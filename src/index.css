@@ -8,35 +8,54 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
+    /* Nature-inspired color palette for tourism */
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 218 27% 25%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 218 27% 25%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 218 27% 25%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Ocean Blue Primary */
+    --primary: 210 100% 45%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Forest Green Secondary */
+    --secondary: 158 50% 35%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Soft Nature Muted */
+    --muted: 210 30% 96%;
+    --muted-foreground: 218 27% 45%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Earth Accent */
+    --accent: 35 45% 65%;
+    --accent-foreground: 218 27% 25%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 210 30% 90%;
+    --input: 210 30% 95%;
+    --ring: 210 100% 45%;
 
-    --radius: 0.5rem;
+    /* Design System Tokens */
+    --radius: 0.75rem;
+    
+    /* Custom Tourism Gradients */
+    --gradient-ocean: linear-gradient(135deg, hsl(210 100% 45%) 0%, hsl(200 100% 55%) 100%);
+    --gradient-forest: linear-gradient(135deg, hsl(158 50% 35%) 0%, hsl(142 60% 45%) 100%);
+    --gradient-earth: linear-gradient(135deg, hsl(35 45% 65%) 0%, hsl(25 55% 70%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(210 100% 45%) 0%, hsl(158 50% 35%) 50%, hsl(35 45% 65%) 100%);
+    
+    /* Shadows */
+    --shadow-soft: 0 2px 20px -2px hsl(210 100% 45% / 0.1);
+    --shadow-nature: 0 8px 30px -8px hsl(158 50% 35% / 0.3);
+    
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     --sidebar-background: 0 0% 98%;
 
