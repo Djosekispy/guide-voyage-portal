@@ -42,10 +42,10 @@ const Header = () => {
           {/* Desktop CTA Buttons */}
           <div className="hidden md:flex items-center space-x-4">
             <Button variant="ghost" asChild>
-              <Link to="/login">Entrar</Link>
+              <Link to="/auth">Entrar</Link>
             </Button>
             <Button variant="hero" asChild>
-              <Link to="/cadastro">Cadastrar</Link>
+              <Link to="/auth">Cadastrar</Link>
             </Button>
           </div>
 
@@ -99,10 +99,10 @@ const Header = () => {
               </Link>
               <div className="flex flex-col space-y-2 pt-4 border-t border-border">
                 <Button variant="ghost" asChild className="justify-start">
-                  <Link to="/login" onClick={toggleMenu}>Entrar</Link>
+                  <Link to="/auth" onClick={toggleMenu}>Entrar</Link>
                 </Button>
                 <Button variant="hero" asChild className="justify-start">
-                  <Link to="/cadastro" onClick={toggleMenu}>Cadastrar</Link>
+                  <Link to="/auth" onClick={toggleMenu}>Cadastrar</Link>
                 </Button>
               </div>
             </nav>
