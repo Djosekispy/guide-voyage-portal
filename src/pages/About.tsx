@@ -1,5 +1,6 @@
 import { Users, Target, Eye, MapPin } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import Header from "@/components/Header";
 
 const About = () => {
   const team = [
@@ -24,7 +25,9 @@ const About = () => {
   ];
 
   return (
-    <div className="min-h-screen pt-24">
+    <div className="min-h-screen">
+      <Header />
+      <div className="pt-24">
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-primary/10 to-secondary/10 py-20">
         <div className="container mx-auto px-4 text-center">
@@ -125,6 +128,7 @@ const About = () => {
             </div>
           </div>
         </section>
+      </div>
       </div>
     </div>
   );

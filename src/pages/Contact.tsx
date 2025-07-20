@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import Header from "@/components/Header";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -38,7 +39,9 @@ const Contact = () => {
   };
 
   return (
-    <div className="min-h-screen pt-24">
+    <div className="min-h-screen">
+      <Header />
+      <div className="pt-24">
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-primary/10 to-secondary/10 py-20">
         <div className="container mx-auto px-4 text-center">
@@ -221,6 +224,7 @@ const Contact = () => {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

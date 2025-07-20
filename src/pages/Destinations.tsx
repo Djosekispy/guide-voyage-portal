@@ -3,6 +3,7 @@ import { Search, MapPin, Users, Star } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import Header from "@/components/Header";
 
 const Destinations = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -88,7 +89,9 @@ const Destinations = () => {
   );
 
   return (
-    <div className="min-h-screen pt-24">
+    <div className="min-h-screen">
+      <Header />
+      <div className="pt-24">
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-primary/10 to-secondary/10 py-20">
         <div className="container mx-auto px-4 text-center">
@@ -177,6 +180,7 @@ const Destinations = () => {
             </p>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

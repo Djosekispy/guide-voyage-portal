@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import Header from "@/components/Header";
 
 const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -57,7 +58,9 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen pt-24 py-12 bg-gradient-to-br from-primary/5 to-secondary/5">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5">
+      <Header />
+      <div className="pt-24 py-12">
       <div className="container mx-auto px-4">
         <div className="max-w-md mx-auto">
           <div className="text-center mb-8">
@@ -293,6 +296,7 @@ const Auth = () => {
             </CardContent>
           </Card>
         </div>
+      </div>
       </div>
     </div>
   );

@@ -5,7 +5,7 @@ import FeaturedDestinations from "@/components/FeaturedDestinations";
 import Testimonials from "@/components/Testimonials";
 import CTASection from "@/components/CTASection";
 import Footer from "@/components/Footer";
-import AngolaMap from "@/components/AngolaMap";
+import GoogleMapsAngola from "@/components/GoogleMapsAngola";
 
 const Index = () => {
   return (
@@ -27,7 +27,7 @@ const Index = () => {
             </p>
           </div>
           <div className="max-w-4xl mx-auto">
-            <AngolaMap />
+            <GoogleMapsAngola height="400px" showSearch={true} showControls={true} />
           </div>
         </div>
       </section>

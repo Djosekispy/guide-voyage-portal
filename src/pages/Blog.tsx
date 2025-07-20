@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import Header from "@/components/Header";
 
 const Blog = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -116,7 +117,9 @@ const Blog = () => {
   });
 
   return (
-    <div className="min-h-screen pt-24">
+    <div className="min-h-screen">
+      <Header />
+      <div className="pt-24">
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-primary/10 to-secondary/10 py-20">
         <div className="container mx-auto px-4 text-center">
@@ -234,6 +237,7 @@ const Blog = () => {
             </p>
           </div>
         )}
+      </div>
       </div>
     </div>
   );
