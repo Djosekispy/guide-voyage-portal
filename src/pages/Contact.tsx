@@ -145,8 +145,8 @@ const Contact = () => {
                       </div>
                       <div>
                         <h3 className="font-semibold text-lg mb-2">E-mail</h3>
-                        <p className="text-muted-foreground">contato@turismo.com</p>
-                        <p className="text-muted-foreground">suporte@turismo.com</p>
+                        <p className="text-muted-foreground">contato@kilemba.ao</p>
+                        <p className="text-muted-foreground">suporte@kilemba.ao</p>
                       </div>
                     </div>
                   </CardContent>
@@ -160,8 +160,8 @@ const Contact = () => {
                       </div>
                       <div>
                         <h3 className="font-semibold text-lg mb-2">Telefone</h3>
-                        <p className="text-muted-foreground">+55 (11) 99999-9999</p>
-                        <p className="text-muted-foreground">Atendimento: 8h às 18h</p>
+                        <p className="text-muted-foreground">+244 923 456 789</p>
+                        <p className="text-muted-foreground">Atendimento: 8h às 17h</p>
                       </div>
                     </div>
                   </CardContent>
@@ -176,9 +176,9 @@ const Contact = () => {
                       <div>
                         <h3 className="font-semibold text-lg mb-2">Endereço</h3>
                         <p className="text-muted-foreground">
-                          Rua das Viagens, 123<br />
-                          Centro, São Paulo - SP<br />
-                          CEP: 01234-567
+                          Rua da Missão, 123<br />
+                          Ingombota, Luanda - Angola<br />
+                          Caixa Postal: 1234
                         </p>
                       </div>
                     </div>

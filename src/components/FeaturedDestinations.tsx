@@ -6,57 +6,57 @@ const FeaturedDestinations = () => {
   const destinations = [
     {
       id: 1,
-      name: "Rio de Janeiro",
-      country: "Brasil",
-      image: "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      guides: 45,
-      rating: 4.9,
-      description: "Cristo Redentor, Pão de Açúcar e praias paradisíacas"
+      name: "Luanda",
+      country: "Angola",
+      image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+      guides: 25,
+      rating: 4.8,
+      description: "Capital vibrante com Fortaleza de São Miguel e Marginal"
     },
     {
       id: 2,
-      name: "Machu Picchu",
-      country: "Peru",
-      image: "https://images.unsplash.com/photo-1587595431973-160d0d94add1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      guides: 23,
-      rating: 4.8,
-      description: "Mistérios incas e trilhas nas montanhas dos Andes"
+      name: "Benguela",
+      country: "Angola",
+      image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+      guides: 18,
+      rating: 4.7,
+      description: "Praias paradisíacas e arquitetura colonial portuguesa"
     },
     {
       id: 3,
-      name: "Paris",
-      country: "França",
-      image: "https://images.unsplash.com/photo-1502602898536-47ad22581b52?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      guides: 78,
-      rating: 4.7,
-      description: "Torre Eiffel, Louvre e charme parisiense"
+      name: "Huambo",
+      country: "Angola",
+      image: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+      guides: 15,
+      rating: 4.6,
+      description: "Planalto central com clima ameno e paisagens montanhosas"
     },
     {
       id: 4,
-      name: "Tóquio",
-      country: "Japão",
-      image: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      guides: 56,
+      name: "Namibe",
+      country: "Angola",
+      image: "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+      guides: 12,
       rating: 4.9,
-      description: "Tradição milenar e modernidade futurista"
+      description: "Deserto do Namibe e paisagens únicas do sul de Angola"
     },
     {
       id: 5,
-      name: "Santorini",
-      country: "Grécia",
-      image: "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      guides: 34,
+      name: "Lubango",
+      country: "Angola",
+      image: "https://images.unsplash.com/photo-1472396961693-142e6e269027?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+      guides: 14,
       rating: 4.8,
-      description: "Pôr do sol romântico e arquitetura cicládica"
+      description: "Serra da Leba e Cristo Rei com vistas espetaculares"
     },
     {
       id: 6,
-      name: "Bali",
-      country: "Indonésia",
-      image: "https://images.unsplash.com/photo-1537953773345-d172ccf13cf1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      guides: 41,
-      rating: 4.7,
-      description: "Templos sagrados, praias e cultura balinesa"
+      name: "Soyo",
+      country: "Angola",
+      image: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+      guides: 10,
+      rating: 4.5,
+      description: "Ponto histórico onde o Rio Congo encontra o Atlântico"
     }
   ];
 
@@ -65,10 +65,10 @@ const FeaturedDestinations = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-            Destinos Populares
+            Destinos em Angola
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Explore os destinos mais procurados pelos nossos viajantes com guias locais experientes
+            Descubra as maravilhas de Angola com nossos guias locais especializados
           </p>
         </div>
 

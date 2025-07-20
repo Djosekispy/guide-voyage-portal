@@ -20,69 +20,91 @@ const Blog = () => {
   const articles = [
     {
       id: 1,
-      title: "10 Dicas Essenciais para Viajar com Segurança",
-      excerpt: "Aprenda como se manter seguro durante suas viagens e aproveitar ao máximo cada destino...",
-      image: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&h=400&fit=crop",
-      author: "Ana Silva",
+      title: "Turismo em Angola: Tesouros Escondidos do Continente Africano",
+      excerpt: "Descubra as maravilhas naturais e culturais que fazem de Angola um destino único na África...",
+      image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=400&fit=crop",
+      author: "Maria Kiluanje",
       date: "2024-01-15",
-      readTime: "5 min",
-      category: "seguranca",
-      tags: ["segurança", "viagem", "dicas"]
+      readTime: "8 min",
+      category: "turismo",
+      tags: ["Angola", "turismo", "África"]
     },
     {
       id: 2,
-      title: "Cultura Local: Como Ser um Viajante Respeitoso",
-      excerpt: "Entenda a importância de respeitar culturas locais e como isso enriquece sua experiência...",
+      title: "Cultura Angolana: Tradições que Resistem ao Tempo",
+      excerpt: "Conheça as ricas tradições culturais angolanas, desde a música à dança e artesanato...",
       image: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&h=400&fit=crop",
-      author: "Carlos Santos",
+      author: "João Savimbi",
       date: "2024-01-12",
       readTime: "7 min",
       category: "cultura",
-      tags: ["cultura", "respeito", "tradições"]
+      tags: ["cultura", "tradições", "Angola"]
     },
     {
       id: 3,
-      title: "Os Melhores Destinos para Turismo Sustentável",
-      excerpt: "Descubra destinos que promovem o turismo responsável e sustentável...",
+      title: "Deserto do Namibe: Aventura no Sul de Angola",
+      excerpt: "Explore as paisagens únicas do Deserto do Namibe e suas formações rochosas impressionantes...",
       image: "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?w=800&h=400&fit=crop",
-      author: "Maria Costa",
+      author: "Ana Tchimboto",
       date: "2024-01-10",
       readTime: "6 min",
       category: "turismo",
-      tags: ["sustentabilidade", "ecoturismo", "natureza"]
+      tags: ["Namibe", "deserto", "aventura"]
     },
     {
       id: 4,
-      title: "Como Escolher o Guia Turístico Ideal",
-      excerpt: "Saiba o que considerar na hora de escolher um guia local para sua viagem...",
-      image: "https://images.unsplash.com/photo-1472396961693-142e6e269027?w=800&h=400&fit=crop",
-      author: "João Oliveira",
+      title: "Dicas de Segurança para Viajar em Angola",
+      excerpt: "Conselhos essenciais para uma viagem segura e proveitosa pelo território angolano...",
+      image: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&h=400&fit=crop",
+      author: "Carlos Bento",
       date: "2024-01-08",
-      readTime: "4 min",
-      category: "dicas",
-      tags: ["guias", "escolha", "viagem"]
+      readTime: "5 min",
+      category: "seguranca",
+      tags: ["segurança", "viagem", "Angola"]
     },
     {
       id: 5,
-      title: "Gastronomia Local: Uma Jornada de Sabores",
-      excerpt: "Explore como a culinária local pode transformar sua experiência de viagem...",
+      title: "Gastronomia Angolana: Sabores Autênticos da África",
+      excerpt: "Delicie-se com os pratos tradicionais angolanos: muamba, calulu, funge e muito mais...",
       image: "https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?w=800&h=400&fit=crop",
-      author: "Sofia Rodriguez",
+      author: "Rosa Miguel",
       date: "2024-01-05",
       readTime: "8 min",
       category: "cultura",
-      tags: ["gastronomia", "cultura", "experiência"]
+      tags: ["gastronomia", "culinária", "Angola"]
     },
     {
       id: 6,
-      title: "Documentos e Preparativos: Lista Completa",
-      excerpt: "Checklist completo do que você precisa organizar antes de viajar...",
+      title: "Documentação para Viajar em Angola",
+      excerpt: "Tudo que você precisa saber sobre vistos, documentos e preparativos para visitar Angola...",
       image: "https://images.unsplash.com/photo-1500673922987-e212871fec22?w=800&h=400&fit=crop",
-      author: "Pedro Almeida",
+      author: "Manuel Dos Santos",
       date: "2024-01-03",
-      readTime: "10 min",
+      readTime: "4 min",
       category: "dicas",
-      tags: ["documentos", "preparativos", "checklist"]
+      tags: ["documentos", "visto", "Angola"]
+    },
+    {
+      id: 7,
+      title: "Quedas de Kalandula: A Majestade das Águas Angolanas",
+      excerpt: "Visite uma das maiores quedas d'água da África, localizada na província de Malanje...",
+      image: "https://images.unsplash.com/photo-1472396961693-142e6e269027?w=800&h=400&fit=crop",
+      author: "Isabel Tchingenge",
+      date: "2024-01-01",
+      readTime: "6 min",
+      category: "turismo",
+      tags: ["Kalandula", "cachoeiras", "Malanje"]
+    },
+    {
+      id: 8,
+      title: "Luanda: Capital Moderna com História Colonial",
+      excerpt: "Explore a vibrante capital angolana, entre arranha-céus modernos e patrimônio histórico...",
+      image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=400&fit=crop",
+      author: "Pedro Kandombe",
+      date: "2023-12-28",
+      readTime: "9 min",
+      category: "turismo",
+      tags: ["Luanda", "história", "capital"]
     }
   ];
 

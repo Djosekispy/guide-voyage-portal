@@ -10,57 +10,75 @@ const Destinations = () => {
   const destinations = [
     {
       id: 1,
-      name: "Rio de Janeiro",
-      country: "Brasil",
-      image: "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=800&h=600&fit=crop",
+      name: "Luanda",
+      country: "Angola",
+      image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop",
       guidesCount: 25,
       rating: 4.8,
-      description: "Cidade maravilhosa com Cristo Redentor, Pão de Açúcar e praias deslumbrantes"
+      description: "Capital vibrante com Fortaleza de São Miguel, Marginal e rica história colonial"
     },
     {
       id: 2,
-      name: "Lisboa",
-      country: "Portugal",
-      image: "https://images.unsplash.com/photo-1555881400-74d7acaacd8b?w=800&h=600&fit=crop",
+      name: "Benguela",
+      country: "Angola",
+      image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop",
       guidesCount: 18,
-      rating: 4.9,
-      description: "Cidade histórica com azulejos, fado e gastronomia única"
+      rating: 4.7,
+      description: "Cidade portuária com praias paradisíacas e arquitetura colonial portuguesa"
     },
     {
       id: 3,
-      name: "Cusco",
-      country: "Peru",
-      image: "https://images.unsplash.com/photo-1587595431973-160d0d94add1?w=800&h=600&fit=crop",
+      name: "Huambo",
+      country: "Angola",
+      image: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&h=600&fit=crop",
       guidesCount: 15,
-      rating: 4.7,
-      description: "Portal de entrada para Machu Picchu e rica cultura inca"
+      rating: 4.6,
+      description: "Planalto central com clima ameno, paisagens montanhosas e patrimônio cultural"
     },
     {
       id: 4,
-      name: "Marrakech",
-      country: "Marrocos",
-      image: "https://images.unsplash.com/photo-1539650116574-75c0c6d73a0e?w=800&h=600&fit=crop",
-      guidesCount: 12,
-      rating: 4.6,
-      description: "Medina vibrante, souks coloridos e arquitetura mourisca"
+      name: "Lubango",
+      country: "Angola",
+      image: "https://images.unsplash.com/photo-1472396961693-142e6e269027?w=800&h=600&fit=crop",
+      guidesCount: 14,
+      rating: 4.8,
+      description: "Serra da Leba com curvas espetaculares e Cristo Rei com vistas panorâmicas"
     },
     {
       id: 5,
-      name: "Quioto",
-      country: "Japão",
-      image: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800&h=600&fit=crop",
-      guidesCount: 20,
+      name: "Namibe",
+      country: "Angola",
+      image: "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?w=800&h=600&fit=crop",
+      guidesCount: 12,
       rating: 4.9,
-      description: "Templos milenares, jardins zen e tradições preservadas"
+      description: "Deserto do Namibe com paisagens únicas e encontro entre deserto e oceano"
     },
     {
       id: 6,
-      name: "Santorini",
-      country: "Grécia",
-      image: "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800&h=600&fit=crop",
+      name: "Soyo",
+      country: "Angola",
+      image: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&h=600&fit=crop",
       guidesCount: 10,
-      rating: 4.8,
-      description: "Ilha paradisíaca com pôr do sol inesquecível e arquitetura cicládica"
+      rating: 4.5,
+      description: "Ponto histórico onde o majestoso Rio Congo encontra o Oceano Atlântico"
+    },
+    {
+      id: 7,
+      name: "Cabinda",
+      country: "Angola",
+      image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=600&fit=crop",
+      guidesCount: 8,
+      rating: 4.4,
+      description: "Enclave rico em petróleo com florestas tropicais e praias selvagens"
+    },
+    {
+      id: 8,
+      name: "Malanje",
+      country: "Angola",
+      image: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&h=600&fit=crop",
+      guidesCount: 11,
+      rating: 4.6,
+      description: "Portal para as impressionantes Quedas de Kalandula e pedras negras de Pungo Andongo"
     }
   ];
 
@@ -75,10 +93,10 @@ const Destinations = () => {
       <section className="bg-gradient-to-r from-primary/10 to-secondary/10 py-20">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6">
-            Explore Destinos
+            Destinos em Angola
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-            Descubra destinos incríveis com guias locais autênticos
+            Descubra as maravilhas naturais e culturais de Angola com guias locais especializados
           </p>
           
           {/* Search Bar */}
@@ -123,7 +141,7 @@ const Destinations = () => {
                 <div className="p-6">
                   <div className="flex items-center gap-2 mb-2">
                     <MapPin className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">{destination.country}</span>
+                    <span className="text-sm text-muted-foreground">{destination.name}, {destination.country}</span>
                   </div>
                   
                   <h3 className="text-xl font-bold mb-3">{destination.name}</h3>

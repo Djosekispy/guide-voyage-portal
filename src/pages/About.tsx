@@ -4,22 +4,22 @@ import { Card, CardContent } from "@/components/ui/card";
 const About = () => {
   const team = [
     {
-      name: "Ana Silva",
+      name: "Ana Kiluanje",
       role: "Fundadora & CEO",
       image: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face",
-      description: "15 anos de experiência em turismo sustentável"
+      description: "20 anos promovendo o turismo sustentável em Angola"
     },
     {
-      name: "Carlos Santos",
+      name: "João Mukongo",
       role: "Diretor de Operações",
       image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
-      description: "Especialista em gestão de experiências turísticas"
+      description: "Especialista em experiências turísticas autênticas angolanas"
     },
     {
-      name: "Maria Costa",
+      name: "Maria Tchizamba",
       role: "Coordenadora de Guias",
       image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=face",
-      description: "Conectando viajantes com guias locais autênticos"
+      description: "Conectando viajantes com as melhores tradições locais"
     }
   ];
 
@@ -32,7 +32,7 @@ const About = () => {
             Sobre Nós
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Conectamos viajantes apaixonados com guias locais autênticos para criar experiências inesquecíveis
+            Conectamos viajantes do mundo todo com guias locais angolanos para descobrir as riquezas do nosso país
           </p>
         </div>
       </section>
@@ -44,9 +44,9 @@ const About = () => {
             <CardContent className="p-8">
               <Target className="w-12 h-12 text-primary mx-auto mb-4" />
               <h3 className="text-2xl font-bold mb-4">Nossa Missão</h3>
-              <p className="text-muted-foreground">
-                Democratizar o turismo autêntico, conectando viajantes com guias locais para experiências genuínas e sustentáveis.
-              </p>
+               <p className="text-muted-foreground">
+                Promover Angola como destino turístico único, conectando viajantes com guias locais para experiências autênticas e sustentáveis.
+               </p>
             </CardContent>
           </Card>
 
@@ -54,9 +54,9 @@ const About = () => {
             <CardContent className="p-8">
               <Eye className="w-12 h-12 text-primary mx-auto mb-4" />
               <h3 className="text-2xl font-bold mb-4">Nossa Visão</h3>
-              <p className="text-muted-foreground">
-                Ser a principal plataforma global que une comunidades locais e viajantes através do turismo responsável.
-              </p>
+               <p className="text-muted-foreground">
+                Ser a principal plataforma de turismo em Angola, destacando nossa cultura, natureza e hospitalidade ao mundo.
+               </p>
             </CardContent>
           </Card>
 
@@ -64,9 +64,9 @@ const About = () => {
             <CardContent className="p-8">
               <MapPin className="w-12 h-12 text-primary mx-auto mb-4" />
               <h3 className="text-2xl font-bold mb-4">Nossos Valores</h3>
-              <p className="text-muted-foreground">
-                Autenticidade, sustentabilidade, respeito cultural e conexões humanas genuínas em cada experiência.
-              </p>
+               <p className="text-muted-foreground">
+                Autenticidade angolana, sustentabilidade ambiental, valorização cultural e promoção do desenvolvimento local.
+               </p>
             </CardContent>
           </Card>
         </div>
@@ -108,19 +108,19 @@ const About = () => {
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
-              <div className="text-3xl md:text-4xl font-bold text-primary mb-2">50+</div>
-              <p className="text-muted-foreground">Destinos</p>
+              <div className="text-3xl md:text-4xl font-bold text-primary mb-2">18</div>
+              <p className="text-muted-foreground">Províncias</p>
             </div>
             <div>
-              <div className="text-3xl md:text-4xl font-bold text-primary mb-2">200+</div>
-              <p className="text-muted-foreground">Guias Parceiros</p>
+              <div className="text-3xl md:text-4xl font-bold text-primary mb-2">150+</div>
+              <p className="text-muted-foreground">Guias Locais</p>
             </div>
             <div>
-              <div className="text-3xl md:text-4xl font-bold text-primary mb-2">1000+</div>
-              <p className="text-muted-foreground">Experiências Realizadas</p>
+              <div className="text-3xl md:text-4xl font-bold text-primary mb-2">500+</div>
+              <p className="text-muted-foreground">Experiências Únicas</p>
             </div>
             <div>
-              <div className="text-3xl md:text-4xl font-bold text-primary mb-2">4.9</div>
+              <div className="text-3xl md:text-4xl font-bold text-primary mb-2">4.8</div>
               <p className="text-muted-foreground">Avaliação Média</p>
             </div>
           </div>

@@ -17,7 +17,7 @@ const Header = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
             <Compass className="h-8 w-8 text-primary" />
-            <span className="font-bold text-xl text-foreground">GuiaViagem</span>
+            <span className="font-bold text-xl text-foreground">Kilemba Tours</span>
           </Link>
 
           {/* Desktop Navigation */}

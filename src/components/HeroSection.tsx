@@ -18,14 +18,14 @@ const HeroSection = () => {
       {/* Content */}
       <div className="relative z-10 text-center text-white px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-          Descubra o Mundo com
+          Descubra Angola com
           <span className="block bg-gradient-ocean bg-clip-text text-transparent">
-            Guias Locais Experts
+            Guias Locais Autênticos
           </span>
         </h1>
         
         <p className="text-xl sm:text-2xl mb-8 text-white/90 max-w-2xl mx-auto">
-          Conecte-se com guias turísticos locais e viva experiências autênticas em destinos incríveis ao redor do mundo.
+          Conecte-se com guias angolanos especializados e explore as maravilhas naturais e culturais do nosso país.
         </p>
 
         {/* CTAs */}
@@ -43,16 +43,16 @@ const HeroSection = () => {
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 mt-16">
           <div className="text-center">
+            <div className="text-3xl font-bold text-primary">150+</div>
+            <div className="text-white/80">Guias Locais</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-primary">18</div>
+            <div className="text-white/80">Províncias</div>
+          </div>
+          <div className="text-center">
             <div className="text-3xl font-bold text-primary">500+</div>
-            <div className="text-white/80">Guias Verificados</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-primary">50+</div>
-            <div className="text-white/80">Destinos</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-primary">5000+</div>
-            <div className="text-white/80">Experiências Realizadas</div>
+            <div className="text-white/80">Experiências Únicas</div>
           </div>
         </div>
       </div>

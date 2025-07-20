@@ -6,39 +6,39 @@ const Testimonials = () => {
   const testimonials = [
     {
       id: 1,
-      name: "Ana Carolina",
-      location: "São Paulo, Brasil",
+      name: "Maria Silva",
+      location: "Lisboa, Portugal",
       avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b47c?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80",
       rating: 5,
-      text: "Minha viagem para o Peru foi transformada graças ao Carlos! Ele nos levou para lugares que jamais encontraríamos sozinhos. Uma experiência inesquecível!",
-      destination: "Machu Picchu, Peru"
+      text: "Angola superou todas as minhas expectativas! O guia João me mostrou as Quedas de Kalandula e a cultura local de forma autêntica. Uma experiência transformadora!",
+      destination: "Malanje, Angola"
     },
     {
       id: 2,
-      name: "Ricardo Santos",
-      location: "Lisboa, Portugal",
+      name: "Ricardo Mendes",
+      location: "São Paulo, Brasil",
       avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80",
       rating: 5,
-      text: "O guia local em Tóquio falava português perfeitamente e conhecia todos os segredos da cidade. Recomendo demais essa plataforma!",
-      destination: "Tóquio, Japão"
+      text: "A Serra da Leba em Lubango foi de tirar o fôlego! A guia Ana conhecia cada curva da estrada e cada história do lugar. Absolutamente incrível!",
+      destination: "Lubango, Angola"
     },
     {
       id: 3,
-      name: "Camila Oliveira",
+      name: "Carlos Ferreira",
       location: "Rio de Janeiro, Brasil",
-      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80",
+      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80",
       rating: 5,
-      text: "Viajei sozinha para Paris e me senti super segura com a Maria como guia. Ela me mostrou a cidade sob uma perspectiva completamente diferente!",
-      destination: "Paris, França"
+      text: "O Deserto do Namibe foi uma aventura única! O guia local me levou para ver paisagens que pareciam de outro planeta. Angola é um tesouro escondido!",
+      destination: "Namibe, Angola"
     },
     {
       id: 4,
-      name: "João Felipe",
-      location: "Belo Horizonte, Brasil",
-      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80",
+      name: "Isabella Santos",
+      location: "Madrid, Espanha",
+      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80",
       rating: 5,
-      text: "Como fotógrafo, precisava de alguém que conhecesse os melhores ângulos e horários. O guia em Santorini superou todas as minhas expectativas!",
-      destination: "Santorini, Grécia"
+      text: "Luanda me surpreendeu completamente! Entre a Fortaleza de São Miguel e a Marginal, descobri uma cidade vibrante e cheia de história. Recomendo a todos!",
+      destination: "Luanda, Angola"
     }
   ];
 
@@ -50,7 +50,7 @@ const Testimonials = () => {
             O que Nossos Viajantes Dizem
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Milhares de experiências incríveis já foram vividas através da nossa plataforma
+            Centenas de experiências autênticas em Angola já foram vividas com nossos guias locais
           </p>
         </div>
 
