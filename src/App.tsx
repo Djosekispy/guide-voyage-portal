@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,6 +11,12 @@ import Blog from "./pages/Blog";
 import Contact from "./pages/Contact";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import GuideDashboard from "./pages/GuideDashboard";
+import GuideProfile from "./pages/GuideProfile";
+import GuideTours from "./pages/GuideTours";
+import GuideBookings from "./pages/GuideBookings";
+import GuideCalendar from "./pages/GuideCalendar";
+import GuideReviews from "./pages/GuideReviews";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +33,15 @@ const App = () => (
           <Route path="/blog" element={<Blog />} />
           <Route path="/contato" element={<Contact />} />
           <Route path="/auth" element={<Auth />} />
+          
+          {/* Guide Panel Routes */}
+          <Route path="/guia/dashboard" element={<GuideDashboard />} />
+          <Route path="/guia/perfil" element={<GuideProfile />} />
+          <Route path="/guia/passeios" element={<GuideTours />} />
+          <Route path="/guia/reservas" element={<GuideBookings />} />
+          <Route path="/guia/calendario" element={<GuideCalendar />} />
+          <Route path="/guia/avaliacoes" element={<GuideReviews />} />
+          
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
