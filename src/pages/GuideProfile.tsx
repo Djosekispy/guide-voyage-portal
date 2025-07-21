@@ -1,236 +1,306 @@
 
 import { useState } from "react";
-import Header from "@/components/Header";
+import { MapPin, Star, Languages, Calendar, Clock, Users, Heart, Share2, Phone, Mail } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useForm } from "react-hook-form";
-import { User, Languages, MapPin, Phone, Mail, Camera } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import Header from "@/components/Header";
 
 const GuideProfile = () => {
-  const [isEditing, setIsEditing] = useState(false);
-  const form = useForm({
-    defaultValues: {
-      name: "Carlos Mendes",
-      email: "carlos@kilemba.com",
-      phone: "+244 923 456 789",
-      city: "Luanda",
-      languages: ["Português", "Inglês"],
-      specialties: ["História", "Cultura", "Natureza"],
-      experience: "5",
-      description: "Guia turístico experiente em Luanda com paixão pela história e cultura angolana."
-    }
-  });
+  const [isFavorite, setIsFavorite] = useState(false);
 
-  const onSubmit = (data: any) => {
-    console.log(data);
-    setIsEditing(false);
+  const guide = {
+    id: 1,
+    name: "Maria Santos",
+    city: "Luanda",
+    rating: 4.9,
+    reviews: 45,
+    yearsExperience: 8,
+    languages: ["Português", "Inglês", "Francês"],
+    specialties: ["História", "Cultura", "Gastronomia"],
+    image: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=300&h=300&fit=crop&crop=face",
+    price: "80.000 Kz/dia",
+    description: "Sou uma guia turística apaixonada por mostrar as belezas e a rica história de Luanda. Com 8 anos de experiência, já guiei mais de 500 turistas pelas principais atrações da nossa capital. Especializo-me em tours históricos, culturais e gastronômicos, sempre com muito carinho e dedicação aos meus clientes.",
+    phone: "+244 923 456 789",
+    email: "maria.santos@email.com",
+    responseTime: "1 hora",
+    location: {
+      lat: -8.8390,
+      lng: 13.2894
+    }
   };
 
-  const languages = ["Português", "Inglês", "Francês", "Espanhol", "Alemão"];
-  const specialties = ["História", "Cultura", "Natureza", "Aventura", "Gastronomia", "Arte", "Arquitetura"];
-  const cities = ["Luanda", "Benguela", "Huambo", "Lobito", "Lubango", "Malanje", "Namibe"];
+  const tours = [
+    {
+      id: 1,
+      title: "Tour Histórico pela Fortaleza de São Miguel",
+      duration: "4 horas",
+      price: "60.000 Kz",
+      description: "Explore a história colonial de Angola na icônica Fortaleza de São Miguel",
+      image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=200&fit=crop"
+    },
+    {
+      id: 2,
+      title: "Descobrindo a Marginal de Luanda",
+      duration: "3 horas", 
+      price: "45.000 Kz",
+      description: "Passeio pela famosa marginal com vista para a Baía de Luanda",
+      image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=200&fit=crop"
+    },
+    {
+      id: 3,
+      title: "Experiência Gastronômica Angolana",
+      duration: "5 horas",
+      price: "120.000 Kz",
+      description: "Tour gastronômico pelos melhores sabores tradicionais de Angola",
+      image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&h=200&fit=crop"
+    }
+  ];
+
+  const reviews = [
+    {
+      id: 1,
+      name: "Pedro Silva",
+      rating: 5,
+      date: "Janeiro 2024",
+      comment: "Maria é uma guia excepcional! Muito conhecedora da história de Luanda e super atenciosa. Recomendo!"
+    },
+    {
+      id: 2,
+      name: "Ana Costa",
+      rating: 5,
+      date: "Dezembro 2023", 
+      comment: "Tour incrível! Maria nos mostrou lugares que jamais encontraríamos sozinhos. Uma experiência inesquecível!"
+    },
+    {
+      id: 3,
+      name: "João Fernandes",
+      rating: 4,
+      date: "Novembro 2023",
+      comment: "Muito profissional e pontual. O tour gastronômico foi uma delícia! Vale muito a pena."
+    }
+  ];
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Meu Perfil</h1>
-          <p className="text-muted-foreground">Gerencie suas informações pessoais e profissionais</p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Profile Photo */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Camera className="h-5 w-5" />
-                Foto do Perfil
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="text-center">
-              <div className="w-32 h-32 mx-auto bg-gray-200 rounded-full flex items-center justify-center mb-4">
-                <User className="h-16 w-16 text-gray-400" />
-              </div>
-              <Button variant="outline" size="sm">
-                Alterar Foto
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Profile Form */}
+      <div className="pt-24 container mx-auto px-4 py-8">
+        {/* Header Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
           <div className="lg:col-span-2">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle>Informações Pessoais</CardTitle>
-                  <CardDescription>Mantenha seus dados atualizados</CardDescription>
-                </div>
-                <Button 
-                  variant={isEditing ? "default" : "outline"}
-                  onClick={() => setIsEditing(!isEditing)}
-                >
-                  {isEditing ? "Cancelar" : "Editar"}
-                </Button>
-              </CardHeader>
-              <CardContent>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Nome Completo</FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                disabled={!isEditing}
-                                className={!isEditing ? "bg-muted" : ""}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Email</FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                type="email"
-                                disabled={!isEditing}
-                                className={!isEditing ? "bg-muted" : ""}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="phone"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Telefone</FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                disabled={!isEditing}
-                                className={!isEditing ? "bg-muted" : ""}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="city"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Cidade</FormLabel>
-                            <Select disabled={!isEditing} value={field.value} onValueChange={field.onChange}>
-                              <FormControl>
-                                <SelectTrigger className={!isEditing ? "bg-muted" : ""}>
-                                  <SelectValue placeholder="Selecione uma cidade" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {cities.map((city) => (
-                                  <SelectItem key={city} value={city}>{city}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="experience"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Anos de Experiência</FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                type="number"
-                                disabled={!isEditing}
-                                className={!isEditing ? "bg-muted" : ""}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    {isEditing && (
-                      <div className="flex gap-4">
-                        <Button type="submit" className="flex-1">
-                          Salvar Alterações
+              <CardContent className="p-6">
+                <div className="flex flex-col md:flex-row gap-6">
+                  <Avatar className="w-32 h-32 mx-auto md:mx-0">
+                    <AvatarImage src={guide.image} />
+                    <AvatarFallback>{guide.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                  </Avatar>
+                  
+                  <div className="flex-1 text-center md:text-left">
+                    <div className="flex items-center justify-between mb-2">
+                      <h1 className="text-3xl font-bold">{guide.name}</h1>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setIsFavorite(!isFavorite)}
+                        >
+                          <Heart className={`w-4 h-4 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          <Share2 className="w-4 h-4" />
                         </Button>
                       </div>
-                    )}
-                  </form>
-                </Form>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 mb-4 justify-center md:justify-start">
+                      <MapPin className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">{guide.city}, Angola</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-4 mb-4 justify-center md:justify-start">
+                      <div className="flex items-center gap-1">
+                        <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                        <span className="font-semibold">{guide.rating}</span>
+                        <span className="text-muted-foreground">({guide.reviews} avaliações)</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Calendar className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">{guide.yearsExperience} anos de experiência</span>
+                      </div>
+                    </div>
+                    
+                    <p className="text-muted-foreground mb-4">{guide.description}</p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Languages className="w-4 h-4 text-muted-foreground" />
+                          <span className="font-medium">Idiomas:</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {guide.languages.map((language) => (
+                            <Badge key={language} variant="secondary">
+                              {language}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Star className="w-4 h-4 text-muted-foreground" />
+                          <span className="font-medium">Especialidades:</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {guide.specialties.map((specialty) => (
+                            <Badge key={specialty} variant="outline">
+                              {specialty}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
-
-            {/* Languages and Specialties */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Languages className="h-5 w-5" />
-                    Idiomas
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {["Português", "Inglês"].map((lang) => (
-                      <div key={lang} className="flex items-center justify-between p-2 bg-muted rounded">
-                        <span>{lang}</span>
-                      </div>
-                    ))}
+          </div>
+          
+          {/* Contact Card */}
+          <div>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-center">Contratar Guia</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center mb-6">
+                  <div className="text-3xl font-bold text-primary mb-2">{guide.price}</div>
+                  <p className="text-sm text-muted-foreground">por dia de tour</p>
+                </div>
+                
+                <div className="space-y-4 mb-6">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Clock className="w-4 h-4 text-muted-foreground" />
+                    <span>Responde em {guide.responseTime}</span>
                   </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MapPin className="h-5 w-5" />
-                    Especialidades
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {["História", "Cultura", "Natureza"].map((specialty) => (
-                      <div key={specialty} className="flex items-center justify-between p-2 bg-muted rounded">
-                        <span>{specialty}</span>
-                      </div>
-                    ))}
+                  
+                  <div className="flex items-center gap-2 text-sm">
+                    <Phone className="w-4 h-4 text-muted-foreground" />
+                    <span>{guide.phone}</span>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                  
+                  <div className="flex items-center gap-2 text-sm">
+                    <Mail className="w-4 h-4 text-muted-foreground" />
+                    <span>{guide.email}</span>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Button variant="hero" className="w-full">
+                    Solicitar Reserva
+                  </Button>
+                  <Button variant="outline" className="w-full">
+                    Enviar Mensagem
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
+
+        {/* Tabs Section */}
+        <Tabs defaultValue="tours" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="tours">Passeios Disponíveis</TabsTrigger>
+            <TabsTrigger value="reviews">Avaliações</TabsTrigger>
+            <TabsTrigger value="map">Localização</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="tours" className="mt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {tours.map((tour) => (
+                <Card key={tour.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                  <CardContent className="p-0">
+                    <img 
+                      src={tour.image} 
+                      alt={tour.title}
+                      className="w-full h-48 object-cover"
+                    />
+                    <div className="p-6">
+                      <h3 className="font-semibold mb-2">{tour.title}</h3>
+                      <p className="text-sm text-muted-foreground mb-4">{tour.description}</p>
+                      
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                          <Clock className="w-4 h-4" />
+                          {tour.duration}
+                        </div>
+                        <span className="font-bold text-primary">{tour.price}</span>
+                      </div>
+                      
+                      <Button variant="outline" className="w-full">
+                        Ver Detalhes
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="reviews" className="mt-6">
+            <div className="space-y-6">
+              {reviews.map((review) => (
+                <Card key={review.id}>
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-4">
+                      <Avatar>
+                        <AvatarFallback>{review.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h4 className="font-semibold">{review.name}</h4>
+                          <div className="flex items-center gap-1">
+                            {[...Array(5)].map((_, i) => (
+                              <Star 
+                                key={i} 
+                                className={`w-4 h-4 ${i < review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} 
+                              />
+                            ))}
+                          </div>
+                          <span className="text-sm text-muted-foreground">{review.date}</span>
+                        </div>
+                        <p className="text-muted-foreground">{review.comment}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="map" className="mt-6">
+            <Card>
+              <CardContent className="p-6">
+                <div className="bg-muted rounded-lg h-96 flex items-center justify-center">
+                  <div className="text-center">
+                    <MapPin className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold mb-2">Mapa Interativo</h3>
+                    <p className="text-muted-foreground">
+                      Localização aproximada do guia em {guide.city}
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Coordenadas: {guide.location.lat}, {guide.location.lng}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

@@ -17,6 +17,10 @@ import GuideTours from "./pages/GuideTours";
 import GuideBookings from "./pages/GuideBookings";
 import GuideCalendar from "./pages/GuideCalendar";
 import GuideReviews from "./pages/GuideReviews";
+import TouristDashboard from "./pages/TouristDashboard";
+import SearchGuides from "./pages/SearchGuides";
+import TouristBookings from "./pages/TouristBookings";
+import ReviewTour from "./pages/ReviewTour";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +45,12 @@ const App = () => (
           <Route path="/guia/reservas" element={<GuideBookings />} />
           <Route path="/guia/calendario" element={<GuideCalendar />} />
           <Route path="/guia/avaliacoes" element={<GuideReviews />} />
+          
+          {/* Tourist Panel Routes */}
+          <Route path="/turista/dashboard" element={<TouristDashboard />} />
+          <Route path="/turista/buscar-guias" element={<SearchGuides />} />
+          <Route path="/turista/reservas" element={<TouristBookings />} />
+          <Route path="/turista/avaliar" element={<ReviewTour />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
