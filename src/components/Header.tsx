@@ -1,14 +1,38 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { Menu, X, MapPin, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Compass, Menu, X } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Header = () => {
+  const navigate = useNavigate();
+  const { user, userData, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
+  
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
   };
+
+  const navigateToDashboard = () => {
+    if (userData?.userType === 'guide') {
+      navigate('/guia/dashboard');
+    } else {
+      navigate('/turista/dashboard');
+    }
+  };
+
+  const navItems = [
+    { name: "Início", href: "/" },
+    { name: "Sobre", href: "/sobre" },
+    { name: "Destinos", href: "/destinos" },
+    { name: "Guias", href: "/guias" },
+    { name: "Blog", href: "/blog" },
+    { name: "Contato", href: "/contato" },
+  ];
 
   return (
     <header className="bg-background/95 backdrop-blur-sm border-b border-border sticky top-0 z-50">
@@ -16,42 +40,71 @@ const Header = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
-            <Compass className="h-8 w-8 text-primary" />
+            <MapPin className="h-8 w-8 text-primary" />
             <span className="font-bold text-xl text-foreground">Kilemba Tours</span>
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="text-foreground hover:text-primary transition-colors">
-              Início
-            </Link>
-            <Link to="/destinos" className="text-foreground hover:text-primary transition-colors">
-              Destinos
-            </Link>
-            <Link to="/sobre" className="text-foreground hover:text-primary transition-colors">
-              Sobre Nós
-            </Link>
-            <Link to="/blog" className="text-foreground hover:text-primary transition-colors">
-              Blog
-            </Link>
-            <Link to="/contato" className="text-foreground hover:text-primary transition-colors">
-              Contato
-            </Link>
+            {navItems.map((item) => (
+              <Link
+                key={item.name}
+                to={item.href}
+                className="text-foreground hover:text-primary transition-colors duration-200"
+              >
+                {item.name}
+              </Link>
+            ))}
           </nav>
 
-          {/* Desktop CTA Buttons */}
-          <div className="hidden md:flex items-center space-x-4">
-            <Button variant="ghost" asChild>
-              <Link to="/auth">Entrar</Link>
-            </Button>
-            <Button variant="hero" asChild>
-              <Link to="/auth">Cadastrar</Link>
-            </Button>
+          {/* Auth Section */}
+          <div className="flex items-center gap-4">
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user.photoURL || ''} alt={userData?.name || ''} />
+                      <AvatarFallback>
+                        {userData?.name?.charAt(0).toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <div className="flex flex-col space-y-1 p-2">
+                    <p className="text-sm font-medium leading-none">{userData?.name}</p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {user.email}
+                    </p>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={navigateToDashboard}>
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Dashboard</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Sair</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" asChild>
+                  <Link to="/auth">Entrar</Link>
+                </Button>
+                <Button variant="hero" asChild>
+                  <Link to="/auth">Criar Conta</Link>
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
           <button
-            onClick={toggleMenu}
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="md:hidden p-2 rounded-md text-foreground hover:bg-accent hover:text-accent-foreground"
           >
             {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -62,49 +115,68 @@ const Header = () => {
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t border-border">
             <nav className="flex flex-col space-y-4">
-              <Link
-                to="/"
-                className="text-foreground hover:text-primary transition-colors px-2 py-1"
-                onClick={toggleMenu}
-              >
-                Início
-              </Link>
-              <Link
-                to="/destinos"
-                className="text-foreground hover:text-primary transition-colors px-2 py-1"
-                onClick={toggleMenu}
-              >
-                Destinos
-              </Link>
-              <Link
-                to="/sobre"
-                className="text-foreground hover:text-primary transition-colors px-2 py-1"
-                onClick={toggleMenu}
-              >
-                Sobre Nós
-              </Link>
-              <Link
-                to="/blog"
-                className="text-foreground hover:text-primary transition-colors px-2 py-1"
-                onClick={toggleMenu}
-              >
-                Blog
-              </Link>
-              <Link
-                to="/contato"
-                className="text-foreground hover:text-primary transition-colors px-2 py-1"
-                onClick={toggleMenu}
-              >
-                Contato
-              </Link>
-              <div className="flex flex-col space-y-2 pt-4 border-t border-border">
-                <Button variant="ghost" asChild className="justify-start">
-                  <Link to="/auth" onClick={toggleMenu}>Entrar</Link>
-                </Button>
-                <Button variant="hero" asChild className="justify-start">
-                  <Link to="/auth" onClick={toggleMenu}>Cadastrar</Link>
-                </Button>
-              </div>
+              {navItems.map((item) => (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className="block px-3 py-2 text-base font-medium text-foreground hover:text-primary"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {item.name}
+                </Link>
+              ))}
+              
+              {user ? (
+                <div className="px-3 py-2">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={user.photoURL || ''} alt={userData?.name || ''} />
+                      <AvatarFallback>
+                        {userData?.name?.charAt(0).toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-sm font-medium">{userData?.name}</p>
+                      <p className="text-xs text-muted-foreground">{user.email}</p>
+                    </div>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    className="w-full mb-2"
+                    onClick={() => {
+                      navigateToDashboard();
+                      setIsMenuOpen(false);
+                    }}
+                  >
+                    <User className="mr-2 h-4 w-4" />
+                    Dashboard
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => {
+                      handleLogout();
+                      setIsMenuOpen(false);
+                    }}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sair
+                  </Button>
+                </div>
+              ) : (
+                <div className="px-3 py-2 space-y-2">
+                  <Button variant="outline" className="w-full" asChild>
+                    <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
+                      Entrar
+                    </Link>
+                  </Button>
+                  <Button variant="hero" className="w-full" asChild>
+                    <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
+                      Criar Conta
+                    </Link>
+                  </Button>
+                </div>
+              )}
             </nav>
           </div>
         )}

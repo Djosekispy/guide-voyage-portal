@@ -4,6 +4,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Destinations from "./pages/Destinations";
@@ -27,38 +29,81 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/sobre" element={<About />} />
-          <Route path="/destinos" element={<Destinations />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/contato" element={<Contact />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/guias" element={<BrowseGuides />} />
-          
-          {/* Guide Panel Routes */}
-          <Route path="/guia/dashboard" element={<GuideDashboard />} />
-          <Route path="/guia/perfil" element={<GuideProfile />} />
-          <Route path="/guia/passeios" element={<GuideTours />} />
-          <Route path="/guia/reservas" element={<GuideBookings />} />
-          <Route path="/guia/calendario" element={<GuideCalendar />} />
-          <Route path="/guia/avaliacoes" element={<GuideReviews />} />
-          
-          {/* Tourist Panel Routes */}
-          <Route path="/turista/dashboard" element={<TouristDashboard />} />
-          <Route path="/turista/buscar-guias" element={<SearchGuides />} />
-          <Route path="/turista/reservas" element={<TouristBookings />} />
-          <Route path="/turista/avaliar" element={<ReviewTour />} />
-          
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<Index />} />
+            <Route path="/sobre" element={<About />} />
+            <Route path="/destinos" element={<Destinations />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/contato" element={<Contact />} />
+            <Route path="/guias" element={<BrowseGuides />} />
+            <Route path="/auth" element={<Auth />} />
+            
+            {/* Guide Panel Routes - Protected */}
+            <Route path="/guia/dashboard" element={
+              <ProtectedRoute userType="guide">
+                <GuideDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/guia/perfil" element={
+              <ProtectedRoute userType="guide">
+                <GuideProfile />
+              </ProtectedRoute>
+            } />
+            <Route path="/guia/passeios" element={
+              <ProtectedRoute userType="guide">
+                <GuideTours />
+              </ProtectedRoute>
+            } />
+            <Route path="/guia/reservas" element={
+              <ProtectedRoute userType="guide">
+                <GuideBookings />
+              </ProtectedRoute>
+            } />
+            <Route path="/guia/calendario" element={
+              <ProtectedRoute userType="guide">
+                <GuideCalendar />
+              </ProtectedRoute>
+            } />
+            <Route path="/guia/avaliacoes" element={
+              <ProtectedRoute userType="guide">
+                <GuideReviews />
+              </ProtectedRoute>
+            } />
+            
+            {/* Tourist Panel Routes - Protected */}
+            <Route path="/turista/dashboard" element={
+              <ProtectedRoute userType="tourist">
+                <TouristDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/turista/buscar-guias" element={
+              <ProtectedRoute userType="tourist">
+                <SearchGuides />
+              </ProtectedRoute>
+            } />
+            <Route path="/turista/reservas" element={
+              <ProtectedRoute userType="tourist">
+                <TouristBookings />
+              </ProtectedRoute>
+            } />
+            <Route path="/turista/avaliar" element={
+              <ProtectedRoute userType="tourist">
+                <ReviewTour />
+              </ProtectedRoute>
+            } />
+            
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
