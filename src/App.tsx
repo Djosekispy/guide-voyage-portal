@@ -21,6 +21,7 @@ import TouristDashboard from "./pages/TouristDashboard";
 import SearchGuides from "./pages/SearchGuides";
 import TouristBookings from "./pages/TouristBookings";
 import ReviewTour from "./pages/ReviewTour";
+import BrowseGuides from "./pages/BrowseGuides";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +38,7 @@ const App = () => (
           <Route path="/blog" element={<Blog />} />
           <Route path="/contato" element={<Contact />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/guias" element={<BrowseGuides />} />
           
           {/* Guide Panel Routes */}
           <Route path="/guia/dashboard" element={<GuideDashboard />} />
