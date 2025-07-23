@@ -1,7 +1,28 @@
 import { Button } from "@/components/ui/button";
 import { Compass, Users, Shield, Heart } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 const CTASection = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleStartAsTourist = () => {
+    if (user) {
+      navigate("/turista/dashboard");
+    } else {
+      navigate("/auth?userType=tourist");
+    }
+  };
+
+  const handleBecomeGuide = () => {
+    if (user) {
+      navigate("/guide-profile-form");
+    } else {
+      navigate("/auth?userType=guide");
+    }
+  };
+
   return (
     <section className="py-20 bg-gradient-hero relative overflow-hidden">
       <div className="absolute inset-0 bg-black/20" />
@@ -57,6 +78,7 @@ const CTASection = () => {
             variant="secondary" 
             size="lg" 
             className="w-full sm:w-auto text-lg px-12 py-4 bg-white text-primary hover:bg-white/90"
+            onClick={handleStartAsTourist}
           >
             <Compass className="mr-2 h-5 w-5" />
             Começar como Turista
@@ -65,6 +87,7 @@ const CTASection = () => {
             variant="outline" 
             size="lg" 
             className="w-full sm:w-auto text-lg px-12 py-4 border-white/30 text-white hover:bg-white hover:text-primary bg-white/10"
+            onClick={handleBecomeGuide}
           >
             <Users className="mr-2 h-5 w-5" />
             Tornar-se Guia

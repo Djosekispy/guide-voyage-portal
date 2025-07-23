@@ -1,8 +1,19 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { MapPin, Star, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const FeaturedDestinations = () => {
+  const navigate = useNavigate();
+
+  const handleViewGuides = (city: string) => {
+    navigate(`/guias?city=${encodeURIComponent(city)}`);
+  };
+
+  const handleViewAllDestinations = () => {
+    navigate("/destinos");
+  };
+
   const destinations = [
     {
       id: 1,
@@ -102,7 +113,11 @@ const FeaturedDestinations = () => {
                     {destination.rating}
                   </div>
                 </div>
-                <Button variant="outline" className="w-full">
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => handleViewGuides(destination.name)}
+                >
                   Ver Guias
                 </Button>
               </CardContent>
@@ -111,7 +126,11 @@ const FeaturedDestinations = () => {
         </div>
 
         <div className="text-center">
-          <Button variant="hero" size="lg">
+          <Button 
+            variant="hero" 
+            size="lg"
+            onClick={handleViewAllDestinations}
+          >
             Ver Todos os Destinos
           </Button>
         </div>

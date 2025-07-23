@@ -1,8 +1,27 @@
 import { Button } from "@/components/ui/button";
 import { Search, MapPin, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import heroImage from "@/assets/hero-tourism.jpg";
 
 const HeroSection = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleFindGuide = () => {
+    navigate("/guias");
+  };
+
+  const handleBecomeGuide = () => {
+    if (user) {
+      // Se já está logado, vai para formulário de guia
+      navigate("/guide-profile-form");
+    } else {
+      // Se não está logado, vai para página de auth como guia
+      navigate("/auth?userType=guide");
+    }
+  };
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image */}
@@ -30,11 +49,21 @@ const HeroSection = () => {
 
         {/* CTAs */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-          <Button variant="hero" size="lg" className="w-full sm:w-auto text-lg px-8 py-4">
+          <Button 
+            variant="hero" 
+            size="lg" 
+            className="w-full sm:w-auto text-lg px-8 py-4"
+            onClick={handleFindGuide}
+          >
             <Search className="mr-2 h-5 w-5" />
             Encontrar Guia
           </Button>
-          <Button variant="outline" size="lg" className="w-full sm:w-auto text-lg px-8 py-4 bg-white/10 border-white/30 text-white hover:bg-white hover:text-foreground">
+          <Button 
+            variant="outline" 
+            size="lg" 
+            className="w-full sm:w-auto text-lg px-8 py-4 bg-white/10 border-white/30 text-white hover:bg-white hover:text-foreground"
+            onClick={handleBecomeGuide}
+          >
             <Users className="mr-2 h-5 w-5" />
             Tornar-se Guia
           </Button>

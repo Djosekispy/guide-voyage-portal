@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Search, MapPin, Languages, Star, Phone, Mail, Calendar, Clock, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,9 +12,19 @@ import { Separator } from "@/components/ui/separator";
 import Header from "@/components/Header";
 
 const BrowseGuides = () => {
+  const [searchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedGuide, setSelectedGuide] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { toast } = useToast();
+
+  // Inicializar busca com parâmetros da URL
+  useEffect(() => {
+    const cityParam = searchParams.get('city');
+    if (cityParam) {
+      setSearchTerm(cityParam);
+    }
+  }, [searchParams]);
 
   const guides = [
     {
@@ -112,6 +124,22 @@ const BrowseGuides = () => {
   const openGuideModal = (guide: any) => {
     setSelectedGuide(guide);
     setIsModalOpen(true);
+  };
+
+  const handleContact = (guide: any) => {
+    window.open(`tel:${guide.phone}`, '_blank');
+    toast({
+      title: "Iniciando chamada",
+      description: `Ligando para ${guide.name}...`,
+    });
+  };
+
+  const handleBooking = (guide: any) => {
+    toast({
+      title: "Redirecionando para reserva",
+      description: `Em breve você poderá reservar com ${guide.name}`,
+    });
+    // Aqui seria implementada a lógica de reserva
   };
 
   return (
@@ -366,11 +394,19 @@ const BrowseGuides = () => {
 
                   {/* Action Buttons */}
                   <div className="flex gap-3 pt-4">
-                    <Button variant="outline" className="flex-1">
+                    <Button 
+                      variant="outline" 
+                      className="flex-1"
+                      onClick={() => handleContact(selectedGuide)}
+                    >
                       <Phone className="w-4 h-4 mr-2" />
                       Entrar em Contato
                     </Button>
-                    <Button variant="hero" className="flex-1">
+                    <Button 
+                      variant="hero" 
+                      className="flex-1"
+                      onClick={() => handleBooking(selectedGuide)}
+                    >
                       <Calendar className="w-4 h-4 mr-2" />
                       Fazer Reserva
                     </Button>

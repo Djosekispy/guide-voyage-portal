@@ -24,6 +24,7 @@ import SearchGuides from "./pages/SearchGuides";
 import TouristBookings from "./pages/TouristBookings";
 import ReviewTour from "./pages/ReviewTour";
 import BrowseGuides from "./pages/BrowseGuides";
+import GuideProfileForm from "./pages/GuideProfileForm";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="/blog" element={<Blog />} />
             <Route path="/contato" element={<Contact />} />
             <Route path="/guias" element={<BrowseGuides />} />
+            <Route path="/guide-profile-form" element={<GuideProfileForm />} />
             <Route path="/auth" element={<Auth />} />
             
             {/* Guide Panel Routes - Protected */}
