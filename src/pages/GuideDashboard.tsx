@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Users, Star, MapPin, Clock, TrendingUp } from "lucide-react";
+import GoogleMapsAngola from "@/components/GoogleMapsAngola";
 
 const GuideDashboard = () => {
   const stats = [
@@ -67,6 +68,20 @@ const GuideDashboard = () => {
             </Card>
           ))}
         </div>
+
+        {/* Mapa Interativo */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MapPin className="h-5 w-5" />
+              Gerencie Suas Atividades no Mapa
+            </CardTitle>
+            <CardDescription>Visualize onde seus passeios acontecem</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <GoogleMapsAngola height="400px" showSearch={true} showControls={true} />
+          </CardContent>
+        </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Recent Bookings */}

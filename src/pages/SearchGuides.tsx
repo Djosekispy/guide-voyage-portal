@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Header from "@/components/Header";
+import GoogleMapsAngola from "@/components/GoogleMapsAngola";
 
 const SearchGuides = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -180,6 +181,13 @@ const SearchGuides = () => {
                   Limpar Filtros
                 </Button>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Mapa Interativo */}
+          <Card className="mb-8">
+            <CardContent className="p-0">
+              <GoogleMapsAngola height="400px" showSearch={true} showControls={true} />
             </CardContent>
           </Card>
 

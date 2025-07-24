@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import Header from "@/components/Header";
+import GoogleMapsAngola from "@/components/GoogleMapsAngola";
 
 const BrowseGuides = () => {
   const [searchParams] = useSearchParams();
@@ -175,31 +176,7 @@ const BrowseGuides = () => {
             <div className="order-2 lg:order-1">
               <Card className="h-96 lg:h-[600px]">
                 <CardContent className="p-0 h-full">
-                  <div className="w-full h-full bg-muted rounded-lg flex items-center justify-center relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20"></div>
-                    <div className="relative z-10 text-center">
-                      <MapPin className="w-16 h-16 text-primary mx-auto mb-4" />
-                      <h3 className="text-xl font-bold mb-2">Mapa Interativo</h3>
-                      <p className="text-muted-foreground">
-                        Visualize a localização dos guias
-                      </p>
-                    </div>
-                    
-                    {/* Simulated map markers */}
-                    {filteredGuides.map((guide, index) => (
-                      <div
-                        key={guide.id}
-                        className={`absolute w-3 h-3 bg-primary rounded-full cursor-pointer hover:scale-150 transition-transform ${
-                          index === 0 ? 'top-1/4 left-1/3' :
-                          index === 1 ? 'top-2/3 right-1/4' :
-                          index === 2 ? 'bottom-1/4 left-1/2' :
-                          'top-1/3 right-1/3'
-                        }`}
-                        onClick={() => openGuideModal(guide)}
-                        title={`${guide.name} - ${guide.city}`}
-                      />
-                    ))}
-                  </div>
+                  <GoogleMapsAngola height="100%" showSearch={true} showControls={true} />
                 </CardContent>
               </Card>
             </div>

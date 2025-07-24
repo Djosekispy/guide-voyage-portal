@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Header from "@/components/Header";
+import GoogleMapsAngola from "@/components/GoogleMapsAngola";
 
 const TouristDashboard = () => {
   const [pendingReviews] = useState([
@@ -198,6 +199,19 @@ const TouristDashboard = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Mapa Interativo */}
+        <Card className="mt-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MapPin className="h-5 w-5" />
+              Explore Angola
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <GoogleMapsAngola height="400px" showSearch={true} showControls={true} />
+          </CardContent>
+        </Card>
 
         {/* Quick Actions */}
         <Card className="mt-8">
