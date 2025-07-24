@@ -80,7 +80,7 @@ const GoogleMapsAngola: React.FC<GoogleMapsAngolaProps> = ({
 }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<google.maps.Map | null>(null);
-  const [apiKey, setApiKey] = useState('AIzaSyAOgcbrjuBmK_FBqSfcqQRTkEbSQpijOJo');
+  const [apiKey, setApiKey] = useState(localStorage.getItem('google_maps_api_key') || '');
   const [searchQuery, setSearchQuery] = useState('');
   const [mapType, setMapType] = useState<'roadmap' | 'satellite' | 'hybrid' | 'terrain'>('roadmap');
   const [selectedDestination, setSelectedDestination] = useState<typeof angolaDestinations[0] | null>(null);
@@ -88,6 +88,15 @@ const GoogleMapsAngola: React.FC<GoogleMapsAngolaProps> = ({
   const [autocomplete, setAutocomplete] = useState<google.maps.places.Autocomplete | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const [tempApiKey, setTempApiKey] = useState('');
+
+  const handleApiKeySave = () => {
+    if (tempApiKey.trim()) {
+      localStorage.setItem('google_maps_api_key', tempApiKey.trim());
+      setApiKey(tempApiKey.trim());
+      setTempApiKey('');
+    }
+  };
 
   const initializeMap = useCallback(async () => {
     if (!mapRef.current || !apiKey) return;
@@ -275,6 +284,73 @@ const GoogleMapsAngola: React.FC<GoogleMapsAngolaProps> = ({
   useEffect(() => {
     initializeMap();
   }, [initializeMap]);
+
+  // Se não houver API key, mostrar configuração
+  if (!apiKey) {
+    return (
+      <div className="relative w-full" style={{ height }}>
+        <div className="absolute inset-0 flex items-center justify-center bg-background/90 backdrop-blur-sm rounded-lg z-20">
+          <Card className="w-96">
+            <CardContent className="p-6">
+              <div className="text-center mb-6">
+                <MapPin className="w-16 h-16 text-primary mx-auto mb-4" />
+                <h3 className="text-xl font-bold mb-2">Configurar Google Maps</h3>
+                <p className="text-sm text-muted-foreground">
+                  Para exibir o mapa, você precisa configurar uma chave da API do Google Maps.
+                </p>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">
+                    Chave da API do Google Maps
+                  </label>
+                  <Input
+                    type="password"
+                    placeholder="Cole sua API key aqui..."
+                    value={tempApiKey}
+                    onChange={(e) => setTempApiKey(e.target.value)}
+                    className="mb-2"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Obtenha sua chave gratuita em{' '}
+                    <a 
+                      href="https://console.cloud.google.com/google/maps-apis" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      Google Cloud Console
+                    </a>
+                  </p>
+                </div>
+                
+                <Button 
+                  onClick={handleApiKeySave} 
+                  className="w-full"
+                  disabled={!tempApiKey.trim()}
+                >
+                  Salvar e Carregar Mapa
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        
+        {/* Fundo cinza para simular o mapa */}
+        <div 
+          style={{ height }} 
+          className="w-full bg-muted rounded-lg shadow-lg flex items-center justify-center"
+        >
+          <div className="text-center text-muted-foreground">
+            <MapPin className="w-24 h-24 mx-auto mb-4 opacity-50" />
+            <p className="text-lg">Mapa não disponível</p>
+            <p className="text-sm">Configure a API key para ver o mapa</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full">
