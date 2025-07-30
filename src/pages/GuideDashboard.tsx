@@ -676,7 +676,7 @@ export default function GuideDashboard() {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <MapPin className="h-5 w-5 mr-2" />
-                Mapa Interativo - Angola
+                Mapa  Angola
               </CardTitle>
             </CardHeader>
             <CardContent>
