@@ -109,8 +109,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         ...additionalData
       };
       
+      if(additionalData.userType === 'guide') {
+      await setDoc(doc(db, 'guides', user.uid), userData);
+      setUserData(userData);
+      }else{
       await setDoc(doc(db, 'users', user.uid), userData);
       setUserData(userData);
+      }
       
       toast({
         title: "Conta criada com sucesso!",

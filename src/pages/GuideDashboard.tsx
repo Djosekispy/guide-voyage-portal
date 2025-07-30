@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -41,6 +41,7 @@ import {
   type TourPackage,
   type Booking
 } from '@/lib/firestore';
+import Header from '@/components/Header';
 
 export default function GuideDashboard() {
   const { user, userData } = useAuth();
@@ -51,6 +52,7 @@ export default function GuideDashboard() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreatePackageOpen, setIsCreatePackageOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<TourPackage | null>(null);
   const [isEditPackageOpen, setIsEditPackageOpen] = useState(false);
 
@@ -112,6 +114,7 @@ export default function GuideDashboard() {
   };
 
   const handleCreatePackage = async () => {
+    setIsSaving(true);
     try {
       if (!guideProfile) return;
 
@@ -155,6 +158,8 @@ export default function GuideDashboard() {
         description: "Não foi possível criar o pacote",
         variant: "destructive"
       });
+    }finally {
+      setIsSaving(false);
     }
   };
 
@@ -230,7 +235,10 @@ export default function GuideDashboard() {
   }
 
   return (
+     <div className="min-h-screen bg-background">
+      <Header />
     <div className="container mx-auto px-4 py-8">
+
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Dashboard do Guia</h1>
         <p className="text-muted-foreground">
@@ -369,7 +377,7 @@ export default function GuideDashboard() {
             <h2 className="text-2xl font-bold">Meus Pacotes</h2>
             <Dialog open={isCreatePackageOpen} onOpenChange={setIsCreatePackageOpen}>
               <DialogTrigger asChild>
-                <Button>
+              <Button>
                   <Plus className="h-4 w-4 mr-2" />
                   Criar Pacote
                 </Button>
@@ -378,6 +386,9 @@ export default function GuideDashboard() {
                 <DialogHeader>
                   <DialogTitle>Criar Novo Pacote</DialogTitle>
                 </DialogHeader>
+                 <DialogDescription>
+                Adicione um novo pacote na sua lista de tours. E não se esqueça de incluir detalhes importantes como localização, duração e preço.
+              </DialogDescription>
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -487,9 +498,12 @@ export default function GuideDashboard() {
                     <Button variant="outline" onClick={() => setIsCreatePackageOpen(false)}>
                       Cancelar
                     </Button>
-                    <Button onClick={handleCreatePackage}>
+                  { isSaving ? <Button  disabled={true}>
+                      Criando Pacote...
+                    </Button>  :  <Button onClick={handleCreatePackage} disabled={!newPackage.title || !newPackage.location || !newPackage.description || newPackage.price <= 0}>
                       Criar Pacote
                     </Button>
+}
                   </div>
                 </div>
               </DialogContent>
@@ -673,6 +687,7 @@ export default function GuideDashboard() {
           </Card>
         </TabsContent>
       </Tabs>
+    </div>
     </div>
   );
 }

@@ -283,7 +283,7 @@ const Auth = () => {
                           required
                           value={registerData.phone}
                           onChange={handleRegisterChange}
-                          placeholder="(11) 99999-9999"
+                          placeholder="(244) 999-999-999"
                           className="mt-2"
                         />
                       </div>
