@@ -129,8 +129,8 @@ const GoogleMapsAngola: React.FC<GoogleMapsAngolaProps> = ({
           searchInputRef.current,
           {
             bounds: new google.maps.LatLngBounds(
-              new google.maps.LatLng(-18.0, 11.0), // Southwest Angola
-              new google.maps.LatLng(-5.0, 24.0)   // Northeast Angola
+              new google.maps.LatLng(-18.0, 11.0), 
+              new google.maps.LatLng(-5.0, 24.0)   
             ),
             strictBounds: true,
             componentRestrictions: { country: 'ao' }

@@ -75,6 +75,8 @@ export default function GuideDashboard() {
     }
   }, [user, userData]);
 
+  
+
   const loadDashboardData = async () => {
     try {
       setLoading(true);
@@ -89,7 +91,7 @@ export default function GuideDashboard() {
         // Carregar pacotes
         const guidePackages = await getGuidePackages(guide.id);
         setPackages(guidePackages);
-
+       console.log('Pacotes carregados:', guidePackages);
         // Carregar reservas
         const guideBookings = await getGuideBookings(guide.id);
         setBookings(guideBookings);
