@@ -41,7 +41,7 @@ const Header = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
             <MapPin className="h-8 w-8 text-primary" />
-            <span className="font-bold text-xl text-foreground">Kilemba Tours</span>
+            <span className="font-bold text-xl text-foreground">Explora Angola</span>
           </Link>
 
           {/* Desktop Navigation */}
