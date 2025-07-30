@@ -4,9 +4,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
+import { useNavigate } from "react-router-dom";
 
 const Destinations = () => {
   const [searchTerm, setSearchTerm] = useState("");
+
+   const navigate = useNavigate();
+  
+    const handleViewGuides = (city: string) => {
+      navigate(`/guias?city=${encodeURIComponent(city)}`);
+    };
 
   const destinations = [
     {
@@ -160,7 +167,7 @@ const Destinations = () => {
                       </span>
                     </div>
                     
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => handleViewGuides(destination.name)}>
                       Ver Guias
                     </Button>
                   </div>

@@ -6,7 +6,7 @@ import heroImage from "@/assets/hero-tourism.jpg";
 
 const HeroSection = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, userData } = useAuth();
 
   const handleFindGuide = () => {
     navigate("/guias");
@@ -58,7 +58,7 @@ const HeroSection = () => {
             <Search className="mr-2 h-5 w-5" />
             Encontrar Guia
           </Button>
-          <Button 
+         {userData?.userType !== 'guide' && <Button 
             variant="outline" 
             size="lg" 
             className="w-full sm:w-auto text-lg px-8 py-4 bg-white/10 border-white/30 text-white hover:bg-white hover:text-foreground"
@@ -66,7 +66,7 @@ const HeroSection = () => {
           >
             <Users className="mr-2 h-5 w-5" />
             Tornar-se Guia
-          </Button>
+          </Button>}
         </div>
 
         {/* Stats */}

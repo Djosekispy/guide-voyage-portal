@@ -33,7 +33,7 @@ export default function BrowseGuides() {
    const [searchParams, setSearchParams] = useSearchParams();
    const queryParam = searchParams.get('city');
 
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(queryParam);
   const [selectedCity, setSelectedCity] = useState('');
   const [priceRange, setPriceRange] = useState('');
   const [sortBy, setSortBy] = useState('rating');
@@ -61,7 +61,6 @@ export default function BrowseGuides() {
         getAllGuides(),
         getAllTourPackages()
       ]);
-      
       setGuides(allGuides);
       setPackages(allPackages);
     } catch (error) {
@@ -86,11 +85,11 @@ export default function BrowseGuides() {
   };
 
   // Filtrar guias
-  const filteredGuides = guides.filter(guide => {
+  const filteredGuides =  guides.filter(guide => {
     const matchesSearch = guide.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          guide.specialties.some(specialty => 
                            specialty.toLowerCase().includes(searchTerm.toLowerCase())
-                         );
+                         ) || guide.city.toLowerCase().includes(searchTerm.toLowerCase()) ||  guide.description.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesCity = !selectedCity || guide.city === selectedCity;
     
@@ -147,6 +146,7 @@ export default function BrowseGuides() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-12"
+          
             />
           </div>
           
@@ -187,7 +187,7 @@ export default function BrowseGuides() {
         </div>
 
         <p className="text-muted-foreground mb-6">
-          {filteredGuides.length} guia{filteredGuides.length !== 1 ? 's' : ''} encontrado{filteredGuides.length !== 1 ? 's' : ''} por <b>{queryParam}</b>  
+          {filteredGuides.length} guia{filteredGuides.length !== 1 ? 's' : ''} encontrado{filteredGuides.length !== 1 ? 's' : ''} por <b>{searchTerm}</b>  
         </p>
       </div>
 

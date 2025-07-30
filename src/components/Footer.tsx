@@ -10,7 +10,7 @@ const Footer = () => {
           <div className="lg:col-span-1">
             <Link to="/" className="flex items-center space-x-2 mb-6">
               <Compass className="h-8 w-8 text-primary" />
-              <span className="font-bold text-xl">GuiaViagem</span>
+              <span className="font-bold text-xl">Turismo Angola</span>
             </Link>
             <p className="text-white/80 mb-6 leading-relaxed">
               Conectamos viajantes com guias locais para experiências autênticas e inesquecíveis ao redor do mundo.
@@ -94,19 +94,19 @@ const Footer = () => {
 
           {/* Contact Info */}
           <div>
-            <h3 className="font-semibold text-lg mb-6">Contato</h3>
+            <h3 className="font-semibold text-lg mb-6">Contacto</h3>
             <div className="space-y-4">
               <div className="flex items-center space-x-3">
                 <Mail className="h-5 w-5 text-primary" />
-                <span className="text-white/80">contato@guiaviagem.com</span>
+                <span className="text-white/80">contacto@turismoangola.com</span>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="h-5 w-5 text-primary" />
-                <span className="text-white/80">+55 (11) 9999-9999</span>
+                <span className="text-white/80">+244 927023710</span>
               </div>
               <div className="flex items-center space-x-3">
                 <MapPin className="h-5 w-5 text-primary" />
-                <span className="text-white/80">São Paulo, Brasil</span>
+                <span className="text-white/80">Lubango, Angola</span>
               </div>
             </div>
           </div>
@@ -115,7 +115,7 @@ const Footer = () => {
         <div className="border-t border-white/20 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-white/60 text-sm mb-4 md:mb-0">
-              © 2024 GuiaViagem. Todos os direitos reservados.
+             © {new Date().getFullYear()} ExplorAngola. Todos os direitos reservados.
             </p>
             <div className="flex space-x-6">
               <Link to="/privacidade" className="text-white/60 hover:text-primary text-sm transition-colors">
