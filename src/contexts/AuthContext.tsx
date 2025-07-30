@@ -9,9 +9,11 @@ import {
   signInWithPopup,
   updateProfile
 } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
+import { DEFAULT_GUIDE_DATA } from '@/mock/deafultProvider';
+import { Guide } from '@/lib/firestore';
 
 interface UserData {
   uid: string;
@@ -92,43 +94,74 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  const register = async (email: string, password: string, additionalData: Omit<UserData, 'uid'>) => {
-    try {
-      setLoading(true);
-      const { user } = await createUserWithEmailAndPassword(auth, email, password);
-      
-      // Atualizar perfil do usuário
-      await updateProfile(user, {
-        displayName: additionalData.name
-      });
+const register = async (email: string, password: string, additionalData: Omit<UserData, 'uid'>) => {
+  try {
+    setLoading(true);
+    const { user } = await createUserWithEmailAndPassword(auth, email, password);
+    
+    // Atualizar perfil do usuário com nome básico
+    await updateProfile(user, {
+      displayName: additionalData.name,
+      photoURL: DEFAULT_GUIDE_DATA.photoURL
+    });
 
-      // Salvar dados adicionais no Firestore
-      const userData: UserData = {
+    // Preparar dados do usuário
+    const userData: UserData = {
+      uid: user.uid,
+      email: user.email!,
+      ...additionalData,
+      photoURL: DEFAULT_GUIDE_DATA.photoURL
+    };
+
+    // Salvar dados básicos do usuário
+    await setDoc(doc(db, 'users', user.uid), userData);
+
+    // Se for guia, criar registro com dados padrão
+    if (additionalData.userType === 'guide') {
+      const guideData: Guide = {
+        ...userData,
+        ...DEFAULT_GUIDE_DATA,
+        id: user.uid,
         uid: user.uid,
-        email: user.email!,
-        ...additionalData
+        name: additionalData.name,
+        phone: additionalData.phone || '',
+         city: additionalData.city || '',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
       };
-      
 
-      await setDoc(doc(db, 'users', user.uid), userData);
-      additionalData.userType === 'guide' && await setDoc(doc(db, 'guides', user.uid), userData);
-      setUserData(userData);
-      
-      toast({
-        title: "Conta criada com sucesso!",
-        description: "Bem-vindo à plataforma!",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Erro ao criar conta",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
-    } finally {
-      setLoading(false);
+      await setDoc(doc(db, 'guides', user.uid), guideData);
     }
-  };
+
+    setUserData(userData);
+    
+    toast({
+      title: "Conta criada com sucesso!",
+      description: additionalData.userType === 'guide' 
+        ? "Seu perfil de guia foi criado com configurações padrão. Complete seu perfil para começar a receber clientes!" 
+        : "Bem-vindo à plataforma!",
+    });
+    
+  } catch (error: any) {
+    console.error("Registration error:", error);
+    
+    let errorMessage = error.message;
+    if (error.code === 'auth/email-already-in-use') {
+      errorMessage = "Este email já está cadastrado.";
+    } else if (error.code === 'auth/weak-password') {
+      errorMessage = "A senha deve ter pelo menos 6 caracteres.";
+    }
+
+    toast({
+      title: "Erro ao criar conta",
+      description: errorMessage,
+      variant: "destructive",
+    });
+    throw error;
+  } finally {
+    setLoading(false);
+  }
+};
 
 const loginWithGoogle = async () => {
 

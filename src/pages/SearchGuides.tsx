@@ -8,8 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Header from "@/components/Header";
 import GoogleMapsAngola from "@/components/GoogleMapsAngola";
+import { useSearchParams } from "react-router-dom";
 
 const SearchGuides = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const myParam = searchParams.get('city');
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedLanguage, setSelectedLanguage] = useState("");

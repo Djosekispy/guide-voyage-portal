@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -30,7 +30,9 @@ import Header from '@/components/Header';
 export default function BrowseGuides() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  
+   const [searchParams, setSearchParams] = useSearchParams();
+   const queryParam = searchParams.get('city');
+
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
   const [priceRange, setPriceRange] = useState('');
@@ -185,7 +187,7 @@ export default function BrowseGuides() {
         </div>
 
         <p className="text-muted-foreground mb-6">
-          {filteredGuides.length} guia{filteredGuides.length !== 1 ? 's' : ''} encontrado{filteredGuides.length !== 1 ? 's' : ''}
+          {filteredGuides.length} guia{filteredGuides.length !== 1 ? 's' : ''} encontrado{filteredGuides.length !== 1 ? 's' : ''} por <b>{queryParam}</b>  
         </p>
       </div>
 

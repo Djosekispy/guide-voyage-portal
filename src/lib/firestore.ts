@@ -31,9 +31,19 @@ export interface Guide {
   rating: number;
   reviewCount: number;
   isActive: boolean;
+  isProfileComplete?: boolean;
   photoURL?: string;
   createdAt: any;
   updatedAt: any;
+}
+
+export interface CityGuidesSummary {
+  name: string;
+  coordinates: { lat: number; lng: number };
+  guides: number;
+  description: string;
+  category: string;
+  guideList?: Guide[]; 
 }
 
 export interface TourPackage {
@@ -128,7 +138,7 @@ export const getAllGuides = async (): Promise<Guide[]> => {
     orderBy('rating', 'desc')
   );
   const querySnapshot = await getDocs(q);
-  
+  console.log("Guides fetched:", querySnapshot.docs.length);
   return querySnapshot.docs.map(doc => ({
     id: doc.id,
     ...doc.data()
@@ -292,3 +302,90 @@ export const subscribeToGuideBookings = (guideId: string, callback: (bookings: B
     callback(bookings);
   });
 };
+
+
+
+
+export async function getGuidesByCity(): Promise<CityGuidesSummary[]> {
+  // Primeiro, obtenha todos os guias do Firestore
+  const guidesSnapshot = await getDocs(collection(db, 'guides'));
+  const allGuides: Guide[] = guidesSnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  } as Guide));
+
+  const citiesBaseData = [
+    { 
+      name: "Luanda", 
+      coordinates: { lat: -8.8383, lng: 13.2343 }, 
+      description: "Capital de Angola com Fortaleza de São Miguel e rica história colonial",
+      category: "capital"
+    },
+    { 
+      name: "Benguela", 
+      coordinates: { lat: -12.5763, lng: 13.4055 }, 
+      description: "Porto histórico com praias paradisíacas e arquitetura colonial",
+      category: "costa"
+    },
+    { 
+      name: "Huambo", 
+      coordinates: { lat: -12.7756, lng: 15.7394 }, 
+      description: "Planalto central com clima ameno e paisagens montanhosas",
+      category: "interior"
+    },
+    { 
+      name: "Lubango", 
+      coordinates: { lat: -14.9177, lng: 13.4925 }, 
+      description: "Serra da Leba com curvas espetaculares e Cristo Rei",
+      category: "montanha"
+    },
+    { 
+      name: "Namibe", 
+      coordinates: { lat: -15.1961, lng: 12.1522 }, 
+      description: "Deserto do Namibe com paisagens únicas",
+      category: "deserto"
+    },
+    { 
+      name: "Soyo", 
+      coordinates: { lat: -6.1349, lng: 12.3689 }, 
+      description: "Foz do Rio Congo encontra o Oceano Atlântico",
+      category: "costa"
+    },
+    { 
+      name: "Cabinda", 
+      coordinates: { lat: -5.5500, lng: 12.2000 }, 
+      description: "Enclave rico em petróleo com florestas tropicais",
+      category: "enclave"
+    },
+    { 
+      name: "Malanje", 
+      coordinates: { lat: -9.5402, lng: 16.3410 }, 
+      description: "Portal para as Quedas de Kalandula e Pedras Negras",
+      category: "interior"
+    }
+  ];
+
+  // Agrupar guias por cidade
+  const guidesByCity: Record<string, Guide[]> = {};
+  allGuides.forEach(guide => {
+    if (!guidesByCity[guide.city]) {
+      guidesByCity[guide.city] = [];
+    }
+    guidesByCity[guide.city].push(guide);
+  });
+
+  // Criar o resultado final combinando os dados base com os guias
+  const result: CityGuidesSummary[] = citiesBaseData.map(city => {
+    const cityGuides = guidesByCity[city.name] || [];
+    return {
+      ...city,
+      guides: cityGuides.length,
+      guideList: cityGuides // Opcional: inclui a lista completa de guias
+    };
+  });
+
+  // Ordenar por número de guias (do maior para o menor)
+  result.sort((a, b) => b.guides - a.guides);
+
+  return result;
+}

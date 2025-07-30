@@ -4,68 +4,12 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { MapPin, Search, Navigation, Layers, Info } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { getGuidesByCity } from '@/lib/firestore';
 
 /// <reference types="google.maps" />
 
 // Dados das principais cidades de Angola com coordenadas
-const angolaDestinations = [
-  { 
-    name: "Luanda", 
-    coordinates: { lat: -8.8383, lng: 13.2343 }, 
-    guides: 25, 
-    description: "Capital de Angola com Fortaleza de São Miguel e rica história colonial",
-    category: "capital"
-  },
-  { 
-    name: "Benguela", 
-    coordinates: { lat: -12.5763, lng: 13.4055 }, 
-    guides: 18, 
-    description: "Porto histórico com praias paradisíacas e arquitetura colonial",
-    category: "costa"
-  },
-  { 
-    name: "Huambo", 
-    coordinates: { lat: -12.7756, lng: 15.7394 }, 
-    guides: 15, 
-    description: "Planalto central com clima ameno e paisagens montanhosas",
-    category: "interior"
-  },
-  { 
-    name: "Lubango", 
-    coordinates: { lat: -14.9177, lng: 13.4925 }, 
-    guides: 14, 
-    description: "Serra da Leba com curvas espetaculares e Cristo Rei",
-    category: "montanha"
-  },
-  { 
-    name: "Namibe", 
-    coordinates: { lat: -15.1961, lng: 12.1522 }, 
-    guides: 12, 
-    description: "Deserto do Namibe com paisagens únicas",
-    category: "deserto"
-  },
-  { 
-    name: "Soyo", 
-    coordinates: { lat: -6.1349, lng: 12.3689 }, 
-    guides: 10, 
-    description: "Foz do Rio Congo encontra o Oceano Atlântico",
-    category: "costa"
-  },
-  { 
-    name: "Cabinda", 
-    coordinates: { lat: -5.5500, lng: 12.2000 }, 
-    guides: 8, 
-    description: "Enclave rico em petróleo com florestas tropicais",
-    category: "enclave"
-  },
-  { 
-    name: "Malanje", 
-    coordinates: { lat: -9.5402, lng: 16.3410 }, 
-    guides: 11, 
-    description: "Portal para as Quedas de Kalandula e Pedras Negras",
-    category: "interior"
-  }
-];
+
 
 interface GoogleMapsAngolaProps {
   height?: string;
@@ -88,6 +32,15 @@ const GoogleMapsAngola: React.FC<GoogleMapsAngolaProps> = ({
   const [autocomplete, setAutocomplete] = useState<google.maps.places.Autocomplete | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+const [angolaDestinations, setAngolaDestinations] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchDestinations = async () => {
+      const data = await getGuidesByCity();
+      setAngolaDestinations(data);
+    };
+    fetchDestinations();
+  }, []);
 
   const initializeMap = useCallback(async () => {
     if (!mapRef.current || !apiKey) return;
