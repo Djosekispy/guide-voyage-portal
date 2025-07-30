@@ -128,73 +128,82 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  const loginWithGoogle = async () => {
-    try {
-      setLoading(true);
-      const provider = new GoogleAuthProvider();
-      
-      // Configurar scopes adicionais se necessário
-      provider.addScope('email');
-      provider.addScope('profile');
-      
-      // Forçar seleção de conta
-      provider.setCustomParameters({
-        prompt: 'select_account'
-      });
-      
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      
-      if (!user.email) {
-        throw new Error('Não foi possível obter o email do usuário');
-      }
-      
-      // Verificar se o usuário já existe no Firestore
-      const userDoc = await getDoc(doc(db, 'users', user.uid));
-      
-      if (!userDoc.exists()) {
-        // Primeiro login com Google - criar perfil básico
-        const userData: UserData = {
-          uid: user.uid,
-          email: user.email,
-          name: user.displayName || user.email.split('@')[0],
-          userType: 'tourist', // Padrão, pode ser alterado depois
-          photoURL: user.photoURL || undefined
-        };
-        
-        await setDoc(doc(db, 'users', user.uid), userData);
-        setUserData(userData);
-      }
-      
-      toast({
-        title: "Login com Google realizado!",
-        description: "Bem-vindo!",
-      });
-    } catch (error: any) {
-      console.error('Erro no login com Google:', error);
-      
-      let errorMessage = "Erro desconhecido";
-      
-      if (error.code === 'auth/popup-closed-by-user') {
-        errorMessage = "Login cancelado pelo usuário";
-      } else if (error.code === 'auth/popup-blocked') {
-        errorMessage = "Pop-up bloqueado pelo navegador";
-      } else if (error.code === 'auth/cancelled-popup-request') {
-        errorMessage = "Solicitação de login cancelada";
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-      
-      toast({
-        title: "Erro no login com Google",
-        description: errorMessage,
-        variant: "destructive",
-      });
-      throw error;
-    } finally {
-      setLoading(false);
+const loginWithGoogle = async () => {
+
+  try {
+    setLoading(true);
+
+    const provider = new GoogleAuthProvider();
+
+    // Configurar parâmetros e escopos
+    provider.setCustomParameters({
+      prompt: 'select_account',
+    });
+
+    provider.addScope('email');
+    provider.addScope('profile');
+
+    // Abrir pop-up de login
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+
+    if (!user.email) {
+      throw new Error('Não foi possível obter o email do usuário');
     }
-  };
+
+    // Verificar se o usuário já existe no Firestore
+    const userRef = doc(db, 'users', user.uid);
+    const userDoc = await getDoc(userRef);
+
+    if (!userDoc.exists()) {
+      // Criar novo usuário
+      const userData: UserData = {
+        uid: user.uid,
+        email: user.email,
+        name: user.displayName ?? user.email.split('@')[0],
+        userType: 'tourist', // padrão, alterável
+        photoURL: user.photoURL ?? undefined,
+      };
+
+      await setDoc(userRef, userData);
+      setUserData(userData); // depende da sua lógica de app (Redux, Zustand etc.)
+    }
+
+    toast({
+      title: 'Login com Google realizado!',
+      description: 'Bem-vindo!',
+    });
+  } catch (error: any) {
+    console.error('Erro no login com Google:', error);
+
+    let errorMessage = 'Erro desconhecido';
+
+    switch (error.code) {
+      case 'auth/popup-closed-by-user':
+        errorMessage = 'Login cancelado pelo usuário';
+        break;
+      case 'auth/popup-blocked':
+        errorMessage = 'Pop-up bloqueado pelo navegador';
+        break;
+      case 'auth/cancelled-popup-request':
+        errorMessage = 'Solicitação de login cancelada';
+        break;
+      default:
+        if (error.message) errorMessage = error.message;
+        break;
+    }
+
+    toast({
+      title: 'Erro no login com Google',
+      description: errorMessage,
+      variant: 'destructive',
+    });
+
+    throw error;
+  } finally {
+    setLoading(false);
+  }
+};
 
   const logout = async () => {
     try {

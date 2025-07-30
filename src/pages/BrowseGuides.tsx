@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import GoogleMapsAngola from '@/components/GoogleMapsAngola';
 import { getAllGuides, getAllTourPackages, type Guide, type TourPackage } from '@/lib/firestore';
+import Header from '@/components/Header';
 
 export default function BrowseGuides() {
   const navigate = useNavigate();
@@ -126,6 +127,8 @@ export default function BrowseGuides() {
   }
 
   return (
+      <div className="min-h-screen">
+          <Header />
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-4">Descobrir Guias</h1>
@@ -150,7 +153,7 @@ export default function BrowseGuides() {
               <SelectValue placeholder="Cidade" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todas as cidades</SelectItem>
+              <SelectItem value="cidades">Todas as cidades</SelectItem>
               {cities.map(city => (
                 <SelectItem key={city} value={city}>{city}</SelectItem>
               ))}
@@ -162,7 +165,7 @@ export default function BrowseGuides() {
               <SelectValue placeholder="Faixa de preço" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos os preços</SelectItem>
+              <SelectItem value="precos">Todos os preços</SelectItem>
               {priceRanges.map(range => (
                 <SelectItem key={range.value} value={range.value}>{range.label}</SelectItem>
               ))}
@@ -286,8 +289,10 @@ export default function BrowseGuides() {
           </div>
         </div>
 
-        {/* Mapa */}
-        <div className="lg:col-span-1">
+   
+      </div>
+     {/* Mapa */}
+        <div className="lg:col-span-1 mt-8">
           <Card className="sticky top-6">
             <CardHeader>
               <CardTitle className="flex items-center">
@@ -304,7 +309,6 @@ export default function BrowseGuides() {
             </CardContent>
           </Card>
         </div>
-      </div>
 
       {/* Dialog com detalhes do guia */}
       <Dialog open={isGuideDetailOpen} onOpenChange={setIsGuideDetailOpen}>
@@ -446,5 +450,6 @@ export default function BrowseGuides() {
         </DialogContent>
       </Dialog>
     </div>
+      </div>
   );
 }

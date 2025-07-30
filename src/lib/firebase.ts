@@ -12,6 +12,7 @@ const firebaseConfig = {
   storageBucket: "kilemba-df33a.appspot.com",
   messagingSenderId: "877784344083",
   appId: "1:877784344083:web:da5492792babbf52f3c1e6"
+
 };
 
 // Initialize Firebase
