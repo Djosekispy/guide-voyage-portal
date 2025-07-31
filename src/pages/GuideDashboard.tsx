@@ -221,10 +221,10 @@ export default function GuideDashboard() {
 
   // Estatísticas
   const totalBookings = bookings.length;
-  const completedTours = bookings.filter(b => b.status === 'completed').length;
-  const pendingBookings = bookings.filter(b => b.status === 'pending').length;
+  const completedTours = bookings.filter(b => b.status === 'Finalizado').length;
+  const pendingBookings = bookings.filter(b => b.status === 'Pendente').length;
   const totalRevenue = bookings
-    .filter(b => b.status === 'completed')
+    .filter(b => b.status === 'Finalizado')
     .reduce((sum, b) => sum + b.totalPrice, 0);
   const averageRating = guideProfile?.rating || 0;
 
@@ -336,9 +336,9 @@ export default function GuideDashboard() {
                         </p>
                       </div>
                       <Badge variant={
-                        booking.status === 'confirmed' ? 'default' :
-                        booking.status === 'completed' ? 'secondary' :
-                        booking.status === 'pending' ? 'destructive' : 'outline'
+                        booking.status === 'Confirmado' ? 'default' :
+                        booking.status === 'Finalizado' ? 'secondary' :
+                        booking.status === 'Pendente' ? 'destructive' : 'outline'
                       }>
                         {booking.status}
                       </Badge>
@@ -583,9 +583,9 @@ export default function GuideDashboard() {
                       <p className="text-muted-foreground">{booking.touristEmail}</p>
                     </div>
                     <Badge variant={
-                      booking.status === 'confirmed' ? 'default' :
-                      booking.status === 'completed' ? 'secondary' :
-                      booking.status === 'pending' ? 'destructive' : 'outline'
+                      booking.status === 'Confirmado' ? 'default' :
+                      booking.status === 'Finalizado' ? 'secondary' :
+                      booking.status === 'Pendente' ? 'destructive' : 'outline'
                     }>
                       {booking.status}
                     </Badge>
@@ -624,11 +624,11 @@ export default function GuideDashboard() {
                     </div>
                   )}
 
-                  {booking.status === 'pending' && (
+                  {booking.status === 'Pendente' && (
                     <div className="flex gap-2">
                       <Button 
                         size="sm" 
-                        onClick={() => handleUpdateBookingStatus(booking.id, 'confirmed')}
+                        onClick={() => handleUpdateBookingStatus(booking.id, 'Confirmado')}
                       >
                         <CheckCircle className="h-4 w-4 mr-2" />
                         Confirmar
@@ -636,7 +636,7 @@ export default function GuideDashboard() {
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => handleUpdateBookingStatus(booking.id, 'cancelled')}
+                        onClick={() => handleUpdateBookingStatus(booking.id, 'Cancelado')}
                       >
                         <XCircle className="h-4 w-4 mr-2" />
                         Cancelar
@@ -644,10 +644,10 @@ export default function GuideDashboard() {
                     </div>
                   )}
 
-                  {booking.status === 'confirmed' && (
+                  {booking.status === 'Confirmado' && (
                     <Button 
                       size="sm" 
-                      onClick={() => handleUpdateBookingStatus(booking.id, 'completed')}
+                      onClick={() => handleUpdateBookingStatus(booking.id, 'Finalizado')}
                     >
                       <CheckCircle className="h-4 w-4 mr-2" />
                       Marcar como Concluído

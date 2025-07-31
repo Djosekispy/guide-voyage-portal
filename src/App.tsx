@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -27,6 +26,8 @@ import BrowseGuides from "./pages/BrowseGuides";
 import GuideProfileForm from "./pages/GuideProfileForm";
 import FavoritesList from "./pages/Favorite";
 import GuidePackagesPage from "./pages/GuidePackagesPage";
+import MessagesPage from "./pages/MessagesPage";
+import { ChatPage } from "./pages/ChatPage";
 
 const queryClient = new QueryClient();
 
@@ -69,18 +70,6 @@ const App = () => (
                 <GuideBookings />
               </ProtectedRoute>
             } />
-
-                <Route path="/guias/:guideId/pacotes" element={
-              <ProtectedRoute userType="tourist">
-                <GuidePackagesPage />
-              </ProtectedRoute>
-            } />
-
-              <Route path="/meus/favoritos" element={
-              <ProtectedRoute userType="tourist">
-                <FavoritesList />
-              </ProtectedRoute>
-            } />
             <Route path="/guia/calendario" element={
               <ProtectedRoute userType="guide">
                 <GuideCalendar />
@@ -113,7 +102,27 @@ const App = () => (
                 <ReviewTour />
               </ProtectedRoute>
             } />
-            
+            <Route path="/guias/:guideId/pacotes" element={
+              <ProtectedRoute userType="tourist">
+                <GuidePackagesPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/meus/favoritos" element={
+              <ProtectedRoute userType="tourist">
+                <FavoritesList />
+              </ProtectedRoute>
+            } />
+
+            {/* Sistema de Mensagens - Acessível para ambos (guias e turistas) */}
+            <Route path="/mensagens" element={
+              <ProtectedRoute>
+                <MessagesPage />
+              </ProtectedRoute>
+            }>
+              <Route index element={<div className="hidden md:flex md:items-center md:justify-center md:h-full">Selecione uma conversa</div>} />
+              <Route path=":conversationId" element={<ChatPage />} />
+            </Route>
+
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

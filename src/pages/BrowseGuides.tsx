@@ -69,6 +69,9 @@ useEffect(() => {
   return () => unsubscribe();
 }, [user?.uid]);
 
+   const handleMessageGuide = (id:string, name: string, photoURL : string) => {
+    navigate(`/mensagens?guideId=${id}&guideName=${encodeURIComponent(name)}&guidePhotoURL=${encodeURIComponent(photoURL || '')}`);
+  };
 
   const handleToggleFavorite = async (guide: Guide) => {
     if (!user?.uid) {
@@ -506,10 +509,11 @@ useEffect(() => {
               </Tabs>
 
               <div className="flex justify-end gap-2 mt-6 pt-6 border-t">
-                <Button variant="outline">
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  Enviar Mensagem
-                </Button>
+
+                    {user?.uid && <Button variant="outline" onClick={() => handleMessageGuide(selectedGuide.id, selectedGuide.name, selectedGuide.photoURL)}>
+                                <MessageSquare className="h-4 w-4 mr-2" />
+                                Enviar Mensagem
+                              </Button>}
                 <Button>
                   <Calendar className="h-4 w-4 mr-2" />
                    <Link to={`/guias/${selectedGuide.id}/pacotes`}>

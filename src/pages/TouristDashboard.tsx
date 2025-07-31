@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Header from "@/components/Header";
 import GoogleMapsAngola from "@/components/GoogleMapsAngola";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const TouristDashboard = () => {
   const [pendingReviews] = useState([
@@ -222,7 +222,7 @@ const TouristDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Button variant="hero" className="h-16">
+              <Button variant="hero" className="h-16" onClick={()=> navigate('/guias')}>
                 <MapPin className="mr-2 h-5 w-5" />
                 Buscar Guias
               </Button>

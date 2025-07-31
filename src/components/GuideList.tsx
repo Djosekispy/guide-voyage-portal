@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -24,6 +25,10 @@ const AvailableGuides = () => {
   const [selectedGuide, setSelectedGuide] = useState<Guide | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
+
+   const handleMessageGuide = (id:string, name: string, photoURL : string) => {
+    navigate(`/mensagens?guideId=${id}&guideName=${encodeURIComponent(name)}&guidePhotoURL=${encodeURIComponent(photoURL || '')}`);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -179,6 +184,10 @@ const AvailableGuides = () => {
                             </div>
                           </div>
                         </DialogTitle>
+
+                        <DialogDescription>
+                          {selectedGuide.description}
+                        </DialogDescription>
                       </DialogHeader>
 
                       <Tabs defaultValue="overview" className="mt-6">
@@ -226,10 +235,10 @@ const AvailableGuides = () => {
                       </Tabs>
 
                       <div className="flex justify-end gap-2 mt-6 pt-6 border-t">
-                        <Button variant="outline">
+                       {user?.uid && <Button variant="outline" onClick={() => handleMessageGuide(selectedGuide.id, selectedGuide.name, selectedGuide.photoURL)}>
                           <MessageSquare className="h-4 w-4 mr-2" />
                           Enviar Mensagem
-                        </Button>
+                        </Button>}
                         <Button>
                           <Calendar className="h-4 w-4 mr-2" />
                             <Link to={`/guias/${guide.id}/pacotes`}>

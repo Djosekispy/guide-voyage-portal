@@ -11,7 +11,8 @@ import {
   orderBy, 
   addDoc,
   serverTimestamp,
-  onSnapshot
+  onSnapshot,
+  writeBatch
 } from 'firebase/firestore';
 import { db } from './firebase';
 
@@ -37,6 +38,28 @@ export interface Guide {
   updatedAt: any;
 }
 
+export interface Message {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  senderName: string;
+  senderPhotoURL?: string;
+  receiverId: string;
+  content: string;
+  timestamp: any;
+  isRead: boolean;
+}
+
+export interface Conversation {
+  id: string;
+  participantIds: string[]; 
+  participantNames: string[]; 
+  lastMessage: string;
+  lastMessageTimestamp: any;
+  unreadCount: number;
+  guidePhotoURL?: string;
+  userPhotoURL?: string;
+}
 export interface CityGuidesSummary {
   name: string;
   coordinates: { lat: number; lng: number };
@@ -459,7 +482,6 @@ export const toggleFavorite = async (userId: string, guide: Guide): Promise<bool
   }
 };
 
-// Listener em tempo real para favoritos
 export const subscribeToUserFavorites = (
   userId: string, 
   callback: (favorites: Favorite[]) => void
@@ -477,4 +499,187 @@ export const subscribeToUserFavorites = (
     })) as Favorite[];
     callback(favorites);
   });
+};
+
+
+
+
+
+// Funções de Conversa
+export const createConversation = async (
+  userId: string,
+  userName: string,
+  userPhotoURL: string | undefined,
+  guideId: string,
+  guideName: string,
+  guidePhotoURL: string | undefined
+): Promise<string> => {
+  const conversationRef = await addDoc(collection(db, 'conversations'), {
+    participantIds: [userId, guideId],
+    participantNames: [userName, guideName],
+    lastMessage: '',
+    lastMessageTimestamp: serverTimestamp(),
+    unreadCount: 0,
+    guidePhotoURL,
+    userPhotoURL,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  });
+  
+  return conversationRef.id;
+};
+
+export const sendMessage = async (
+  conversationId: string,
+  senderId: string,
+  senderName: string,
+  senderPhotoURL: string | undefined,
+  receiverId: string,
+  content: string
+): Promise<string> => {
+  // Adiciona a mensagem
+  const messageRef = await addDoc(collection(db, 'messages'), {
+    conversationId,
+    senderId,
+    senderName,
+    senderPhotoURL,
+    receiverId,
+    content,
+    timestamp: serverTimestamp(),
+    isRead: false
+  });
+  
+  // Atualiza a conversa com a última mensagem
+  const conversationRef = doc(db, 'conversations', conversationId);
+  await updateDoc(conversationRef, {
+    lastMessage: content,
+    lastMessageTimestamp: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  });
+  
+  // Incrementa o contador de mensagens não lidas para o receptor
+  const conversationSnap = await getDoc(conversationRef);
+  if (conversationSnap.exists()) {
+    const conversation = conversationSnap.data() as Conversation;
+    const receiverIndex = conversation.participantIds.indexOf(receiverId);
+    
+    if (receiverIndex !== -1) {
+      await updateDoc(conversationRef, {
+        unreadCount: conversation.unreadCount + 1
+      });
+    }
+  }
+  
+  return messageRef.id;
+};
+
+export const markMessagesAsRead = async (conversationId: string, userId: string) => {
+  const q = query(
+    collection(db, 'messages'),
+    where('conversationId', '==', conversationId),
+    where('receiverId', '==', userId),
+    where('isRead', '==', false)
+  );
+  
+  const querySnapshot = await getDocs(q);
+  const batch = writeBatch(db);
+  
+  querySnapshot.forEach((doc) => {
+    batch.update(doc.ref, { isRead: true });
+  });
+  
+  await batch.commit();
+  
+  // Reseta o contador de mensagens não lidas
+  const conversationRef = doc(db, 'conversations', conversationId);
+  await updateDoc(conversationRef, {
+    unreadCount: 0
+  });
+};
+
+export const getConversationsForUser = async (userId: string): Promise<Conversation[]> => {
+  const q = query(
+    collection(db, 'conversations'),
+    where('participantIds', 'array-contains', userId),
+    orderBy('lastMessageTimestamp', 'desc')
+  );
+  
+  const querySnapshot = await getDocs(q);
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  })) as Conversation[];
+};
+
+export const getMessagesForConversation = async (conversationId: string): Promise<Message[]> => {
+  const q = query(
+    collection(db, 'messages'),
+    where('conversationId', '==', conversationId),
+    orderBy('timestamp', 'asc')
+  );
+  
+  const querySnapshot = await getDocs(q);
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  })) as Message[];
+};
+
+// Listeners em tempo real
+export const subscribeToConversations = (
+  userId: string,
+  callback: (conversations: Conversation[]) => void
+) => {
+  const q = query(
+    collection(db, 'conversations'),
+    where('participantIds', 'array-contains', userId),
+    orderBy('lastMessageTimestamp', 'desc')
+  );
+  
+  return onSnapshot(q, (querySnapshot) => {
+    const conversations = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as Conversation[];
+    callback(conversations);
+  });
+};
+
+export const subscribeToMessages = (
+  conversationId: string,
+  callback: (messages: Message[]) => void
+) => {
+  const q = query(
+    collection(db, 'messages'),
+    where('conversationId', '==', conversationId),
+    orderBy('timestamp', 'asc')
+  );
+  
+  return onSnapshot(q, (querySnapshot) => {
+    const messages = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as Message[];
+    callback(messages);
+  });
+};
+
+
+export const getConversation = async (conversationId: string): Promise<Conversation | null> => {
+  try {
+    const conversationRef = doc(db, 'conversations', conversationId);
+    const conversationSnap = await getDoc(conversationRef);
+    
+    if (!conversationSnap.exists()) {
+      return null;
+    }
+    
+    return {
+      id: conversationSnap.id,
+      ...conversationSnap.data()
+    } as Conversation;
+  } catch (error) {
+    console.error("Erro ao buscar conversa:", error);
+    return null;
+  }
 };

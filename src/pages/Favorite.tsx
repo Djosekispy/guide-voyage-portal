@@ -58,7 +58,11 @@ export default function FavoritesList() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [currentPackageIndex, setCurrentPackageIndex] = useState(0);
 
-  // Cidades disponíveis para filtro
+ 
+   const handleMessageGuide = (id:string, name: string, photoURL : string) => {
+    navigate(`/mensagens?guideId=${id}&guideName=${encodeURIComponent(name)}&guidePhotoURL=${encodeURIComponent(photoURL || '')}`);
+  };
+
   const cities = ['Luanda', 'Benguela', 'Huambo', 'Lubango', 'Namibe', 'Cabinda', 'Soyo'];
 
   useEffect(() => {
@@ -360,16 +364,11 @@ export default function FavoritesList() {
                       Ver
                     </Button>
                     
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="h-9"
-                      onClick={() => handleSendMessage(favorite.guideId)}
-                    >
-                      <MessageSquare className="h-4 w-4 mr-2" />
-                      Mensagem
-                    </Button>
                     
+                    {user?.uid && <Button variant="outline" onClick={() => handleMessageGuide(selectedGuide.id, selectedGuide.name, selectedGuide.photoURL)}>
+                                <MessageSquare className="h-4 w-4 mr-2" />
+                                Mensagem
+                              </Button>}
                     <Button 
                       size="sm" 
                       className="h-9"
@@ -549,7 +548,7 @@ export default function FavoritesList() {
                         onClick={() => handleSendMessage(selectedGuide.id)}
                       >
                         <MessageSquare className="h-4 w-4 mr-2" />
-                        Enviar Mensagem
+                         Mensagem
                       </Button>
                       <Button 
                         variant="outline" 
