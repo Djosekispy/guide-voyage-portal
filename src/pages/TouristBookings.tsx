@@ -154,7 +154,7 @@ useEffect(() => {
             <div className="flex flex-wrap gap-2">
               {booking.status === 'Pendente' && (
                 <>
-                  {user?.uid && 
+               {user?.uid && 
                   <Button variant="outline" onClick={() => handleMessageGuide(booking.guideId, booking.guideName, booking.guidePhotoURL)}>
                                             <MessageSquare className="h-4 w-4 mr-2" />
                                             Mensagem
