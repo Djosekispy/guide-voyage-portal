@@ -6,6 +6,7 @@ import Testimonials from "@/components/Testimonials";
 import CTASection from "@/components/CTASection";
 import Footer from "@/components/Footer";
 import GoogleMapsAngola from "@/components/GoogleMapsAngola";
+import AvailableGuides from "@/components/GuideList";
 
 const Index = () => {
   return (
@@ -14,6 +15,7 @@ const Index = () => {
       <HeroSection />
       <HowItWorks />
       <FeaturedDestinations />
+      <AvailableGuides />
       
       {/* Mapa Interativo de Angola */}
       <section className="py-20 bg-muted/30">
