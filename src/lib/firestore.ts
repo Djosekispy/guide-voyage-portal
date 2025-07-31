@@ -149,7 +149,6 @@ export const getAllGuides = async (): Promise<Guide[]> => {
     orderBy('rating', 'desc')
   );
   const querySnapshot = await getDocs(q);
-  console.log("Guides fetched:", querySnapshot.docs.length);
   return querySnapshot.docs.map(doc => ({
     id: doc.id,
     ...doc.data()
