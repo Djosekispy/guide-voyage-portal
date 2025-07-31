@@ -47,26 +47,29 @@ export default function BrowseGuides() {
   const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [isFavoritedMap, setIsFavoritedMap] = useState<Record<string, boolean>>({});
 
-  // Carregar favoritos
-  useEffect(() => {
-    if (!user?.uid) return;
 
-    const unsubscribe = subscribeToUserFavorites(user.uid, (fetchedFavorites) => {
-      setFavorites(fetchedFavorites);
-      
-      // Criar mapa de favoritos para acesso rápido
-      const favoritedMap = fetchedFavorites.reduce((acc, fav) => {
-        acc[fav.guideId] = true;
-        return acc;
-      }, {} as Record<string, boolean>);
-      
-      setIsFavoritedMap(favoritedMap);
-    });
+useEffect(() => {
+  if (!user?.uid) {
+    setFavorites([]);
+    setIsFavoritedMap({});
+    return;
+  }
 
-    return () => unsubscribe();
-  }, [user?.uid]);
+  const unsubscribe = subscribeToUserFavorites(user.uid, (fetchedFavorites) => {
+    setFavorites(fetchedFavorites);
 
-  // Função para alternar favorito
+    const favoritedMap = fetchedFavorites.reduce((acc, fav) => {
+      acc[fav.guideId] = true;
+      return acc;
+    }, {} as Record<string, boolean>);
+
+    setIsFavoritedMap(favoritedMap);
+  });
+
+  return () => unsubscribe();
+}, [user?.uid]);
+
+
   const handleToggleFavorite = async (guide: Guide) => {
     if (!user?.uid) {
       toast({
