@@ -55,7 +55,7 @@ useEffect(() => {
     return;
   }
 
-  const unsubscribe = subscribeToUserFavorites(user.uid, (fetchedFavorites) => {
+  const unsubscribe = subscribeToUserFavorites(user?.uid, (fetchedFavorites) => {
     setFavorites(fetchedFavorites);
 
     const favoritedMap = fetchedFavorites.reduce((acc, fav) => {
@@ -81,7 +81,7 @@ useEffect(() => {
     }
 
     try {
-      const isNowFavorited = await toggleFavorite(user.uid, guide);
+      const isNowFavorited = await toggleFavorite(user?.uid, guide);
       
       toast({
         title: isNowFavorited ? "Adicionado aos favoritos" : "Removido dos favoritos",
@@ -319,12 +319,12 @@ useEffect(() => {
                               <Button 
                               variant="outline" 
                               size="sm"
-                              disabled={!user || guide.uid === user.uid}
+                              disabled={!user || guide.uid === user?.uid}
                               onClick={() => handleToggleFavorite(guide)}
-                              className={!isGuideFavorited(user.uid, guide.id) || isFavoritedMap[guide.id] ? "bg-amber-100 border-amber-300" : ""}
+                              className={!isGuideFavorited(user?.uid, guide.id) || isFavoritedMap[guide.id] ? "bg-amber-100 border-amber-300" : ""}
                             >
                               <Heart 
-                                className={`h-4 w-4 mr-2 ${!isGuideFavorited(user.uid, guide.id) || isFavoritedMap[guide.id] ? "fill-red-500 text-red-500" : ""}`} 
+                                className={`h-4 w-4 mr-2 ${!isGuideFavorited(user?.uid, guide.id) || isFavoritedMap[guide.id] ? "fill-red-500 text-red-500" : ""}`} 
                               />
                               {isFavoritedMap[guide.id] ? "Favorito" : "Favoritar"}
                             </Button>
