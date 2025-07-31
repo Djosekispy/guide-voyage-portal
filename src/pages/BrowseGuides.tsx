@@ -35,7 +35,7 @@ export default function BrowseGuides() {
    const queryParam = searchParams.get('city');
    const { user } = useAuth();
 
-  const [searchTerm, setSearchTerm] = useState(queryParam);
+  const [searchTerm, setSearchTerm] = useState(queryParam || 'Lubango');
   const [selectedCity, setSelectedCity] = useState('');
   const [priceRange, setPriceRange] = useState('');
   const [sortBy, setSortBy] = useState('rating');
