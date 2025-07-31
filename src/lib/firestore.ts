@@ -99,6 +99,7 @@ export interface Booking {
   guideName: string;
   packageId?: string;
   packageTitle?: string;
+  guideCity?: string;
   date: string;
   time: string;
   duration: number;
@@ -164,6 +165,26 @@ export const getGuideProfile = async (uid: string): Promise<Guide | null> => {
     ...guideDoc.data()
   } as Guide;
 };
+
+export const getTourPackage = async (packageId: string): Promise<TourPackage | null> => {
+  try {
+    const packageRef = doc(db, 'tourPackages', packageId);
+    const packageSnap = await getDoc(packageRef);
+    
+    if (!packageSnap.exists()) {
+      return null;
+    }
+    
+    return {
+      id: packageSnap.id,
+      ...packageSnap.data()
+    } as TourPackage;
+  } catch (error) {
+    console.error("Error getting tour package:", error);
+    return null;
+  }
+};
+
 
 export const getAllGuides = async (): Promise<Guide[]> => {
   const q = query(
@@ -683,3 +704,38 @@ export const getConversation = async (conversationId: string): Promise<Conversat
     return null;
   }
 };
+
+export const getTouristReviews = async (touristId: string): Promise<Review[]> => {
+  const q = query(
+    collection(db, 'reviews'),
+    where('touristId', '==', touristId),
+    orderBy('createdAt', 'desc')
+  );
+  const querySnapshot = await getDocs(q);
+  
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  })) as Review[];
+};
+
+// Listener em tempo real para reservas do turista
+export const subscribeToTouristBookings = (
+  touristId: string,
+  callback: (bookings: Booking[]) => void
+) => {
+  const q = query(
+    collection(db, 'bookings'),
+    where('touristId', '==', touristId),
+    orderBy('date', 'asc')
+  );
+  
+  return onSnapshot(q, (querySnapshot) => {
+    const bookings = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as Booking[];
+    callback(bookings);
+  });
+};
+

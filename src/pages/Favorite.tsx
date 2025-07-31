@@ -40,7 +40,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function FavoritesList() {
@@ -460,7 +460,9 @@ export default function FavoritesList() {
                 </Button>
               </div>
             </DialogHeader>
-
+           <DialogDescription>
+            {selectedGuide.description}
+           </DialogDescription>
             <Tabs defaultValue="overview" className="mt-6">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="overview">Visão Geral</TabsTrigger>
@@ -543,13 +545,10 @@ export default function FavoritesList() {
                     </div>
                     
                     <div className="flex flex-col gap-2">
-                      <Button 
-                        className="w-full"
-                        onClick={() => handleSendMessage(selectedGuide.id)}
-                      >
-                        <MessageSquare className="h-4 w-4 mr-2" />
-                         Mensagem
-                      </Button>
+                       {user?.uid && <Button variant="outline" onClick={() => handleMessageGuide(selectedGuide.id, selectedGuide.name, selectedGuide.photoURL)}>
+                                <MessageSquare className="h-4 w-4 mr-2" />
+                                Mensagem
+                              </Button>}
                       <Button 
                         variant="outline" 
                         className="w-full"

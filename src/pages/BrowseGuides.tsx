@@ -337,7 +337,9 @@ useEffect(() => {
                             </Button>
                             <Button size="sm">
                               <Calendar className="h-4 w-4 mr-2" />
-                              Reservar
+                                <Link to={`/guias/${guide.id}/pacotes`}>
+                                             Reserva
+                                            </Link>
                             </Button>
                           </div>
                         </div>

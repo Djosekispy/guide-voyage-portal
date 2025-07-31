@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Calendar, Star, MapPin, Clock, User, MessageSquare } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,57 +6,107 @@ import { Badge } from "@/components/ui/badge";
 import Header from "@/components/Header";
 import GoogleMapsAngola from "@/components/GoogleMapsAngola";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { 
+  getTouristBookings,
+  getGuideReviews,
+  getUserFavorites,
+  Booking,
+  Review,
+  Favorite
+} from "@/lib/firestore";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const TouristDashboard = () => {
-  const [pendingReviews] = useState([
-    {
-      id: 1,
-      guideName: "Maria Santos",
-      tourTitle: "Tour Histórico pela Fortaleza de São Miguel",
-      date: "2024-01-15",
-      city: "Luanda",
-      rating: 0
-    },
-    {
-      id: 2,
-      guideName: "João Fernandes", 
-      tourTitle: "Exploração das Quedas de Kalandula",
-      date: "2024-01-10",
-      city: "Malanje",
-      rating: 0
-    }
-  ]);
+  const { user } = useAuth();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalBookings: 0,
+    completedTours: 0,
+    pendingReviews: 0,
+    favoriteGuides: 0
+  });
+  const [pendingReviews, setPendingReviews] = useState<any[]>([]);
+  const [upcomingBookings, setUpcomingBookings] = useState<Booking[]>([]);
+  const [favoriteGuides, setFavoriteGuides] = useState<Favorite[]>([]);
 
-  const [upcomingBookings] = useState([
-    {
-      id: 1,
-      guideName: "Ana Pereira",
-      tourTitle: "Passeio pelas Curvas da Serra da Leba",
-      date: "2024-01-25",
-      time: "09:00",
-      city: "Lubango",
-      status: "confirmada",
-      price: "150.000 Kz"
-    },
-    {
-      id: 2,
-      guideName: "Carlos Mbala",
-      tourTitle: "Aventura no Deserto do Namibe",
-      date: "2024-02-05",
-      time: "07:00", 
-      city: "Namibe",
-      status: "pendente",
-      price: "200.000 Kz"
-    }
-  ]);
+  useEffect(() => {
+    if (!user?.uid) return;
 
-  const stats = {
-    totalBookings: 8,
-    completedTours: 6,
-    pendingReviews: pendingReviews.length,
-    favoriteGuides: 3
+    const loadDashboardData = async () => {
+      try {
+        setLoading(true);
+        
+        // Carrega todas as reservas do turista
+        const bookings = await getTouristBookings(user.uid);
+        
+        // Carrega avaliações existentes para verificar pendentes
+        const reviews = await getGuideReviews(user.uid);
+        
+        // Carrega guias favoritos
+        const favorites = await getUserFavorites(user.uid);
+        
+        // Filtra reservas finalizadas sem avaliação
+        const completedBookings = bookings.filter(
+          b => b.status === 'Finalizado' && 
+          !reviews.some(r => r.bookingId === b.id)
+        );
+        
+        // Filtra próximas reservas (confirmadas)
+        const upcoming = bookings.filter(
+          b => b.status === 'Confirmado' && 
+          new Date(b.date) >= new Date()
+        ).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+           
+        // Prepara avaliações pendentes
+        const pending = completedBookings.map(booking => ({
+          id: booking.id,
+          guideName: booking.guideName,
+          tourTitle: booking.packageTitle || 'Tour Personalizado',
+          date: booking.date,
+          city: booking.guideCity || 'Não especificado',
+          rating: 0
+        }));
+        
+        // Atualiza estados
+        setStats({
+          totalBookings: bookings.length,
+          completedTours: completedBookings.length,
+          pendingReviews: pending.length,
+          favoriteGuides: favorites.length
+        });
+        
+        setPendingReviews(pending);
+        setUpcomingBookings(upcoming);
+        setFavoriteGuides(favorites);
+        
+      } catch (error) {
+        console.error("Erro ao carregar dados do dashboard:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDashboardData();
+  }, [user?.uid]);
+
+  const handleReviewTour = (bookingId: string) => {
+    navigate(`/turista/avaliar?bookingId=${bookingId}`);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="pt-24 container mx-auto px-4 py-8">
+          <div className="flex justify-center items-center h-64">
+            <p>Carregando dados do dashboard...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -133,8 +182,8 @@ const TouristDashboard = () => {
                 {upcomingBookings.map((booking) => (
                   <div key={booking.id} className="border rounded-lg p-4">
                     <div className="flex justify-between items-start mb-2">
-                      <h3 className="font-semibold">{booking.tourTitle}</h3>
-                      <Badge variant={booking.status === 'confirmada' ? 'default' : 'secondary'}>
+                      <h3 className="font-semibold">{booking.packageTitle || 'Tour Personalizado'}</h3>
+                      <Badge variant={booking.status === 'Confirmado' ? 'default' : 'secondary'}>
                         {booking.status}
                       </Badge>
                     </div>
@@ -144,22 +193,38 @@ const TouristDashboard = () => {
                     <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
                       <span className="flex items-center gap-1">
                         <MapPin className="h-4 w-4" />
-                        {booking.city}
+                        {booking.guideCity || 'Local não especificado'}
                       </span>
                       <span className="flex items-center gap-1">
                         <Clock className="h-4 w-4" />
-                        {booking.date} às {booking.time}
+                        {new Date(booking.date).toLocaleDateString('pt-AO')} às {booking.time}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="font-semibold text-primary">{booking.price}</span>
-                      <Button variant="outline" size="sm">
+                      <span className="font-semibold text-primary">
+                        {booking.totalPrice?.toLocaleString('pt-AO', { style: 'currency', currency: 'AOA' }) || 'Preço não definido'}
+                      </span>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => navigate(`/turista/reservas/${booking.id}`)}
+                      >
                         Ver Detalhes
                       </Button>
                     </div>
                   </div>
                 ))}
-                <Button variant="outline" className="w-full">
+                {upcomingBookings.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Calendar className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                    <p>Nenhuma reserva confirmada</p>
+                  </div>
+                )}
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => navigate('/turista/reservas')}
+                >
                   Ver Todas as Reservas
                 </Button>
               </div>
@@ -184,9 +249,14 @@ const TouristDashboard = () => {
                     </p>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
                       <MapPin className="h-4 w-4" />
-                      {review.city} - {review.date}
+                      {review.city} - {new Date(review.date).toLocaleDateString('pt-AO')}
                     </div>
-                    <Button variant="hero" size="sm" className="w-full">
+                    <Button 
+                      variant="hero" 
+                      size="sm" 
+                      className="w-full"
+                      onClick={() => handleReviewTour(review.id)}
+                    >
                       Avaliar Agora
                     </Button>
                   </div>
@@ -201,6 +271,7 @@ const TouristDashboard = () => {
             </CardContent>
           </Card>
         </div>
+
 
         {/* Mapa Interativo */}
         <Card className="mt-8">
@@ -222,15 +293,15 @@ const TouristDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Button variant="hero" className="h-16" onClick={()=> navigate('/guias')}>
+              <Button variant="hero" className="h-16" onClick={() => navigate('/guias')}>
                 <MapPin className="mr-2 h-5 w-5" />
                 Buscar Guias
               </Button>
-              <Button variant="outline" className="h-16">
+              <Button variant="outline" className="h-16" onClick={() => navigate('/turista/reservas')}>
                 <Calendar className="mr-2 h-5 w-5" />
                 Minhas Reservas
               </Button>
-              <Button variant="outline" className="h-16" onClick={()=> navigate('/meus/favoritos')}>
+              <Button variant="outline" className="h-16" onClick={() => navigate('/meus/favoritos')}>
                 <Star className="mr-2 h-5 w-5" />
                 Meus Favoritos
               </Button>

@@ -28,6 +28,7 @@ import FavoritesList from "./pages/Favorite";
 import GuidePackagesPage from "./pages/GuidePackagesPage";
 import MessagesPage from "./pages/MessagesPage";
 import { ChatPage } from "./pages/ChatPage";
+import BookingPage from "./pages/BookingPage";
 
 const queryClient = new QueryClient();
 
@@ -87,16 +88,17 @@ const App = () => (
                 <TouristDashboard />
               </ProtectedRoute>
             } />
+             <Route path="/turista/reservas" element={
+              <ProtectedRoute userType="tourist">
+                <TouristBookings />
+              </ProtectedRoute>
+            } />
             <Route path="/turista/buscar-guias" element={
               <ProtectedRoute userType="tourist">
                 <SearchGuides />
               </ProtectedRoute>
             } />
-            <Route path="/turista/reservas" element={
-              <ProtectedRoute userType="tourist">
-                <TouristBookings />
-              </ProtectedRoute>
-            } />
+        
             <Route path="/turista/avaliar" element={
               <ProtectedRoute userType="tourist">
                 <ReviewTour />
@@ -105,6 +107,12 @@ const App = () => (
             <Route path="/guias/:guideId/pacotes" element={
               <ProtectedRoute userType="tourist">
                 <GuidePackagesPage />
+              </ProtectedRoute>
+            } />
+
+             <Route path="/pacotes/:packageId/reserva" element={
+              <ProtectedRoute userType="tourist">
+                <BookingPage />
               </ProtectedRoute>
             } />
             <Route path="/meus/favoritos" element={
