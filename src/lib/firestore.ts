@@ -81,7 +81,7 @@ export interface Booking {
   duration: number;
   totalPrice: number;
   groupSize: number;
-  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+  status: 'Pendente' | 'Confirmado' | 'Finalizado' | 'Cancelado';
   notes?: string;
   createdAt: any;
   updatedAt: any;

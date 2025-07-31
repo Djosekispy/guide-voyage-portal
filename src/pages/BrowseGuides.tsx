@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -509,7 +509,9 @@ export default function BrowseGuides() {
                 </Button>
                 <Button>
                   <Calendar className="h-4 w-4 mr-2" />
-                  Fazer Reserva
+                   <Link to={`/guias/${selectedGuide.id}/pacotes`}>
+                                            Fazer Reserva
+                                            </Link>
                 </Button>
               </div>
             </>

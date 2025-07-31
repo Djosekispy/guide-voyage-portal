@@ -26,6 +26,7 @@ import ReviewTour from "./pages/ReviewTour";
 import BrowseGuides from "./pages/BrowseGuides";
 import GuideProfileForm from "./pages/GuideProfileForm";
 import FavoritesList from "./pages/Favorite";
+import GuidePackagesPage from "./pages/GuidePackagesPage";
 
 const queryClient = new QueryClient();
 
@@ -68,6 +69,13 @@ const App = () => (
                 <GuideBookings />
               </ProtectedRoute>
             } />
+
+                <Route path="/guias/:guideId/pacotes" element={
+              <ProtectedRoute userType="tourist">
+                <GuidePackagesPage />
+              </ProtectedRoute>
+            } />
+
               <Route path="/meus/favoritos" element={
               <ProtectedRoute userType="tourist">
                 <FavoritesList />
