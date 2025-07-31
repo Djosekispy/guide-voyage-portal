@@ -208,7 +208,7 @@ export default function GuidePackagesPage() {
                     <SelectValue placeholder="Todas durações" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todas durações</SelectItem>
+                    <SelectItem value="duracao">Todas durações</SelectItem>
                     <SelectItem value="short">Curta (até 4h)</SelectItem>
                     <SelectItem value="medium">Média (4-8h)</SelectItem>
                     <SelectItem value="long">Longa (+8h)</SelectItem>
