@@ -300,14 +300,13 @@ export default function GuidePackagesPage() {
                             <span>{pkg.rating.toFixed(1)}</span>
                           </div>
                         )}
-                      </div>
-                      
+                      </div>    
                       <div className="w-full flex gap-2">
                         <Button variant="outline" className="flex-1" asChild>
                           <Link to={`/pacotes/${pkg.id}`}>Detalhes</Link>
                         </Button>
                         <Button className="flex-1" asChild>
-                          <Link to={`/pacotes/${pkg.id}/reserva`}>Reservar</Link>
+                         <Link to={`/pacotes/${pkg.id}/reserva`}>Reservar</Link>
                         </Button>
                       </div>
                     </CardFooter>

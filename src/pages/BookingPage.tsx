@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Calendar, Clock, User, MapPin, DollarSign, Info, Check } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import { pt } from 'date-fns/locale';
@@ -27,9 +27,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
 export default function BookingPage() {
- const [searchParams, setSearchParams] = useSearchParams();
-    const packageId = searchParams.get('packageId');
- console.log(packageId)
+  const { packageId } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -41,7 +39,7 @@ export default function BookingPage() {
   const [notes, setNotes] = useState('');
   const [availableTimes] = useState(['08:00', '09:00', '10:00', '14:00', '15:00']);
   const [step, setStep] = useState(1);
-
+  console.log(packageId)
   useEffect(() => {
     const loadPackageData = async () => {
       try {
