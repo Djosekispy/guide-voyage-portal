@@ -65,7 +65,7 @@ const TouristDashboard = () => {
           guideName: booking.guideName,
           tourTitle: booking.packageTitle || 'Tour Personalizado',
           date: booking.date,
-          city: booking.guideCity || 'Não especificado',
+          city: booking.city || 'Não especificado',
           rating: 0
         }));
         
@@ -193,7 +193,7 @@ const TouristDashboard = () => {
                     <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
                       <span className="flex items-center gap-1">
                         <MapPin className="h-4 w-4" />
-                        {booking.guideCity || 'Local não especificado'}
+                        {booking.city || 'Local não especificado'}
                       </span>
                       <span className="flex items-center gap-1">
                         <Clock className="h-4 w-4" />

@@ -99,7 +99,7 @@ export interface Booking {
   guideName: string;
   packageId?: string;
   packageTitle?: string;
-  guideCity?: string;
+  city?: string;
   date: string;
   time: string;
   duration: number;

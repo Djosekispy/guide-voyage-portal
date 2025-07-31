@@ -22,7 +22,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { createBooking, Booking, getTourPackage } from '@/lib/firestore';
+import { createBooking, Booking, getTourPackage, TourPackage } from '@/lib/firestore';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
@@ -32,14 +32,14 @@ export default function BookingPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
-  const [packageData, setPackageData] = useState(null);
+  const [packageData, setPackageData] = useState<TourPackage >(null);
   const [date, setDate] = useState(new Date());
   const [time, setTime] = useState('09:00');
   const [groupSize, setGroupSize] = useState(1);
   const [notes, setNotes] = useState('');
   const [availableTimes] = useState(['08:00', '09:00', '10:00', '14:00', '15:00']);
   const [step, setStep] = useState(1);
-  console.log(packageId)
+
   useEffect(() => {
     const loadPackageData = async () => {
       try {
@@ -78,6 +78,7 @@ export default function BookingPage() {
         packageId: packageData.id,
         packageTitle: packageData.title,
         date: format(date, 'yyyy-MM-dd'),
+        city: packageData.location,
         time,
         duration: parseInt(packageData.duration.split(' ')[0]),
         totalPrice: packageData.price * groupSize,
