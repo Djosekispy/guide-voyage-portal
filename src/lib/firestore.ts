@@ -100,6 +100,17 @@ export interface Review {
   createdAt: any;
 }
 
+export interface Favorite {
+  id: string;
+  userId: string;
+  guideId: string;
+  guideName: string;
+  guidePhotoURL?: string;
+  guideCity: string;
+  guideRating: number;
+  createdAt: any;
+}
+
 // Guide Functions
 export const createGuideProfile = async (guideData: Omit<Guide, 'id' | 'createdAt' | 'updatedAt'>) => {
   const docRef = await addDoc(collection(db, 'guides'), {
@@ -303,9 +314,6 @@ export const subscribeToGuideBookings = (guideId: string, callback: (bookings: B
   });
 };
 
-
-
-
 export async function getGuidesByCity(): Promise<CityGuidesSummary[]> {
   // Primeiro, obtenha todos os guias do Firestore
   const guidesSnapshot = await getDocs(collection(db, 'guides'));
@@ -389,3 +397,85 @@ export async function getGuidesByCity(): Promise<CityGuidesSummary[]> {
 
   return result;
 }
+
+// Favorite Functions
+export const addFavorite = async (userId: string, guide: Guide): Promise<string> => {
+  const docRef = await addDoc(collection(db, 'favorites'), {
+    userId,
+    guideId: guide.id,
+    guideName: guide.name,
+    guidePhotoURL: guide.photoURL,
+    guideCity: guide.city,
+    guideRating: guide.rating,
+    createdAt: serverTimestamp()
+  });
+  return docRef.id;
+};
+
+export const removeFavorite = async (favoriteId: string): Promise<void> => {
+  await deleteDoc(doc(db, 'favorites', favoriteId));
+};
+
+export const getUserFavorites = async (userId: string): Promise<Favorite[]> => {
+
+  const q = query(
+    collection(db, 'favorites'),
+    where('userId', '==', userId),
+    orderBy('createdAt', 'desc')
+  );
+  const querySnapshot = await getDocs(q);
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  })) as Favorite[];
+};
+
+export const isGuideFavorited = async (userId: string, guideId: string): Promise<boolean> => {
+  const q = query(
+    collection(db, 'favorites'),
+    where('userId', '==', userId),
+    where('guideId', '==', guideId)
+  );
+  const querySnapshot = await getDocs(q);
+  return !querySnapshot.empty;
+};
+
+export const toggleFavorite = async (userId: string, guide: Guide): Promise<boolean> => {
+  const q = query(
+    collection(db, 'favorites'),
+    where('userId', '==', userId),
+    where('guideId', '==', guide.id)
+  );
+  const querySnapshot = await getDocs(q);
+  
+  if (querySnapshot.empty) {
+    // Adicionar aos favoritos
+    await addFavorite(userId, guide);
+    return true;
+  } else {
+    // Remover dos favoritos
+    const favoriteId = querySnapshot.docs[0].id;
+    await removeFavorite(favoriteId);
+    return false;
+  }
+};
+
+// Listener em tempo real para favoritos
+export const subscribeToUserFavorites = (
+  userId: string, 
+  callback: (favorites: Favorite[]) => void
+) => {
+  const q = query(
+    collection(db, 'favorites'),
+    where('userId', '==', userId),
+    orderBy('createdAt', 'desc')
+  );
+  
+  return onSnapshot(q, (querySnapshot) => {
+    const favorites = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as Favorite[];
+    callback(favorites);
+  });
+};

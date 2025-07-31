@@ -9,7 +9,8 @@ const HeroSection = () => {
   const { user, userData } = useAuth();
 
   const handleFindGuide = () => {
-    navigate("/guias");
+    navigate(`/guias?city=${encodeURIComponent(userData.city)}`);
+
   };
 
   const handleBecomeGuide = () => {

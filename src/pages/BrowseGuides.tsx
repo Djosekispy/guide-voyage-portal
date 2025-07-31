@@ -24,14 +24,16 @@ import {
   Eye
 } from 'lucide-react';
 import GoogleMapsAngola from '@/components/GoogleMapsAngola';
-import { getAllGuides, getAllTourPackages, type Guide, type TourPackage } from '@/lib/firestore';
+import { Favorite, getAllGuides, getAllTourPackages, isGuideFavorited, subscribeToUserFavorites, toggleFavorite, type Guide, type TourPackage } from '@/lib/firestore';
 import Header from '@/components/Header';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function BrowseGuides() {
   const navigate = useNavigate();
   const { toast } = useToast();
    const [searchParams, setSearchParams] = useSearchParams();
    const queryParam = searchParams.get('city');
+   const { user } = useAuth();
 
   const [searchTerm, setSearchTerm] = useState(queryParam);
   const [selectedCity, setSelectedCity] = useState('');
@@ -42,6 +44,62 @@ export default function BrowseGuides() {
   const [loading, setLoading] = useState(true);
   const [selectedGuide, setSelectedGuide] = useState<Guide | null>(null);
   const [isGuideDetailOpen, setIsGuideDetailOpen] = useState(false);
+  const [favorites, setFavorites] = useState<Favorite[]>([]);
+  const [isFavoritedMap, setIsFavoritedMap] = useState<Record<string, boolean>>({});
+
+  // Carregar favoritos
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    const unsubscribe = subscribeToUserFavorites(user.uid, (fetchedFavorites) => {
+      setFavorites(fetchedFavorites);
+      
+      // Criar mapa de favoritos para acesso rápido
+      const favoritedMap = fetchedFavorites.reduce((acc, fav) => {
+        acc[fav.guideId] = true;
+        return acc;
+      }, {} as Record<string, boolean>);
+      
+      setIsFavoritedMap(favoritedMap);
+    });
+
+    return () => unsubscribe();
+  }, [user?.uid]);
+
+  // Função para alternar favorito
+  const handleToggleFavorite = async (guide: Guide) => {
+    if (!user?.uid) {
+      toast({
+        title: "Ação requer login",
+        description: "Por favor, faça login para favoritar guias",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const isNowFavorited = await toggleFavorite(user.uid, guide);
+      
+      toast({
+        title: isNowFavorited ? "Adicionado aos favoritos" : "Removido dos favoritos",
+        description: isNowFavorited 
+          ? `Você favoritou ${guide.name}` 
+          : `Você removeu ${guide.name} dos favoritos`,
+      });
+      
+      // Atualizar estado local
+      setIsFavoritedMap(prev => ({
+        ...prev,
+        [guide.id]: isNowFavorited
+      }));
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao atualizar seus favoritos",
+        variant: "destructive"
+      });
+    }
+  };
 
   const cities = ['Luanda', 'Benguela', 'Huambo', 'Lubango', 'Namibe', 'Cabinda'];
   const priceRanges = [
@@ -190,7 +248,6 @@ export default function BrowseGuides() {
           {filteredGuides.length} guia{filteredGuides.length !== 1 ? 's' : ''} encontrado{filteredGuides.length !== 1 ? 's' : ''} por <b>{searchTerm}</b>  
         </p>
       </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Lista de Guias */}
         <div className="lg:col-span-2">
@@ -256,9 +313,17 @@ export default function BrowseGuides() {
                           </div>
 
                           <div className="flex gap-2">
-                            <Button variant="outline" size="sm">
-                              <Heart className="h-4 w-4 mr-2" />
-                              Favoritar
+                              <Button 
+                              variant="outline" 
+                              size="sm"
+                              disabled={!user || guide.uid === user.uid}
+                              onClick={() => handleToggleFavorite(guide)}
+                              className={!isGuideFavorited(user.uid, guide.id) || isFavoritedMap[guide.id] ? "bg-amber-100 border-amber-300" : ""}
+                            >
+                              <Heart 
+                                className={`h-4 w-4 mr-2 ${!isGuideFavorited(user.uid, guide.id) || isFavoritedMap[guide.id] ? "fill-red-500 text-red-500" : ""}`} 
+                              />
+                              {isFavoritedMap[guide.id] ? "Favorito" : "Favoritar"}
                             </Button>
                             <Button variant="outline" size="sm" onClick={() => handleViewGuide(guide)}>
                               <Eye className="h-4 w-4 mr-2" />

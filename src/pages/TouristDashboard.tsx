@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Header from "@/components/Header";
 import GoogleMapsAngola from "@/components/GoogleMapsAngola";
+import { useNavigate } from "react-router-dom";
 
 const TouristDashboard = () => {
   const [pendingReviews] = useState([
@@ -26,6 +27,7 @@ const TouristDashboard = () => {
       rating: 0
     }
   ]);
+  const navigate = useNavigate();
 
   const [upcomingBookings] = useState([
     {
@@ -228,7 +230,7 @@ const TouristDashboard = () => {
                 <Calendar className="mr-2 h-5 w-5" />
                 Minhas Reservas
               </Button>
-              <Button variant="outline" className="h-16">
+              <Button variant="outline" className="h-16" onClick={()=> navigate('/meus/favoritos')}>
                 <Star className="mr-2 h-5 w-5" />
                 Meus Favoritos
               </Button>

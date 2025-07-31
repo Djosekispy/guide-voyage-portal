@@ -25,6 +25,7 @@ import TouristBookings from "./pages/TouristBookings";
 import ReviewTour from "./pages/ReviewTour";
 import BrowseGuides from "./pages/BrowseGuides";
 import GuideProfileForm from "./pages/GuideProfileForm";
+import FavoritesList from "./pages/Favorite";
 
 const queryClient = new QueryClient();
 
@@ -65,6 +66,11 @@ const App = () => (
             <Route path="/guia/reservas" element={
               <ProtectedRoute userType="guide">
                 <GuideBookings />
+              </ProtectedRoute>
+            } />
+              <Route path="/meus/favoritos" element={
+              <ProtectedRoute userType="tourist">
+                <FavoritesList />
               </ProtectedRoute>
             } />
             <Route path="/guia/calendario" element={
