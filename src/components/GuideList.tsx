@@ -57,8 +57,8 @@ const AvailableGuides = () => {
     fetchData();
   }, [user?.uid]);
 
-  const handleViewProfile = (guide: Guide) => {
-    setSelectedGuide(guide);
+  const handleViewProfile = (guide: Guide['id']) => {
+      navigate(`/guia/perfil?guideId=${guide}`);
   };
 
   const handleRateGuide = (id: string, stars: number) => {
@@ -159,7 +159,7 @@ const AvailableGuides = () => {
                     <Button
                       variant="outline"
                       className="w-full"
-                      onClick={() => handleViewProfile(guide)}
+                      onClick={() => handleViewProfile(guide.uid)}
                     >
                       Ver Perfil
                     </Button>

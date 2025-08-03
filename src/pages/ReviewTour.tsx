@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Star, Send, Camera, MapPin, Calendar, Clock, User } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,25 +7,53 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { Booking, createReview, getBookingOneReview, getGuideBookingById, getGuideProfile, getTourPackage, Guide, Review, TourPackage, updateBookingReview } from "@/lib/firestore";
+import { useAuth } from "@/contexts/AuthContext";
+import { set } from "date-fns";
 
 const ReviewTour = () => {
-  const [rating, setRating] = useState(0);
-  const [comment, setComment] = useState("");
+  
   const [hoveredStar, setHoveredStar] = useState(0);
   const { toast } = useToast();
+  const params  = useSearchParams();
+  const bookingId = params[0].get('bookingId')
+  const { user, userData } = useAuth()
+  const navigate = useNavigate();
+  const [tour, setTour] = useState<Booking>(null)
+    const [guide, setGuide] = useState<Guide>(null)
+     const [reviewed, setReviewed] = useState<Review>(null)
+  const [isLoading, setisLoading ] = useState(true)
 
-  const tour = {
-    id: 1,
-    guideName: "Maria Santos",
-    guideImage: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
-    tourTitle: "Tour Histórico pela Fortaleza de São Miguel",
-    date: "2024-01-15",
-    time: "09:00",
-    duration: "4 horas",
-    city: "Luanda",
-    price: "60.000 Kz",
-    participants: 2
-  };
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState('');
+  useEffect(()=>{
+        const loadDashboardData = async () => {
+          try {
+            // Carrega todas as reservas do turista
+            const bookings = await getGuideBookingById(bookingId);
+            const guideData = await getGuideProfile(bookings.guideId);
+            const ReviwedYet = await getBookingOneReview(bookingId,user.uid);
+            console.log(ReviwedYet)
+            setTour(bookings);
+            setGuide(guideData);
+            setReviewed(ReviwedYet);
+            setComment(ReviwedYet?.comment);
+            setRating(ReviwedYet?.rating)
+            
+          } catch (error) {
+            console.error("Erro ao carregar dados do dashboard:", error);
+          } finally {
+            setisLoading(false);
+          }
+        };
+    
+        loadDashboardData();
+
+
+  },[bookingId])
+
+
 
   const handleStarClick = (starValue: number) => {
     setRating(starValue);
@@ -35,7 +63,7 @@ const ReviewTour = () => {
     setHoveredStar(starValue);
   };
 
-  const handleSubmitReview = () => {
+  const handleSubmitReview = async () => {
     if (rating === 0) {
       toast({
         title: "Avaliação necessária",
@@ -54,7 +82,31 @@ const ReviewTour = () => {
       return;
     }
 
+    if(reviewed){
+        await updateBookingReview(bookingId,user.uid,{
+      bookingId,
+      comment,
+      guideId : guide.uid,
+      guideName : guide.name,
+      rating,
+      touristId : user.uid,
+      touristName : userData.name,
+      packageId : tour.packageId
+    })
+    }else{
+          await createReview({
+      bookingId,
+      comment,
+      guideId : guide.uid,
+      guideName : guide.name,
+      rating,
+      touristId : user.uid,
+      touristName : userData.name,
+      packageId : tour.packageId
+    })
+    }
     // Aqui seria enviado para o backend
+
     toast({
       title: "Avaliação enviada!",
       description: "Sua avaliação foi enviada com sucesso. Obrigado pelo feedback!",
@@ -63,6 +115,7 @@ const ReviewTour = () => {
     // Reset form
     setRating(0);
     setComment("");
+     navigate(-1);
   };
 
   const getRatingText = (stars: number) => {
@@ -79,6 +132,18 @@ const ReviewTour = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
+
+        {isLoading ? (
+        <div className="space-y-8 animate-pulse">
+          <div className="h-6 bg-muted rounded w-1/2" />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="h-80 bg-muted rounded-lg" />
+            <div className="h-80 bg-muted rounded-lg" />
+          </div>
+          <div className="h-40 bg-muted rounded-lg mt-8" />
+        </div>
+      ) : (
+          <>
       <div className="pt-24 container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">Avaliar Passeio</h1>
@@ -98,38 +163,41 @@ const ReviewTour = () => {
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
                   <Avatar className="w-16 h-16">
-                    <AvatarImage src={tour.guideImage} />
-                    <AvatarFallback>{tour.guideName.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                    <AvatarImage src={guide?.photoURL} />
+                    <AvatarFallback>{tour?.guideName.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <h3 className="font-semibold text-lg">{tour.tourTitle}</h3>
-                    <p className="text-muted-foreground">Guia: {tour.guideName}</p>
+                    <h3 className="font-semibold text-lg">{tour?.packageTitle}</h3>
+                    <p className="text-muted-foreground">Guia: {tour?.guideName}</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div className="flex items-center gap-2">
                     <MapPin className="w-4 h-4 text-muted-foreground" />
-                    <span>{tour.city}</span>
+                    <span>{tour?.city}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-muted-foreground" />
-                    <span>{tour.date}</span>
+                    <span>{tour?.date}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4 text-muted-foreground" />
-                    <span>{tour.time} - {tour.duration}</span>
+                    <span>{tour?.time} - {tour?.duration} Horas</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4 text-muted-foreground" />
-                    <span>{tour.participants} participante{tour.participants !== 1 ? 's' : ''}</span>
+                    <span>{tour?.groupSize} participante{tour?.groupSize !== 1 ? 's' : ''}</span>
                   </div>
                 </div>
 
                 <div className="pt-4 border-t">
                   <div className="flex justify-between items-center">
                     <span className="font-medium">Total Pago:</span>
-                    <span className="text-2xl font-bold text-primary">{tour.price}</span>
+                    <span className="text-2xl font-bold text-primary">{tour?.totalPrice.toLocaleString('pt-AO', { 
+                                  style: 'currency', 
+                                  currency: 'AOA' 
+                                }) }</span>
                   </div>
                 </div>
               </div>
@@ -191,7 +259,7 @@ const ReviewTour = () => {
                   </p>
                 </div>
 
-                {/* Photos (Future feature) */}
+                {/* Photos (Future feature) 
                 <div>
                   <label className="block font-medium mb-2">
                     Adicionar Fotos (Opcional)
@@ -209,7 +277,7 @@ const ReviewTour = () => {
                     </p>
                   </div>
                 </div>
-
+*/}
                 {/* Submit Button */}
                 <Button 
                   onClick={handleSubmitReview}
@@ -265,6 +333,8 @@ const ReviewTour = () => {
           </CardContent>
         </Card>
       </div>
+       </>
+      )}
     </div>
   );
 };

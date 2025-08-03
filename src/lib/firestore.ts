@@ -281,6 +281,20 @@ export const getGuideBookings = async (guideId: string): Promise<Booking[]> => {
   })) as Booking[];
 };
 
+export const getGuideBookingById = async (bookingId: string): Promise<Booking | null> => {
+  const docRef = doc(db, 'bookings', bookingId);
+  const docSnap = await getDoc(docRef);
+
+  if (docSnap.exists()) {
+    return {
+      id: docSnap.id,
+      ...docSnap.data()
+    } as Booking;
+  }
+
+  return null;
+};
+
 export const getTouristBookings = async (touristId: string): Promise<Booking[]> => {
   const q = query(
     collection(db, 'bookings'), 
@@ -306,6 +320,53 @@ export const createReview = async (reviewData: Omit<Review, 'id' | 'createdAt'>)
   await updateGuideRating(reviewData.guideId);
   
   return docRef.id;
+};
+
+export const getBookingOneReview = async (bookingId: string, touristId: string): Promise<Review | null> => {
+  const reviewsQuery = query(
+    collection(db, 'reviews'), 
+    where('bookingId', '==', bookingId),
+    where('touristId', '==', touristId)
+  );
+
+  const querySnapshot = await getDocs(reviewsQuery);
+
+  if (!querySnapshot.empty) {
+    const doc = querySnapshot.docs[0]; 
+    return {
+      id: doc.id,
+      ...doc.data()
+    } as Review;
+  }
+
+  return null;
+};
+
+export const updateBookingReview = async (
+  bookingId: string,
+  touristId: string,
+  dataToUpdate: Partial<Review>
+): Promise<boolean> => {
+  try {
+    const reviewsQuery = query(
+      collection(db, 'reviews'),
+      where('bookingId', '==', bookingId),
+      where('touristId', '==', touristId)
+    );
+
+    const querySnapshot = await getDocs(reviewsQuery);
+
+    if (!querySnapshot.empty) {
+      const docRef = querySnapshot.docs[0].ref;
+      await updateDoc(docRef, dataToUpdate);
+      return true;
+    }
+
+    return false; // Review não encontrado
+  } catch (error) {
+    console.error("Erro ao atualizar o review:", error);
+    return false;
+  }
 };
 
 export const getGuideReviews = async (guideId: string): Promise<Review[]> => {

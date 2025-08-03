@@ -25,7 +25,8 @@ import {
   DollarSign,
   CheckCircle,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
 import GoogleMapsAngola from '@/components/GoogleMapsAngola';
 import {
@@ -91,7 +92,6 @@ export default function GuideDashboard() {
         // Carregar pacotes
         const guidePackages = await getGuidePackages(guide.id);
         setPackages(guidePackages);
-       console.log('Pacotes carregados:', guidePackages);
         // Carregar reservas
         const guideBookings = await getGuideBookings(guide.id);
         setBookings(guideBookings);
@@ -115,55 +115,97 @@ export default function GuideDashboard() {
     }
   };
 
-  const handleCreatePackage = async () => {
-    setIsSaving(true);
-    try {
-      if (!guideProfile) return;
+const handleEditPackage = async () => {
+  setIsSaving(true);
+  try {
+    if (!selectedPackage) return;
 
-      await createTourPackage({
-        guideId: guideProfile.id,
-        guideName: guideProfile.name,
-        ...newPackage,
-        includes: newPackage.includes.filter(item => item.trim()),
-        excludes: newPackage.excludes.filter(item => item.trim()),
-        itinerary: newPackage.itinerary.filter(item => item.trim()),
-        images: newPackage.images.filter(item => item.trim()),
-        isActive: true,
-        rating: 0,
-        reviewCount: 0
-      });
+    // Filtrar arrays para remover itens vazios
+    const filteredPackage = {
+      ...selectedPackage,
+      includes: selectedPackage.includes.filter(item => item.trim() !== ''),
+      excludes: selectedPackage.excludes.filter(item => item.trim() !== ''),
+      itinerary: selectedPackage.itinerary.filter(item => item.trim() !== ''),
+      images: selectedPackage.images.filter(item => item.trim() !== '')
+    };
 
-      toast({
-        title: "Sucesso!",
-        description: "Pacote criado com sucesso"
-      });
+    await updateTourPackage(selectedPackage.id,filteredPackage);
 
-      setIsCreatePackageOpen(false);
-      setNewPackage({
-        title: '',
-        description: '',
-        duration: '',
-        price: 0,
-        maxGroupSize: 1,
-        location: '',
-        includes: [''],
-        excludes: [''],
-        itinerary: [''],
-        images: ['']
-      });
-      
-      loadDashboardData();
-    } catch (error) {
-      console.error('Erro ao criar pacote:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível criar o pacote",
-        variant: "destructive"
-      });
-    }finally {
-      setIsSaving(false);
-    }
-  };
+    toast({
+      title: "Sucesso!",
+      description: "Pacote atualizado com sucesso"
+    });
+
+    setIsEditPackageOpen(false);
+    loadDashboardData();
+  } catch (error) {
+    console.error('Erro ao atualizar pacote:', error);
+    toast({
+      title: "Erro",
+      description: "Não foi possível atualizar o pacote",
+      variant: "destructive"
+    });
+  } finally {
+    setIsSaving(false);
+  }
+};
+
+const handleCreatePackage = async () => {
+  setIsSaving(true);
+  try {
+    if (!guideProfile) return;
+
+    // Filtrar arrays para remover itens vazios
+    const filteredPackage = {
+      ...newPackage,
+      includes: newPackage.includes.filter(item => item.trim() !== ''),
+      excludes: newPackage.excludes.filter(item => item.trim() !== ''),
+      itinerary: newPackage.itinerary.filter(item => item.trim() !== ''),
+      images: newPackage.images.filter(item => item.trim() !== '')
+    };
+
+    await createTourPackage({
+      guideId: guideProfile.id,
+      guideName: guideProfile.name,
+      ...filteredPackage,
+      isActive: true,
+      rating: 0,
+      reviewCount: 0
+    });
+
+    toast({
+      title: "Sucesso!",
+      description: "Pacote criado com sucesso"
+    });
+
+    // Resetar formulário
+    setIsCreatePackageOpen(false);
+    setNewPackage({
+      title: '',
+      description: '',
+      duration: '',
+      price: 0,
+      maxGroupSize: 1,
+      location: '',
+      includes: [''],
+      excludes: [''],
+      itinerary: [''],
+      images: ['']
+    });
+    
+    // Recarregar dados
+    loadDashboardData();
+  } catch (error) {
+    console.error('Erro ao criar pacote:', error);
+    toast({
+      title: "Erro",
+      description: "Não foi possível criar o pacote",
+      variant: "destructive"
+    });
+  } finally {
+    setIsSaving(false);
+  }
+};
 
   const handleDeletePackage = async (packageId: string) => {
     try {
@@ -218,6 +260,28 @@ export default function GuideDashboard() {
       [field]: prev[field].map((item, i) => i === index ? value : item)
     }));
   };
+
+
+  const updateSelectedArrayItem = (field: 'includes' | 'excludes' | 'itinerary' | 'images', index: number, value: string) => {
+  setSelectedPackage(prev => prev ? ({
+    ...prev,
+    [field]: prev[field].map((item, i) => i === index ? value : item)
+  }) : null);
+};
+
+const addSelectedArrayItem = (field: 'includes' | 'excludes' | 'itinerary' | 'images') => {
+  setSelectedPackage(prev => prev ? ({
+    ...prev,
+    [field]: [...prev[field], '']
+  }) : null);
+};
+
+const removeSelectedArrayItem = (field: 'includes' | 'excludes' | 'itinerary' | 'images', index: number) => {
+  setSelectedPackage(prev => prev ? ({
+    ...prev,
+    [field]: prev[field].filter((_, i) => i !== index)
+  }) : null);
+};
 
   // Estatísticas
   const totalBookings = bookings.length;
@@ -374,201 +438,575 @@ export default function GuideDashboard() {
           </div>
         </TabsContent>
 
-        <TabsContent value="packages" className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold">Meus Pacotes</h2>
-            <Dialog open={isCreatePackageOpen} onOpenChange={setIsCreatePackageOpen}>
-              <DialogTrigger asChild>
-              <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Criar Pacote
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>Criar Novo Pacote</DialogTitle>
-                </DialogHeader>
-                 <DialogDescription>
-                Adicione um novo pacote na sua lista de tours. E não se esqueça de incluir detalhes importantes como localização, duração e preço.
-              </DialogDescription>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="title">Título do Pacote</Label>
-                      <Input
-                        id="title"
-                        value={newPackage.title}
-                        onChange={(e) => setNewPackage(prev => ({ ...prev, title: e.target.value }))}
-                        placeholder="Ex: Tour pela Ilha de Luanda"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="location">Localização</Label>
-                      <Input
-                        id="location"
-                        value={newPackage.location}
-                        onChange={(e) => setNewPackage(prev => ({ ...prev, location: e.target.value }))}
-                        placeholder="Ex: Luanda, Angola"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="description">Descrição</Label>
-                    <Textarea
-                      id="description"
-                      value={newPackage.description}
-                      onChange={(e) => setNewPackage(prev => ({ ...prev, description: e.target.value }))}
-                      placeholder="Descreva seu pacote turístico..."
-                      rows={3}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <Label htmlFor="duration">Duração</Label>
-                      <Select value={newPackage.duration} onValueChange={(value) => setNewPackage(prev => ({ ...prev, duration: value }))}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="2 horas">2 horas</SelectItem>
-                          <SelectItem value="4 horas">4 horas</SelectItem>
-                          <SelectItem value="1 dia">1 dia</SelectItem>
-                          <SelectItem value="2 dias">2 dias</SelectItem>
-                          <SelectItem value="3 dias">3 dias</SelectItem>
-                          <SelectItem value="1 semana">1 semana</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="price">Preço (AOA)</Label>
-                      <Input
-                        id="price"
-                        type="number"
-                        value={newPackage.price}
-                        onChange={(e) => setNewPackage(prev => ({ ...prev, price: Number(e.target.value) }))}
-                        placeholder="15000"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="maxGroupSize">Máx. Grupo</Label>
-                      <Input
-                        id="maxGroupSize"
-                        type="number"
-                        value={newPackage.maxGroupSize}
-                        onChange={(e) => setNewPackage(prev => ({ ...prev, maxGroupSize: Number(e.target.value) }))}
-                        placeholder="4"
-                        min="1"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Inclui */}
-                  <div>
-                    <Label>O que está incluído</Label>
-                    {newPackage.includes.map((item, index) => (
-                      <div key={index} className="flex gap-2 mt-2">
-                        <Input
-                          value={item}
-                          onChange={(e) => updateArrayItem('includes', index, e.target.value)}
-                          placeholder="Ex: Transporte"
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => removeArrayItem('includes', index)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => addArrayItem('includes')}
-                      className="mt-2"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Adicionar Item
-                    </Button>
-                  </div>
-
-                  <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={() => setIsCreatePackageOpen(false)}>
-                      Cancelar
-                    </Button>
-                  { isSaving ? <Button  disabled={true}>
-                      Criando Pacote...
-                    </Button>  :  <Button onClick={handleCreatePackage} disabled={!newPackage.title || !newPackage.location || !newPackage.description || newPackage.price <= 0}>
-                      Criar Pacote
-                    </Button>
-}
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {packages.map((pkg) => (
-              <Card key={pkg.id}>
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <CardTitle className="text-lg">{pkg.title}</CardTitle>
-                    <Badge variant={pkg.isActive ? 'default' : 'secondary'}>
-                      {pkg.isActive ? 'Ativo' : 'Inativo'}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground mb-4">{pkg.description}</p>
-                  
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center text-sm">
-                      <Clock className="h-4 w-4 mr-2" />
-                      {pkg.duration}
-                    </div>
-                    <div className="flex items-center text-sm">
-                      <MapPin className="h-4 w-4 mr-2" />
-                      {pkg.location}
-                    </div>
-                    <div className="flex items-center text-sm">
-                      <Users className="h-4 w-4 mr-2" />
-                      Até {pkg.maxGroupSize} pessoas
-                    </div>
-                    <div className="flex items-center text-sm">
-                      <DollarSign className="h-4 w-4 mr-2" />
-                      {pkg.price.toLocaleString('pt-AO', { style: 'currency', currency: 'AOA' })}
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center">
-                      <Star className="h-4 w-4 text-yellow-500 mr-1" />
-                      <span className="text-sm">{pkg.rating.toFixed(1)} ({pkg.reviewCount})</span>
-                    </div>
-                    
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
+          <TabsContent value="packages" className="mt-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {packages.map((tour) => (
+                        <Card key={tour?.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                          <CardContent className="p-0">
+                            <img 
+                              src={tour?.images[0]} 
+                              alt={tour?.title}
+                              className="w-full h-48 object-cover"
+                            />
+                            <div className="p-6">
+                              <h3 className="font-semibold mb-2">{tour?.title}</h3>
+                              <p className="text-sm text-muted-foreground mb-4">{tour?.description}</p>
+                              
+                              <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                      <div className="space-y-2 mb-4">
+                            <div className="flex items-center text-sm">
+                              <Clock className="h-4 w-4 mr-2" />
+                              {tour?.duration}
+                            </div>
+                            <div className="flex items-center text-sm">
+                              <MapPin className="h-4 w-4 mr-2" />
+                              {tour?.location}
+                            </div>
+                            <div className="flex items-center text-sm">
+                              <Users className="h-4 w-4 mr-2" />
+                              Até {tour?.maxGroupSize} pessoas
+                            </div>
+                            <div className="flex items-center text-sm">
+                              <DollarSign className="h-4 w-4 mr-2" />
+                              {tour?.price.toLocaleString('pt-AO', { style: 'currency', currency: 'AOA' })}
+                            </div>
+                          </div>
+                                </div>
+                             
+                                <span className="font-bold text-primary">{tour?.price?.toLocaleString('pt-AO', { 
+                                  style: 'currency', 
+                                  currency: 'AOA' 
+                                })}</span>
+                              </div>
+                               <div className="flex gap-2">
+                      <Button variant="outline" size="sm"
+                      onClick={()=>{
+                        setSelectedPackage(tour)
+                        setIsEditPackageOpen(true);
+                      }}
+                      >
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => handleDeletePackage(pkg.id)}
+                        onClick={() => handleDeletePackage(tour.id)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </TabsContent>
+                  
+
+ <Dialog open={isCreatePackageOpen} onOpenChange={setIsCreatePackageOpen}>
+  <DialogTrigger asChild>
+    <Button>
+      <Plus className="h-4 w-4 mr-2" />
+      Criar Pacote
+    </Button>
+  </DialogTrigger>
+  
+  <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+    <DialogHeader>
+      <DialogTitle>Criar Novo Pacote</DialogTitle>
+      <DialogDescription>
+        Adicione um novo pacote na sua lista de tours. Inclua todos os detalhes necessários.
+      </DialogDescription>
+    </DialogHeader>
+  <div className="space-y-4">
+    <div className="grid grid-cols-2 gap-4">
+      <div>
+        <Label htmlFor="title">Título do Pacote*</Label>
+        <Input
+          id="title"
+          value={newPackage.title}
+          onChange={(e) => setNewPackage(prev => ({ ...prev, title: e.target.value }))}
+          placeholder="Ex: Tour pela Ilha de Luanda"
+        />
+      </div>
+      <div>
+        <Label htmlFor="location">Localização*</Label>
+        <Input
+          id="location"
+          value={newPackage.location}
+          onChange={(e) => setNewPackage(prev => ({ ...prev, location: e.target.value }))}
+          placeholder="Ex: Luanda, Angola"
+        />
+      </div>
+    </div>
+
+    <div>
+      <Label htmlFor="description">Descrição*</Label>
+      <Textarea
+        id="description"
+        value={newPackage.description}
+        onChange={(e) => setNewPackage(prev => ({ ...prev, description: e.target.value }))}
+        placeholder="Descreva seu pacote turístico..."
+        rows={3}
+      />
+    </div>
+
+    <div className="grid grid-cols-3 gap-4">
+      <div>
+        <Label htmlFor="duration">Duração*</Label>
+        <Select 
+          value={newPackage.duration} 
+          onValueChange={(value) => setNewPackage(prev => ({ ...prev, duration: value }))}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Selecione" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="2 horas">2 horas</SelectItem>
+            <SelectItem value="4 horas">4 horas</SelectItem>
+            <SelectItem value="1 dia">1 dia</SelectItem>
+            <SelectItem value="2 dias">2 dias</SelectItem>
+            <SelectItem value="3 dias">3 dias</SelectItem>
+            <SelectItem value="1 semana">1 semana</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div>
+        <Label htmlFor="price">Preço (AOA)*</Label>
+        <Input
+          id="price"
+          type="number"
+          value={newPackage.price}
+          onChange={(e) => setNewPackage(prev => ({ ...prev, price: Number(e.target.value) }))}
+          placeholder="15000"
+          min="0"
+        />
+      </div>
+      <div>
+        <Label htmlFor="maxGroupSize">Máx. Grupo*</Label>
+        <Input
+          id="maxGroupSize"
+          type="number"
+          value={newPackage.maxGroupSize}
+          onChange={(e) => setNewPackage(prev => ({ ...prev, maxGroupSize: Number(e.target.value) }))}
+          placeholder="4"
+          min="1"
+        />
+      </div>
+    </div>
+
+    {/* Campo para imagens */}
+    <div>
+      <Label>Imagens (URLs)</Label>
+      {newPackage.images.map((image, index) => (
+        <div key={index} className="flex gap-2 mt-2">
+          <Input
+            value={image}
+            onChange={(e) => updateArrayItem('images', index, e.target.value)}
+            placeholder="https://exemplo.com/imagem.jpg"
+            type="url"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => removeArrayItem('images', index)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ))}
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => addArrayItem('images')}
+        className="mt-2"
+      >
+        <Plus className="h-4 w-4 mr-2" />
+        Adicionar Imagem
+      </Button>
+    </div>
+
+    {/* O que está incluído */}
+    <div>
+      <Label>O que está incluído</Label>
+      {newPackage.includes.map((item, index) => (
+        <div key={index} className="flex gap-2 mt-2">
+          <Input
+            value={item}
+            onChange={(e) => updateArrayItem('includes', index, e.target.value)}
+            placeholder="Ex: Transporte"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => removeArrayItem('includes', index)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ))}
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => addArrayItem('includes')}
+        className="mt-2"
+      >
+        <Plus className="h-4 w-4 mr-2" />
+        Adicionar Item
+      </Button>
+    </div>
+
+    {/* O que não está incluído */}
+    <div>
+      <Label>O que não está incluído</Label>
+      {newPackage.excludes.map((item, index) => (
+        <div key={index} className="flex gap-2 mt-2">
+          <Input
+            value={item}
+            onChange={(e) => updateArrayItem('excludes', index, e.target.value)}
+            placeholder="Ex: Refeições"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => removeArrayItem('excludes', index)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ))}
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => addArrayItem('excludes')}
+        className="mt-2"
+      >
+        <Plus className="h-4 w-4 mr-2" />
+        Adicionar Item
+      </Button>
+    </div>
+
+    {/* Itinerário */}
+    <div>
+      <Label>Itinerário</Label>
+      {newPackage.itinerary.map((item, index) => (
+        <div key={index} className="flex gap-2 mt-2">
+          <Input
+            value={item}
+            onChange={(e) => updateArrayItem('itinerary', index, e.target.value)}
+            placeholder="Ex: Dia 1 - Visita ao Museu"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => removeArrayItem('itinerary', index)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ))}
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => addArrayItem('itinerary')}
+        className="mt-2"
+      >
+        <Plus className="h-4 w-4 mr-2" />
+        Adicionar Dia
+      </Button>
+    </div>
+
+    <div className="flex justify-end gap-2 pt-4">
+      <Button variant="outline" onClick={() => setIsCreatePackageOpen(false)}>
+        Cancelar
+      </Button>
+      {isSaving ? (
+        <Button disabled={true}>
+          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          Criando Pacote...
+        </Button>
+      ) : (
+        <Button 
+          onClick={handleCreatePackage} 
+          disabled={
+         !newPackage.title || 
+        !newPackage.location || 
+        !newPackage.description || 
+        newPackage.price <= 0 ||
+        !newPackage.duration ||
+        newPackage.maxGroupSize <= 0 ||
+        newPackage.images.length === 0 ||
+        newPackage.images.some(img => img.trim() === '')
+          }
+        >
+          Criar Pacote
+        </Button>
+      )}
+    </div>
+  </div>
+ </DialogContent>
+</Dialog>
+
+{/* Diálogo de Edição */}
+<Dialog open={isEditPackageOpen} onOpenChange={setIsEditPackageOpen}>
+  <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+    <DialogHeader>
+      <DialogTitle>Editar Pacote</DialogTitle>
+      <DialogDescription>
+        Atualize os detalhes do seu pacote turístico.
+      </DialogDescription>
+    </DialogHeader>
+    
+    {selectedPackage && (
+      <div className="space-y-4">
+        {/* Campos do formulário (igual ao de criação, mas com os valores de selectedPackage) */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="edit-title">Título do Pacote*</Label>
+            <Input
+              id="edit-title"
+              value={selectedPackage.title}
+              onChange={(e) => setSelectedPackage(prev => prev ? ({ ...prev, title: e.target.value }) : null)}
+              placeholder="Ex: Tour pela Ilha de Luanda"
+            />
           </div>
-        </TabsContent>
+          <div>
+            <Label htmlFor="edit-location">Localização*</Label>
+            <Input
+              id="edit-location"
+              value={selectedPackage.location}
+              onChange={(e) => setSelectedPackage(prev => prev ? ({ ...prev, location: e.target.value }) : null)}
+              placeholder="Ex: Luanda, Angola"
+            />
+          </div>
+        </div>
+
+          <div>
+      <Label htmlFor="description">Descrição*</Label>
+      <Textarea
+        id="description"
+        value={selectedPackage.description}
+        onChange={(e) => setSelectedPackage(prev => ({ ...prev, description: e.target.value }))}
+        placeholder="Descreva seu pacote turístico..."
+        rows={3}
+      />
+    </div>
+
+    <div className="grid grid-cols-3 gap-4">
+      <div>
+        <Label htmlFor="duration">Duração*</Label>
+        <Select 
+          value={selectedPackage.duration} 
+          onValueChange={(value) => setSelectedPackage(prev => ({ ...prev, duration: value }))}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Selecione" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="2 horas">2 horas</SelectItem>
+            <SelectItem value="4 horas">4 horas</SelectItem>
+            <SelectItem value="1 dia">1 dia</SelectItem>
+            <SelectItem value="2 dias">2 dias</SelectItem>
+            <SelectItem value="3 dias">3 dias</SelectItem>
+            <SelectItem value="1 semana">1 semana</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div>
+        <Label htmlFor="price">Preço (AOA)*</Label>
+        <Input
+          id="price"
+          type="number"
+          value={selectedPackage.price}
+          onChange={(e) => setSelectedPackage(prev => ({ ...prev, price: Number(e.target.value) }))}
+          placeholder="15000"
+          min="0"
+        />
+      </div>
+      <div>
+        <Label htmlFor="maxGroupSize">Máx. Grupo*</Label>
+        <Input
+          id="maxGroupSize"
+          type="number"
+          value={selectedPackage.maxGroupSize}
+          onChange={(e) => setSelectedPackage(prev => ({ ...prev, maxGroupSize: Number(e.target.value) }))}
+          placeholder="4"
+          min="1"
+        />
+      </div>
+    </div>
+
+    {/* Campo para imagens */}
+    <div>
+      <Label>Imagens (URLs)</Label>
+      {selectedPackage.images.map((image, index) => (
+        <div key={index} className="flex gap-2 mt-2">
+          <Input
+            value={image}
+            onChange={(e) => updateSelectedArrayItem('images', index, e.target.value)}
+            placeholder="https://exemplo.com/imagem.jpg"
+            type="url"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => removeSelectedArrayItem('images', index)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ))}
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => addSelectedArrayItem('images')}
+        className="mt-2"
+      >
+        <Plus className="h-4 w-4 mr-2" />
+        Adicionar Imagem
+      </Button>
+    </div>
+
+    {/* O que está incluído */}
+    <div>
+      <Label>O que está incluído</Label>
+      {selectedPackage.includes.map((item, index) => (
+        <div key={index} className="flex gap-2 mt-2">
+          <Input
+            value={item}
+            onChange={(e) => updateSelectedArrayItem('includes', index, e.target.value)}
+            placeholder="Ex: Transporte"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => removeSelectedArrayItem('includes', index)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ))}
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => addSelectedArrayItem('includes')}
+        className="mt-2"
+      >
+        <Plus className="h-4 w-4 mr-2" />
+        Adicionar Item
+      </Button>
+    </div>
+
+    {/* O que não está incluído */}
+    <div>
+      <Label>O que não está incluído</Label>
+      {selectedPackage.excludes.map((item, index) => (
+        <div key={index} className="flex gap-2 mt-2">
+          <Input
+            value={item}
+            onChange={(e) => updateSelectedArrayItem('excludes', index, e.target.value)}
+            placeholder="Ex: Refeições"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => removeSelectedArrayItem('excludes', index)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ))}
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => addSelectedArrayItem('excludes')}
+        className="mt-2"
+      >
+        <Plus className="h-4 w-4 mr-2" />
+        Adicionar Item
+      </Button>
+    </div>
+
+    {/* Itinerário */}
+    <div>
+      <Label>Itinerário</Label>
+      {selectedPackage.itinerary.map((item, index) => (
+        <div key={index} className="flex gap-2 mt-2">
+          <Input
+            value={item}
+            onChange={(e) => updateSelectedArrayItem('itinerary', index, e.target.value)}
+            placeholder="Ex: Dia 1 - Visita ao Museu"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => removeSelectedArrayItem('itinerary', index)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ))}
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => addSelectedArrayItem('itinerary')}
+        className="mt-2"
+      >
+        <Plus className="h-4 w-4 mr-2" />
+        Adicionar Dia
+      </Button>
+    </div>
+
+
+        <div className="flex justify-end gap-2 pt-4">
+          <Button variant="outline" onClick={() => setIsEditPackageOpen(false)}>
+            Cancelar
+          </Button>
+          {isSaving ? (
+            <Button disabled={true}>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Atualizando...
+            </Button>
+          ) : (
+            <Button 
+              onClick={handleEditPackage}
+              disabled={
+                !selectedPackage.title || 
+                !selectedPackage.location || 
+                !selectedPackage.description || 
+                selectedPackage.price <= 0 ||
+                !selectedPackage.duration ||
+                selectedPackage.maxGroupSize <= 0
+              }
+            >
+              Atualizar Pacote
+            </Button>
+          )}
+        </div>
+      </div>
+    )}
+  </DialogContent>
+</Dialog>
+
+
+
 
         <TabsContent value="bookings" className="space-y-6">
           <h2 className="text-2xl font-bold">Reservas</h2>

@@ -25,6 +25,9 @@ const Header = () => {
     }
   };
 
+
+  
+
   const navigateToMessages = () => navigate('/mensagens');
 
   const navItems = [
@@ -33,7 +36,7 @@ const Header = () => {
     { name: "Destinos", href: "/destinos" },
     { name: "Guias", href: "/guias" },
     { name: "Blog", href: "/blog" },
-    { name: "Contato", href: "/contato" },
+    { name: "Contacto", href: "/contato" },
   ];
 
   return (
