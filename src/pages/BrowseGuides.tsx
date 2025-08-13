@@ -24,7 +24,17 @@ import {
   Eye
 } from 'lucide-react';
 import GoogleMapsAngola from '@/components/GoogleMapsAngola';
-import { Favorite, getAllGuides, getAllTourPackages, isGuideFavorited, subscribeToUserFavorites, toggleFavorite, type Guide, type TourPackage } from '@/lib/firestore';
+import { Favorite, 
+  getAllGuides, 
+  getAllTourPackages, 
+  getGuideProfile, 
+  getGuideReviews, 
+  isGuideFavorited, 
+  Review, 
+  subscribeToUserFavorites, 
+  toggleFavorite, 
+  type Guide, 
+  type TourPackage } from '@/lib/firestore';
 import Header from '@/components/Header';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -34,7 +44,7 @@ export default function BrowseGuides() {
    const [searchParams, setSearchParams] = useSearchParams();
    const queryParam = searchParams.get('city');
    const { user } = useAuth();
-
+   const [reviews, setReviews] = useState<Review[]>([]);
   const [searchTerm, setSearchTerm] = useState(queryParam || 'Lubango');
   const [selectedCity, setSelectedCity] = useState('');
   const [priceRange, setPriceRange] = useState('');
@@ -123,7 +133,7 @@ useEffect(() => {
       setLoading(true);
       const [allGuides, allPackages] = await Promise.all([
         getAllGuides(),
-        getAllTourPackages()
+        getAllTourPackages(),
       ]);
       setGuides(allGuides);
       setPackages(allPackages);
@@ -139,9 +149,30 @@ useEffect(() => {
     }
   };
 
-  const handleViewGuide = (guide: Guide) => {
+  const handleViewGuide = async (guide: Guide) => {
+    
     setSelectedGuide(guide);
     setIsGuideDetailOpen(true);
+        const guideId = guide.uid
+      try {
+      const [guide, guidePackages, guideReviews] = await Promise.all([
+        getGuideProfile(guideId),
+        getGuidePackages(guideId),
+        getGuideReviews(guideId)
+      ]);
+
+      if (guide) {
+        setSelectedGuide(guide);
+        setPackages(guidePackages);
+        setReviews(guideReviews);
+      }
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar os dados do guia",
+        variant: "destructive"
+      });
+    }
   };
 
   const getGuidePackages = (guideId: string) => {
@@ -335,9 +366,9 @@ useEffect(() => {
                               <Eye className="h-4 w-4 mr-2" />
                               Ver Perfil
                             </Button>
-                            <Button size="sm">
+                            <Button disabled={!user || guide.uid === user?.uid} size="sm">
                               <Calendar className="h-4 w-4 mr-2" />
-                                <Link to={`/guias/${guide.id}/pacotes`}>
+                                <Link    to={`/guias/${guide.id}/pacotes`}>
                                              Reserva
                                             </Link>
                             </Button>
@@ -485,7 +516,7 @@ useEffect(() => {
                               <span className="text-sm">{pkg.rating.toFixed(1)} ({pkg.reviewCount})</span>
                             </div>
                             
-                            <Button size="sm">
+                            <Button disabled={!user || selectedGuide.uid === user?.uid}  size="sm">
                               <Calendar className="h-4 w-4 mr-2" />
                               Reservar
                             </Button>
@@ -502,21 +533,58 @@ useEffect(() => {
                   )}
                 </TabsContent>
 
-                <TabsContent value="reviews">
-                  <h3 className="font-semibold mb-4">Avaliações dos Clientes</h3>
-                  <p className="text-center text-muted-foreground py-8">
-                    As avaliações serão carregadas em breve.
-                  </p>
-                </TabsContent>
+                 <TabsContent value="reviews" className="mt-6">
+                <h3 className="text-lg font-semibold mb-4">Avaliações dos Clientes</h3>
+                
+                {reviews.length > 0 ? (
+                  <div className="space-y-6">
+                    {reviews.map((review) => (
+                      <div key={review.id} className="border rounded-lg p-4">
+                        <div className="flex items-center gap-3 mb-3">
+                          <Avatar className="h-10 w-10">
+                            <AvatarFallback>
+                              {review.touristName.split(' ').map(n => n[0]).join('')}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <h4 className="font-medium">{review.touristName}</h4>
+                            <div className="flex items-center">
+                              {[...Array(5)].map((_, i) => (
+                                <Star
+                                  key={i}
+                                  className={`h-4 w-4 ${i < review.rating ? 'text-yellow-500 fill-current' : 'text-gray-300'}`}
+                                />
+                              ))}
+                              <span className="text-sm text-muted-foreground ml-2">
+                                {new Date(review.createdAt).toLocaleDateString('pt-AO')}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <p className="text-muted-foreground">
+                          {review.comment}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Star className="h-12 w-12 mx-auto mb-4" />
+                    <h4 className="text-lg font-medium">Nenhuma avaliação ainda</h4>
+                    <p>Seja o primeiro a avaliar este guia</p>
+                  </div>
+                )}
+              </TabsContent>
               </Tabs>
 
               <div className="flex justify-end gap-2 mt-6 pt-6 border-t">
 
-                    {user?.uid && <Button variant="outline" onClick={() => handleMessageGuide(selectedGuide.id, selectedGuide.name, selectedGuide.photoURL)}>
+                    {user?.uid && 
+                    <Button disabled={!user || selectedGuide.uid === user?.uid} variant="outline" onClick={() => handleMessageGuide(selectedGuide.id, selectedGuide.name, selectedGuide.photoURL)}>
                                 <MessageSquare className="h-4 w-4 mr-2" />
                                 Enviar Mensagem
                               </Button>}
-                <Button>
+                <Button disabled={!user || selectedGuide.uid === user?.uid} >
                   <Calendar className="h-4 w-4 mr-2" />
                    <Link to={`/guias/${selectedGuide.id}/pacotes`}>
                                             Fazer Reserva

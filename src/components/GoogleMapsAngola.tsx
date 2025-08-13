@@ -231,6 +231,7 @@ const [angolaDestinations, setAngolaDestinations] = useState<any[]>([]);
 
 
   return (
+    <>
     <div className="relative w-full">
       {/* Controles superiores */}
       {showControls && (
@@ -285,40 +286,7 @@ const [angolaDestinations, setAngolaDestinations] = useState<any[]>([]);
         </div>
       )}
 
-      {/* Lista de destinos */}
-      {showControls && (
-        <div className="absolute top-4 right-4 z-10">
-          <Card className="w-64 max-h-80 overflow-y-auto">
-            <CardContent className="p-3">
-              <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
-                <MapPin className="w-4 h-4" />
-                Destinos Principais
-              </h4>
-              <div className="space-y-2">
-                {angolaDestinations.map((destination) => (
-                  <div
-                    key={destination.name}
-                    onClick={() => zoomToDestination(destination)}
-                    className={`p-2 rounded-md cursor-pointer hover:bg-accent transition-colors ${
-                      selectedDestination?.name === destination.name ? 'bg-accent' : ''
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-sm">{destination.name}</span>
-                      <Badge variant="secondary" className="text-xs">
-                        {destination.guides} guias
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                      {destination.description}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+
 
       {/* Informações sobre o destino selecionado */}
       {selectedDestination && (
@@ -377,6 +345,42 @@ const [angolaDestinations, setAngolaDestinations] = useState<any[]>([]);
         </div>
       )}
     </div>
+
+          {/* Lista de destinos */}
+      {showControls && (
+        <div className="w-full mt-4">
+          <Card className="w-auto max-h-80 overflow-y-auto">
+            <CardContent className="p-3">
+              <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                <MapPin className="w-4 h-4" />
+                Destinos Principais
+              </h4>
+              <div className="space-y-2">
+                {angolaDestinations.map((destination) => (
+                  <div
+                    key={destination.name}
+                    onClick={() => zoomToDestination(destination)}
+                    className={`p-2 rounded-md cursor-pointer hover:bg-accent transition-colors ${
+                      selectedDestination?.name === destination.name ? 'bg-accent' : ''
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-sm">{destination.name}</span>
+                      <Badge variant="secondary" className="text-xs">
+                        {destination.guides} guias
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                      {destination.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+    </>
   );
 };
 
