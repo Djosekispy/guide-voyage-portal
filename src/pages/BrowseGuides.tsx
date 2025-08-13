@@ -155,15 +155,13 @@ useEffect(() => {
     setIsGuideDetailOpen(true);
         const guideId = guide.uid
       try {
-      const [guide, guidePackages, guideReviews] = await Promise.all([
+      const [guide, guideReviews] = await Promise.all([
         getGuideProfile(guideId),
-        getGuidePackages(guideId),
         getGuideReviews(guideId)
       ]);
 
       if (guide) {
         setSelectedGuide(guide);
-        setPackages(guidePackages);
         setReviews(guideReviews);
       }
     } catch (error) {
