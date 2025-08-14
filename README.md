@@ -1,77 +1,79 @@
-# Welcome to your Lovable project
+# Explorar Angola - Plataforma de Turismo
 
-## Project info
+## 📌 Visão Geral
 
-**URL**: https://lovable.dev/projects/1dc36af7-6be2-4de4-bce4-6963c5d8802f
+O **Explorar Angola** é uma plataforma web completa desenvolvida para promover o potencial turístico de Angola, conectando viajantes com guias locais e pacotes turísticos em todas as 18 províncias do país.
 
-## How can I edit this code?
+![Captura de Ecrã da Aplicação](https://i.imgur.com/JYhRZxP.jpg)
 
-There are several ways of editing your application.
+## ✨ Funcionalidades
 
-**Use Lovable**
+### Para Viajantes
+- **Explorar Destinos**: Descubra as 18 províncias angolanas com informações detalhadas
+- **Encontrar Guias Locais**: Conecte-se com guias turísticos certificados em cada região
+- **Pacotes Turísticos**: Acesse experiências e atividades cuidadosamente selecionadas
+- **Galeria Interativa**: Carrosséis de imagens com visualização em modal para cada destino
+- **Filtros Avançados**: Busque por localização, preço, duração e avaliações
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/1dc36af7-6be2-4de4-bce4-6963c5d8802f) and start prompting.
+### Para Guias Turísticos
+- **Perfil Profissional**: Crie e gerencie seu perfil de guia turístico
+- **Publicar Pacotes**: Ofereça seus serviços e experiências turísticas
+- **Gestão de Reservas**: Aceite e organize reservas de clientes
+- **Avaliações**: Receba feedback dos viajantes
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🛠️ Tecnologias Utilizadas
 
-**Use your preferred IDE**
+- **Frontend**: 
+  - React.js com TypeScript
+  - Tailwind CSS
+  - Shadcn/ui (Componentes UI)
+  - React Router
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- **Backend**:
+  - Firebase (Firestore Database)
+  - Autenticação com Google e Email/Senha
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- **Ferramentas**:
+  - Vite (Build Tool)
+  - ESLint + Prettier
+  - Git + GitHub
 
-Follow these steps:
+## 🚀 Como Executar o Projeto
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Pré-requisitos
+- Node.js (v16 ou superior)
+- npm ou yarn
+- Conta no Firebase
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### Instalação
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+1. Clone o repositório:
+```bash
+git clone https://github.com/Djosekispy/guide-voyage-portal.git
 ```
 
-**Edit a file directly in GitHub**
+2. Instale as dependências:
+```bash
+cd guide-voyage-portal
+yarn install
+```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+3. Configure o Firebase:
+- Crie um arquivo `.env` na raiz do projeto com suas credenciais do Firebase
 
-**Use GitHub Codespaces**
+4. Inicie o servidor de desenvolvimento:
+```bash
+yarn dev
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 🤝 Como Contribuir
 
-## What technologies are used for this project?
+1. Faça um fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/nova-feature`)
+3. Commit suas mudanças (`git commit -m 'Adiciona nova feature'`)
+4. Push para a branch (`git push origin feature/nova-feature`)
+5. Abra um Pull Request
 
-This project is built with:
+## 📜 Licença
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/1dc36af7-6be2-4de4-bce4-6963c5d8802f) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
-
-##contasteste
-antonio@gmail.com - 12345678 - Guia
-gabriel@gmail.com - 12345678 - Turista
+Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
