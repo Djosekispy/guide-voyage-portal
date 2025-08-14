@@ -34,7 +34,6 @@ const ReviewTour = () => {
             const bookings = await getGuideBookingById(bookingId);
             const guideData = await getGuideProfile(bookings.guideId);
             const ReviwedYet = await getBookingOneReview(bookingId,user.uid);
-            console.log(ReviwedYet)
             setTour(bookings);
             setGuide(guideData);
             setReviewed(ReviwedYet);

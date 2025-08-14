@@ -383,6 +383,20 @@ export const getGuideReviews = async (guideId: string): Promise<Review[]> => {
   })) as Review[];
 };
 
+export const getTuristReviews = async (touristId: string): Promise<Review[]> => {
+  const q = query(
+    collection(db, 'reviews'), 
+    where('touristId', '==', touristId),
+    orderBy('createdAt', 'desc')
+  );
+  const querySnapshot = await getDocs(q);
+  
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  })) as Review[];
+};
+
 // Helper function to update guide rating
 const updateGuideRating = async (guideId: string) => {
   const reviews = await getGuideReviews(guideId);

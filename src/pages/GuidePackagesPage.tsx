@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { Search, Filter, MapPin, Clock, Star, Wallet, Users } from "lucide-react";
+import { Search, Filter, MapPin, Clock, Star, Wallet, Users, X } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { getGuidePackages, getGuideProfile, Guide, TourPackage } from "@/lib/firestore";
@@ -17,6 +17,7 @@ export default function GuidePackagesPage() {
   const [packages, setPackages] = useState<TourPackage[]>([]);
   const [filteredPackages, setFilteredPackages] = useState<TourPackage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedPackage, setSelectedPackage] = useState<TourPackage | null>(null);
   
   // Filtros
   const [searchTerm, setSearchTerm] = useState("");
@@ -91,6 +92,16 @@ export default function GuidePackagesPage() {
     });
   };
 
+  const openPackageModal = (pkg: TourPackage) => {
+    setSelectedPackage(pkg);
+    document.body.style.overflow = 'hidden'; // Impede scroll da página principal
+  };
+
+  const closePackageModal = () => {
+    setSelectedPackage(null);
+    document.body.style.overflow = 'auto'; // Restaura scroll da página principal
+  };
+
   if (loading) return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -132,7 +143,7 @@ export default function GuidePackagesPage() {
               <div className="flex-shrink-0">
                 <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center shadow-lg overflow-hidden">
                   {guide.photoURL ? (
-                    <img src={guide.photoURL} alt={guide.name} className="w-full h-full object-cover" />
+                    <img src={guide.photoURL} alt={guide.name} className="w-full  h-full object-cover" />
                   ) : (
                     <span className="text-3xl font-bold text-primary">
                       {guide.name.charAt(0)}
@@ -240,9 +251,7 @@ export default function GuidePackagesPage() {
             
             {filteredPackages.length === 0 ? (
               <div className="text-center py-12 bg-white rounded-xl shadow-sm">
-                <p className="text-lg text-gray-600">Nenhum pacote encontrado com os filtros selecionados.
-         
-                </p>
+                <p className="text-lg text-gray-600">Nenhum pacote encontrado com os filtros selecionados.</p>
                 <Button 
                   variant="outline" 
                   className="mt-4"
@@ -266,7 +275,6 @@ export default function GuidePackagesPage() {
                           <CardTitle className="text-xl">{pkg.title}</CardTitle>
                           <CardDescription className="mt-1 line-clamp-2">{pkg.location}</CardDescription>
                         </div>
-                      
                       </div>
                     </CardHeader>
                     
@@ -304,11 +312,15 @@ export default function GuidePackagesPage() {
                         )}
                       </div>    
                       <div className="w-full flex gap-2">
-                        <Button variant="outline" className="flex-1" asChild>
-                          <Link to={`/pacotes/${pkg.id}`}>Detalhes</Link>
+                        <Button 
+                          variant="outline" 
+                          className="flex-1"
+                          onClick={() => openPackageModal(pkg)}
+                        >
+                          Detalhes
                         </Button>
                         <Button className="flex-1" asChild>
-                         <Link to={`/pacotes/${pkg.id}/reserva`}>Reservar</Link>
+                          <Link to={`/pacotes/${pkg.id}/reserva`}>Reservar</Link>
                         </Button>
                       </div>
                     </CardFooter>
@@ -321,6 +333,152 @@ export default function GuidePackagesPage() {
       </main>
       
       <Footer />
+
+      {/* Modal de Detalhes do Pacote */}
+      {selectedPackage && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
+              <h2 className="text-2xl font-bold">{selectedPackage.title}</h2>
+              <button 
+                onClick={closePackageModal}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            
+            <div className="p-6">
+              {/* Imagens (se houver) */}
+              {selectedPackage.images?.length > 0 && (
+                <div className="mb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {selectedPackage.images.slice(0, 4).map((img, index) => (
+                      <div key={index} className="h-48 rounded-lg overflow-hidden">
+                        <img 
+                          src={img} 
+                          alt={`Imagem ${index + 1} do pacote ${selectedPackage.title}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Informações básicas */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="space-y-2">
+                  <h3 className="font-semibold flex items-center">
+                    <MapPin className="h-5 w-5 mr-2 text-primary" />
+                    Localização
+                  </h3>
+                  <p>{selectedPackage.location}</p>
+                </div>
+                
+                <div className="space-y-2">
+                  <h3 className="font-semibold flex items-center">
+                    <Clock className="h-5 w-5 mr-2 text-primary" />
+                    Duração
+                  </h3>
+                  <p>{selectedPackage.duration}</p>
+                </div>
+                
+                <div className="space-y-2">
+                  <h3 className="font-semibold flex items-center">
+                    <Users className="h-5 w-5 mr-2 text-primary" />
+                    Tamanho do grupo
+                  </h3>
+                  <p>Até {selectedPackage.maxGroupSize} pessoas</p>
+                </div>
+              </div>
+              
+              {/* Descrição completa */}
+              <div className="mb-8">
+                <h3 className="text-xl font-semibold mb-3">Sobre este pacote</h3>
+                <p className="text-gray-700 whitespace-pre-line">{selectedPackage.description}</p>
+              </div>
+              
+              {/* Itinerário */}
+              {selectedPackage.itinerary?.length > 0 && (
+                <div className="mb-8">
+                  <h3 className="text-xl font-semibold mb-3">Itinerário</h3>
+                  <ol className="list-decimal pl-5 space-y-2">
+                    {selectedPackage.itinerary.map((item, index) => (
+                      <li key={index} className="text-gray-700">
+                        {item}
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              )}
+              
+              {/* Incluso/Não incluso */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div>
+                  <h3 className="text-xl font-semibold mb-3 text-green-600">Inclui</h3>
+                  <ul className="space-y-2">
+                    {selectedPackage.includes?.length > 0 ? (
+                      selectedPackage.includes.map((item, index) => (
+                        <li key={index} className="flex items-start">
+                          <span className="text-green-500 mr-2">✓</span>
+                          <span>{item}</span>
+                        </li>
+                      ))
+                    ) : (
+                      <li className="text-gray-500">Nenhum item informado</li>
+                    )}
+                  </ul>
+                </div>
+                
+                <div>
+                  <h3 className="text-xl font-semibold mb-3 text-red-600">Não inclui</h3>
+                  <ul className="space-y-2">
+                    {selectedPackage.excludes?.length > 0 ? (
+                      selectedPackage.excludes.map((item, index) => (
+                        <li key={index} className="flex items-start">
+                          <span className="text-red-500 mr-2">✗</span>
+                          <span>{item}</span>
+                        </li>
+                      ))
+                    ) : (
+                      <li className="text-gray-500">Nenhum item informado</li>
+                    )}
+                  </ul>
+                </div>
+              </div>
+              
+              {/* Preço e ação */}
+              <div className="border-t pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div>
+                  <p className="text-sm text-gray-500">Preço total</p>
+                  <p className="text-3xl font-bold text-primary">
+                    {formatCurrency(selectedPackage.price)}
+                  </p>
+                </div>
+                
+                <div className="flex gap-3 w-full md:w-auto">
+                  <Button 
+                    variant="outline" 
+                    className="flex-1"
+                    onClick={closePackageModal}
+                  >
+                    Voltar
+                  </Button>
+                  <Button className="flex-1" asChild>
+                    <Link 
+                      to={`/pacotes/${selectedPackage.id}/reserva`}
+                      onClick={closePackageModal}
+                    >
+                      Reservar agora
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

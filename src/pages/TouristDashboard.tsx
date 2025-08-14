@@ -13,7 +13,8 @@ import {
   getUserFavorites,
   Booking,
   Review,
-  Favorite
+  Favorite,
+  getTuristReviews
 } from "@/lib/firestore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -42,17 +43,18 @@ const TouristDashboard = () => {
         const bookings = await getTouristBookings(user.uid);
         
         // Carrega avaliações existentes para verificar pendentes
-        const reviews = await getGuideReviews(user.uid);
-        
+        const reviews = await getTuristReviews(user.uid);
+
         // Carrega guias favoritos
         const favorites = await getUserFavorites(user.uid);
-        
         // Filtra reservas finalizadas sem avaliação
         const completedBookings = bookings.filter(
+          b => b.status === 'Finalizado');
+        
+        const completeButPendingReview =   bookings.filter(
           b => b.status === 'Finalizado' && 
           !reviews.some(r => r.bookingId === b.id)
         );
-        
         // Filtra próximas reservas (confirmadas)
         const upcoming = bookings.filter(
           b => b.status === 'Confirmado' && 
@@ -73,11 +75,11 @@ const TouristDashboard = () => {
         setStats({
           totalBookings: bookings.length,
           completedTours: completedBookings.length,
-          pendingReviews: pending.length,
+          pendingReviews: completeButPendingReview.length,
           favoriteGuides: favorites.length
         });
         
-        setPendingReviews(pending);
+        setPendingReviews(completeButPendingReview);
         setUpcomingBookings(upcoming);
         setFavoriteGuides(favorites);
         

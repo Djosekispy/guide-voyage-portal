@@ -164,7 +164,8 @@ export default function FavoritesList() {
   };
 
   const handleBookGuide = (guideId: string) => {
-    navigate(`/booking?guideId=${guideId}`);
+    navigate(`/guias/${guideId}/pacotes`);
+    
   };
 
   const handleBookPackage = (packageId: string) => {
@@ -338,23 +339,8 @@ export default function FavoritesList() {
                     >
                       <Heart className="h-4 w-4 fill-red-500 text-red-500" />
                     </Button>
-                  </div>
-                </CardHeader>
-                
-                <CardContent>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center">
-                      <Star className="h-4 w-4 text-yellow-500 mr-1" />
-                      <span className="font-medium">{favorite.guideRating.toFixed(1)}</span>
-                      <span className="text-gray-500 text-sm ml-1">({Math.floor(favorite.guideRating * 10)} avaliações)</span>
-                    </div>
-                    <Badge variant="outline" className="text-green-600 border-green-200 bg-green-50">
-                      Disponível
-                    </Badge>
-                  </div>
-                  
-                  <div className="grid grid-cols-3 gap-2">
-                    <Button 
+
+                       <Button 
                       variant="outline" 
                       size="sm" 
                       className="h-9"
@@ -363,22 +349,10 @@ export default function FavoritesList() {
                       <Eye className="h-4 w-4 mr-2" />
                       Ver
                     </Button>
-                    
-                    
-                    {user?.uid && <Button variant="outline" onClick={() => handleMessageGuide(selectedGuide.id, selectedGuide.name, selectedGuide.photoURL)}>
-                                <MessageSquare className="h-4 w-4 mr-2" />
-                                Mensagem
-                              </Button>}
-                    <Button 
-                      size="sm" 
-                      className="h-9"
-                      onClick={() => handleBookGuide(favorite.guideId)}
-                    >
-                      <Calendar className="h-4 w-4 mr-2" />
-                      Reservar
-                    </Button>
                   </div>
-                </CardContent>
+                </CardHeader>
+                
+    
               </Card>
             ))}
           </div>

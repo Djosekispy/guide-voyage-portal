@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Header from "@/components/Header";
 import { Booking, getGuideProfile, getTouristBookings, updateBookingStatus } from "@/lib/firestore";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 const TouristBookings = () => {
@@ -196,13 +196,11 @@ useEffect(() => {
               
               {booking.status === 'Finalizado' && (
                 <>
-                  <Button variant="hero" size="sm">
-                    <Star className="w-4 h-4 mr-2" />
-                    Avaliar
-                  </Button>
+                 <Link  to={`/guias/${booking.guideId}/pacotes`}>
                   <Button variant="outline" size="sm">
                     Contratar Novamente
                   </Button>
+                  </Link>
                 </>
               )}
               
