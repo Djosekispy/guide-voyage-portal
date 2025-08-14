@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, MapPin, User, LogOut, MessageCircle } from "lucide-react";
+import { Menu, X, MapPin, User, LogOut, MessageCircle, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
@@ -67,10 +67,12 @@ const Header = () => {
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <Avatar className="h-8 w-8">
+                  <Button 
+                  variant="ghost"
+                   className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8" >
                       <AvatarImage src={user.photoURL || ''} alt={userData?.name || ''} />
-                      <AvatarFallback>
+                      <AvatarFallback >
                         {userData?.name?.charAt(0).toUpperCase() || 'U'}
                       </AvatarFallback>
                     </Avatar>
@@ -85,8 +87,13 @@ const Header = () => {
                   </div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={navigateToDashboard}>
-                    <User className="mr-2 h-4 w-4" />
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
                     <span>Dashboard</span>
+                  </DropdownMenuItem>
+                   <DropdownMenuItem 
+                  onClick={()=> userData.userType === 'guide' ? navigate('/guia/EditProfile') : navigate('/turista/EditProfile')}>
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Perfil</span>
                   </DropdownMenuItem>
                    <DropdownMenuItem onClick={navigateToMessages}>
                     <MessageCircle className="mr-2 h-4 w-4" />

@@ -514,10 +514,6 @@ useEffect(() => {
                               <span className="text-sm">{pkg.rating.toFixed(1)} ({pkg.reviewCount})</span>
                             </div>
                             
-                            <Button disabled={!user || selectedGuide.uid === user?.uid}  size="sm">
-                              <Calendar className="h-4 w-4 mr-2" />
-                              Reservar
-                            </Button>
                           </div>
                         </CardContent>
                       </Card>

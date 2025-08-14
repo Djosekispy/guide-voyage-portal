@@ -29,6 +29,8 @@ import GuidePackagesPage from "./pages/GuidePackagesPage";
 import MessagesPage from "./pages/MessagesPage";
 import { ChatPage } from "./pages/ChatPage";
 import BookingPage from "./pages/BookingPage";
+import GuideProfilePage from "./pages/GuideProfileEdit";
+import UserProfilePage from "./pages/UserProfilePage";
 
 const queryClient = new QueryClient();
 
@@ -56,8 +58,15 @@ const App = () => (
                 <GuideDashboard />
               </ProtectedRoute>
             } />
-            <Route path="/guia/perfil" element={
+
+              <Route path="/guia/EditProfile" element={
               <ProtectedRoute userType="guide">
+                <GuideProfilePage />
+              </ProtectedRoute>
+            } />
+
+            <Route path="/guia/perfil" element={
+              <ProtectedRoute >
                 <GuideProfile />
               </ProtectedRoute>
             } />
@@ -86,6 +95,12 @@ const App = () => (
             <Route path="/turista/dashboard" element={
               <ProtectedRoute userType="tourist">
                 <TouristDashboard />
+              </ProtectedRoute>
+            } />
+
+             <Route path="/turista/EditProfile" element={
+              <ProtectedRoute userType="tourist">
+                <UserProfilePage />
               </ProtectedRoute>
             } />
              <Route path="/turista/reservas" element={

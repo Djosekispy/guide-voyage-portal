@@ -20,7 +20,7 @@ export default function GuidePackagesPage() {
   
   // Filtros
   const [searchTerm, setSearchTerm] = useState("");
-  const [priceRange, setPriceRange] = useState([0, 1000000]);
+  const [priceRange, setPriceRange] = useState([0, 100000000]);
   const [durationFilter, setDurationFilter] = useState("");
   const [sortOption, setSortOption] = useState("popular");
 
@@ -240,7 +240,9 @@ export default function GuidePackagesPage() {
             
             {filteredPackages.length === 0 ? (
               <div className="text-center py-12 bg-white rounded-xl shadow-sm">
-                <p className="text-lg text-gray-600">Nenhum pacote encontrado com os filtros selecionados.</p>
+                <p className="text-lg text-gray-600">Nenhum pacote encontrado com os filtros selecionados.
+         
+                </p>
                 <Button 
                   variant="outline" 
                   className="mt-4"

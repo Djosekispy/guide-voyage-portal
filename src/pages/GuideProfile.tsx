@@ -15,6 +15,7 @@ const GuideProfile = () => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const guideId = searchParams.get('guideId');
+  const { user } = useAuth();
   const [guide, setGuide ] = useState<Guide>(null)
    const [tours, setTours ] = useState<TourPackage[]>([])
    const [reviews, setReviews ] = useState<Review[]>([])
@@ -80,11 +81,13 @@ const GuideProfile = () => {
                         <Button
                           variant="outline"
                           size="sm"
+                              disabled={!guide || guide.uid === user?.uid}
                           onClick={() => setIsFavorite(!isFavorite)}
                         >
-                          <Heart className={`w-4 h-4 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
+                          <Heart
+                           className={`w-4 h-4 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
                         </Button>
-                        <Button variant="outline" size="sm">
+                        <Button disabled={!guide || guide.uid === user?.uid}  variant="outline" size="sm">
                           <Share2 className="w-4 h-4" />
                         </Button>
                       </div>
@@ -174,13 +177,13 @@ const GuideProfile = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Button variant="hero" className="w-full">
+                  <Button disabled={!guide || guide.uid === user?.uid} variant="hero" className="w-full">
                      <Link to={`/guias/${guide?.id}/pacotes`}>
                                                             Solicitar Reserva
                                                                 </Link>
                    
                   </Button>
-                  <Button variant="outline" className="w-full" onClick={()=>handleMessageGuide(guide?.uid,guide?.name,guide?.photoURL)}>
+                  <Button disabled={!guide || guide.uid === user?.uid} variant="outline" className="w-full" onClick={()=>handleMessageGuide(guide?.uid,guide?.name,guide?.photoURL)}>
                     Enviar Mensagem
                   </Button>
                 </div>
