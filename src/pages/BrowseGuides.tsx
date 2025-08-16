@@ -45,7 +45,7 @@ export default function BrowseGuides() {
    const queryParam = searchParams.get('city');
    const { user } = useAuth();
    const [reviews, setReviews] = useState<Review[]>([]);
-  const [searchTerm, setSearchTerm] = useState(queryParam || 'Lubango');
+  const [searchTerm, setSearchTerm] = useState(queryParam || '');
   const [selectedCity, setSelectedCity] = useState('');
   const [priceRange, setPriceRange] = useState('');
   const [sortBy, setSortBy] = useState('rating');
@@ -117,7 +117,26 @@ useEffect(() => {
     }
   };
 
-  const cities = ['Luanda', 'Benguela', 'Huambo', 'Lubango', 'Namibe', 'Cabinda'];
+const cities = [
+  'Bengo',
+  'Benguela',
+  'Bié',
+  'Cabinda',
+  'Cuando Cubango',
+  'Cuanza Norte',
+  'Cuanza Sul',
+  'Cunene',
+  'Huambo',
+  'Huíla',
+  'Luanda',
+  'Lunda Norte',
+  'Lunda Sul',
+  'Malanje',
+  'Moxico',
+  'Namibe',
+  'Uíge',
+  'Zaire'
+];
   const priceRanges = [
     { label: 'Até 10.000 AOA', value: '0-10000' },
     { label: '10.000 - 15.000 AOA', value: '10000-15000' },
@@ -243,7 +262,13 @@ useEffect(() => {
             />
           </div>
           
-          <Select value={selectedCity} onValueChange={setSelectedCity}>
+          <Select value={selectedCity} 
+               onValueChange={(value) => {
+        value === 'cidades' 
+          ? (setSelectedCity(''), setSearchTerm('')) 
+          : (setSelectedCity(value), setSearchTerm(value));
+      }}
+    >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Cidade" />
             </SelectTrigger>

@@ -11,7 +11,6 @@ const Header = () => {
   const { user, userData, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  
   const handleLogout = async () => {
     await logout();
     navigate('/');
@@ -23,12 +22,20 @@ const Header = () => {
     } else {
       navigate('/turista/dashboard');
     }
+    setIsMenuOpen(false);
   };
 
+  const navigateToMessages = () => {
+    navigate('/mensagens');
+    setIsMenuOpen(false);
+  };
 
-  
-
-  const navigateToMessages = () => navigate('/mensagens');
+  const navigateToProfile = () => {
+    userData?.userType === 'guide' 
+      ? navigate('/guia/EditProfile') 
+      : navigate('/turista/EditProfile');
+    setIsMenuOpen(false);
+  };
 
   const navItems = [
     { name: "Início", href: "/" },
@@ -62,17 +69,18 @@ const Header = () => {
             ))}
           </nav>
 
-          {/* Auth Section */}
-          <div className="flex items-center gap-4">
+          {/* Desktop Auth Section */}
+          <div className="hidden md:flex items-center gap-4">
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button 
-                  variant="ghost"
-                   className="relative h-8 w-8 rounded-full">
-                    <Avatar className="h-8 w-8" >
+                    variant="ghost"
+                    className="relative h-8 w-8 rounded-full"
+                  >
+                    <Avatar className="h-8 w-8">
                       <AvatarImage src={user.photoURL || ''} alt={userData?.name || ''} />
-                      <AvatarFallback >
+                      <AvatarFallback>
                         {userData?.name?.charAt(0).toUpperCase() || 'U'}
                       </AvatarFallback>
                     </Avatar>
@@ -90,12 +98,11 @@ const Header = () => {
                     <LayoutDashboard className="mr-2 h-4 w-4" />
                     <span>Dashboard</span>
                   </DropdownMenuItem>
-                   <DropdownMenuItem 
-                  onClick={()=> userData.userType === 'guide' ? navigate('/guia/EditProfile') : navigate('/turista/EditProfile')}>
+                  <DropdownMenuItem onClick={navigateToProfile}>
                     <User className="mr-2 h-4 w-4" />
                     <span>Perfil</span>
                   </DropdownMenuItem>
-                   <DropdownMenuItem onClick={navigateToMessages}>
+                  <DropdownMenuItem onClick={navigateToMessages}>
                     <MessageCircle className="mr-2 h-4 w-4" />
                     <span>Conversas</span>
                   </DropdownMenuItem>
@@ -130,12 +137,12 @@ const Header = () => {
         {/* Mobile Navigation */}
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t border-border">
-            <nav className="flex flex-col space-y-4">
+            <nav className="flex flex-col space-y-2">
               {navItems.map((item) => (
                 <Link
                   key={item.name}
                   to={item.href}
-                  className="block px-3 py-2 text-base font-medium text-foreground hover:text-primary"
+                  className="block px-3 py-2 text-base font-medium text-foreground hover:text-primary hover:bg-accent/50 rounded"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {item.name}
@@ -143,8 +150,8 @@ const Header = () => {
               ))}
               
               {user ? (
-                <div className="px-3 py-2">
-                  <div className="flex items-center gap-3 mb-4">
+                <>
+                  <div className="flex items-center gap-3 px-3 py-2">
                     <Avatar className="h-10 w-10">
                       <AvatarImage src={user.photoURL || ''} alt={userData?.name || ''} />
                       <AvatarFallback>
@@ -156,31 +163,41 @@ const Header = () => {
                       <p className="text-xs text-muted-foreground">{user.email}</p>
                     </div>
                   </div>
-                  <Button 
-                    variant="outline" 
-                    className="w-full mb-2"
-                    onClick={() => {
-                      navigateToDashboard();
-                      setIsMenuOpen(false);
-                    }}
+                  
+                  <button
+                    onClick={navigateToDashboard}
+                    className="flex items-center px-3 py-2 text-base font-medium text-foreground hover:text-primary hover:bg-accent/50 rounded w-full text-left"
+                  >
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    Dashboard
+                  </button>
+                  
+                  <button
+                    onClick={navigateToProfile}
+                    className="flex items-center px-3 py-2 text-base font-medium text-foreground hover:text-primary hover:bg-accent/50 rounded w-full text-left"
                   >
                     <User className="mr-2 h-4 w-4" />
-                    Dashboard
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="w-full"
-                    onClick={() => {
-                      handleLogout();
-                      setIsMenuOpen(false);
-                    }}
+                    Perfil
+                  </button>
+                  
+                  <button
+                    onClick={navigateToMessages}
+                    className="flex items-center px-3 py-2 text-base font-medium text-foreground hover:text-primary hover:bg-accent/50 rounded w-full text-left"
+                  >
+                    <MessageCircle className="mr-2 h-4 w-4" />
+                    Conversas
+                  </button>
+                  
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center px-3 py-2 text-base font-medium text-foreground hover:text-primary hover:bg-accent/50 rounded w-full text-left"
                   >
                     <LogOut className="mr-2 h-4 w-4" />
                     Sair
-                  </Button>
-                </div>
+                  </button>
+                </>
               ) : (
-                <div className="px-3 py-2 space-y-2">
+                <div className="flex flex-col space-y-2 px-3 pt-2">
                   <Button variant="outline" className="w-full" asChild>
                     <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
                       Entrar
