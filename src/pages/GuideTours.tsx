@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Edit2, Trash2, MapPin, Clock, Users, DollarSign } from "lucide-react";
+import GuideSidebar from "@/components/GuideSidebar";
 
 const GuideTours = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -83,7 +84,10 @@ const GuideTours = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <div className="container mx-auto px-4 py-8">
+    
+         <GuideSidebar />
+        
+    <div  className="flex-1 lg:ml-64 px-4">
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-foreground mb-2">Meus Passeios</h1>

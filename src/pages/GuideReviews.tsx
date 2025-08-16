@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Star, User, Calendar, MessageSquare, TrendingUp, Award } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import GuideSidebar from "@/components/GuideSidebar";
 
 const GuideReviews = () => {
   const [ratingFilter, setRatingFilter] = useState("todas");
@@ -107,7 +108,8 @@ const GuideReviews = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <div className="container mx-auto px-4 py-8">
+         <GuideSidebar />
+    <div  className="flex-1 lg:ml-64 px-4">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">Minhas Avaliações</h1>
           <p className="text-muted-foreground">Veja o que os turistas estão dizendo sobre seus passeios</p>

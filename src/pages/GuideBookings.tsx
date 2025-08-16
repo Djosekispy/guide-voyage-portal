@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar, Clock, User, MapPin, Phone, Mail, Check, X } from "lucide-react";
+import GuideSidebar from "@/components/GuideSidebar";
 
 const GuideBookings = () => {
   const [statusFilter, setStatusFilter] = useState("todas");
@@ -91,8 +92,10 @@ const GuideBookings = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-      <div className="container mx-auto px-4 py-8">
+     
+         <GuideSidebar />
+        
+    <div  className="flex-1 lg:ml-64 px-4">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">Reservas Recebidas</h1>
           <p className="text-muted-foreground">Gerencie as reservas dos seus passeios</p>

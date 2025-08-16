@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar as CalendarIcon, Clock, Users, MapPin, Plus } from "lucide-react";
 import { format, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import GuideSidebar from "@/components/GuideSidebar";
 
 const GuideCalendar = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
@@ -84,7 +85,10 @@ const GuideCalendar = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <div className="container mx-auto px-4 py-8">
+     
+         <GuideSidebar />
+        
+    <div  className="flex-1 lg:ml-64 px-4">
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-foreground mb-2">Meu Calendário</h1>

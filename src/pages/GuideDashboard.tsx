@@ -43,6 +43,7 @@ import {
   type Booking
 } from '@/lib/firestore';
 import Header from '@/components/Header';
+import GuideSidebar from '@/components/GuideSidebar';
 
 export default function GuideDashboard() {
   const { user, userData } = useAuth();
@@ -303,7 +304,10 @@ const removeSelectedArrayItem = (field: 'includes' | 'excludes' | 'itinerary' | 
   return (
      <div className="min-h-screen bg-background">
       <Header />
-    <div className="container mx-auto px-4 py-8">
+
+         <GuideSidebar />
+        
+    <div  className="flex-1 lg:ml-64 px-4">
 
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Dashboard do Guia</h1>
