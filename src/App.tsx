@@ -32,6 +32,7 @@ import BookingPage from "./pages/BookingPage";
 import GuideProfilePage from "./pages/GuideProfileEdit";
 import UserProfilePage from "./pages/UserProfilePage";
 import GuideClients from "./pages/guideClients";
+import GuideBilling from "./pages/GuideBilling";
 
 const queryClient = new QueryClient();
 
@@ -76,6 +77,12 @@ const App = () => (
                 <GuideTours />
               </ProtectedRoute>
             } />
+                    <Route path="/guia/facturamento" element={
+              <ProtectedRoute userType="guide">
+                <GuideBilling />
+              </ProtectedRoute>
+            } />
+            
             <Route path="/guia/reservas" element={
               <ProtectedRoute userType="guide">
                 <GuideBookings />
