@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,70 +9,36 @@ import { Calendar as CalendarIcon, Clock, Users, MapPin, Plus } from "lucide-rea
 import { format, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import GuideSidebar from "@/components/GuideSidebar";
+import { useAuth } from "@/contexts/AuthContext";
+import { Booking, getGuideBookings, subscribeToGuideBookings } from "@/lib/firestore";
+import { toast } from "@/hooks/use-toast";
 
 const GuideCalendar = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [viewMode, setViewMode] = useState("month");
+    const {user, userData } = useAuth()
+    
+     const [bookings, setBookings] = useState<Booking[]>([]);
+      const [loading, setLoading] = useState(true);
+  
 
-  const bookings = [
-    {
-      id: 1,
-      tour: "City Tour Luanda",
-      tourist: "Maria Silva",
-      date: new Date(2024, 0, 25),
-      time: "09:00",
-      duration: "4 horas",
-      participants: 2,
-      status: "confirmado"
-    },
-    {
-      id: 2,
-      tour: "Miradouro da Lua",
-      tourist: "João Santos",
-      date: new Date(2024, 0, 26),
-      time: "08:00",
-      duration: "6 horas",
-      participants: 4,
-      status: "confirmado"
-    },
-    {
-      id: 3,
-      tour: "Fortaleza de São Miguel",
-      tourist: "Ana Costa",
-      date: new Date(2024, 0, 27),
-      time: "14:00",
-      duration: "3 horas",
-      participants: 1,
-      status: "confirmado"
-    },
-    {
-      id: 4,
-      tour: "City Tour Luanda",
-      tourist: "Pedro Mendes",
-      date: new Date(2024, 0, 28),
-      time: "10:00",
-      duration: "4 horas",
-      participants: 3,
-      status: "pendente"
-    }
-  ];
 
   const getBookingsForDate = (date: Date | undefined) => {
     if (!date) return [];
     return bookings.filter(booking => isSameDay(booking.date, date));
   };
 
-  const getDatesWithBookings = () => {
-    return bookings.map(booking => booking.date);
-  };
+const getDatesWithBookings = () => {
+  return bookings.map(booking => new Date(booking.date));
+};
 
   const selectedDateBookings = getBookingsForDate(selectedDate);
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pendente': return 'border-l-yellow-500 bg-yellow-50';
-      case 'confirmado': return 'border-l-green-500 bg-green-50';
-      case 'cancelado': return 'border-l-red-500 bg-red-50';
+      case 'Pendente': return 'border-l-yellow-500 bg-yellow-50';
+      case 'Confirmado': return 'border-l-green-500 bg-green-50';
+      case 'Cancelado': return 'border-l-red-500 bg-red-50';
       default: return 'border-l-gray-500 bg-gray-50';
     }
   };
@@ -82,13 +48,53 @@ const GuideCalendar = () => {
     "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"
   ];
 
+
+  useEffect(() => {
+    if (user && userData?.userType === 'guide') {
+      loadDashboardData();
+    }
+  }, [user, userData]);
+
+  
+
+  const loadDashboardData = async () => {
+    try {
+      setLoading(true);
+      
+      if (!user?.uid) return;
+
+
+      if (user) {
+        // Carregar reservas
+        const guideBookings = await getGuideBookings(user.uid);
+        setBookings(guideBookings);
+
+        // Configurar listener em tempo real para reservas
+        const unsubscribe = subscribeToGuideBookings(user.uid, (updatedBookings) => {
+          setBookings(updatedBookings);
+        });
+
+        return () => unsubscribe();
+      }
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar os dados do dashboard",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
      
          <GuideSidebar />
         
-    <div  className="flex-1 lg:ml-64 px-4">
+    <div  className="flex-1 lg:ml-64 px-4 pt-4">
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-foreground mb-2">Meu Calendário</h1>
@@ -177,11 +183,11 @@ const GuideCalendar = () => {
                     >
                       <div className="flex justify-between items-start mb-3">
                         <div>
-                          <h4 className="font-semibold text-lg">{booking.tour}</h4>
-                          <p className="text-muted-foreground">Turista: {booking.tourist}</p>
+                          <h4 className="font-semibold text-lg">{booking.city}</h4>
+                          <p className="text-muted-foreground">Turista: {booking.touristName}</p>
                         </div>
                         <div className={`px-2 py-1 rounded-full text-xs ${
-                          booking.status === 'confirmado' 
+                          booking.status === 'Confirmado' 
                             ? 'bg-green-100 text-green-800' 
                             : 'bg-yellow-100 text-yellow-800'
                         }`}>
@@ -195,7 +201,7 @@ const GuideCalendar = () => {
                         </div>
                         <div className="flex items-center gap-2">
                           <Users className="h-4 w-4 text-muted-foreground" />
-                          <span>{booking.participants} participante(s)</span>
+                          <span>{booking.groupSize} participante(s)</span>
                         </div>
                         <div className="flex gap-2">
                           <Button size="sm" variant="outline">

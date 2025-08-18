@@ -1,68 +1,24 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, Clock, User, MapPin, Phone, Mail, Check, X } from "lucide-react";
+import { Calendar, Clock, User, MapPin, Phone, Mail, Check, X, CalendarHeart } from "lucide-react";
 import GuideSidebar from "@/components/GuideSidebar";
+import { useAuth } from "@/contexts/AuthContext";
+import { Booking, getGuideBookings, subscribeToGuideBookings } from "@/lib/firestore";
+import { toast } from "@/hooks/use-toast";
 
 const GuideBookings = () => {
   const [statusFilter, setStatusFilter] = useState("todas");
+  const {user, userData } = useAuth()
   
-  const [bookings, setBookings] = useState([
-    {
-      id: 1,
-      tourist: "Maria Silva",
-      email: "maria@email.com",
-      phone: "+244 923 111 222",
-      tour: "City Tour Luanda",
-      date: "2024-01-25",
-      time: "09:00",
-      participants: 2,
-      status: "pendente",
-      totalPrice: "30000"
-    },
-    {
-      id: 2,
-      tourist: "João Santos",
-      email: "joao@email.com", 
-      phone: "+244 923 333 444",
-      tour: "Miradouro da Lua",
-      date: "2024-01-26",
-      time: "08:00",
-      participants: 4,
-      status: "confirmado",
-      totalPrice: "100000"
-    },
-    {
-      id: 3,
-      tourist: "Ana Costa",
-      email: "ana@email.com",
-      phone: "+244 923 555 666",
-      tour: "Fortaleza de São Miguel",
-      date: "2024-01-27",
-      time: "14:00",
-      participants: 1,
-      status: "confirmado",
-      totalPrice: "12000"
-    },
-    {
-      id: 4,
-      tourist: "Pedro Mendes",
-      email: "pedro@email.com",
-      phone: "+244 923 777 888",
-      tour: "City Tour Luanda",
-      date: "2024-01-28",
-      time: "10:00",
-      participants: 3,
-      status: "cancelado",
-      totalPrice: "45000"
-    }
-  ]);
+   const [bookings, setBookings] = useState<Booking[]>([]);
+    const [loading, setLoading] = useState(true);
 
-  const handleStatusChange = (bookingId: number, newStatus: string) => {
+  const handleStatusChange = (bookingId: string, newStatus: Booking['status']) => {
     setBookings(bookings.map(booking => 
       booking.id === bookingId 
         ? { ...booking, status: newStatus }
@@ -85,17 +41,57 @@ const GuideBookings = () => {
 
   const stats = {
     total: bookings.length,
-    pendente: bookings.filter(b => b.status === 'pendente').length,
-    confirmado: bookings.filter(b => b.status === 'confirmado').length,
-    cancelado: bookings.filter(b => b.status === 'cancelado').length
+    pendente: bookings.filter(b => b.status === 'Pendente').length,
+    confirmado: bookings.filter(b => b.status === 'Confirmado').length,
+    cancelado: bookings.filter(b => b.status === 'Cancelado').length
   };
+
+  useEffect(() => {
+    if (user && userData?.userType === 'guide') {
+      loadDashboardData();
+    }
+  }, [user, userData]);
+
+  
+
+  const loadDashboardData = async () => {
+    try {
+      setLoading(true);
+      
+      if (!user?.uid) return;
+
+
+      if (user) {
+        // Carregar reservas
+        const guideBookings = await getGuideBookings(user.uid);
+        setBookings(guideBookings);
+
+        // Configurar listener em tempo real para reservas
+        const unsubscribe = subscribeToGuideBookings(user.uid, (updatedBookings) => {
+          setBookings(updatedBookings);
+        });
+
+        return () => unsubscribe();
+      }
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar os dados do dashboard",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   return (
     <div className="min-h-screen bg-background">
-     
+     <Header />
          <GuideSidebar />
         
-    <div  className="flex-1 lg:ml-64 px-4">
+    <div  className="flex-1 lg:ml-64 px-4 pt-4">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">Reservas Recebidas</h1>
           <p className="text-muted-foreground">Gerencie as reservas dos seus passeios</p>
@@ -178,21 +174,21 @@ const GuideBookings = () => {
                   <TableRow key={booking.id}>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{booking.tourist}</div>
+                        <div className="font-medium">{booking.touristName}</div>
                         <div className="text-sm text-muted-foreground flex items-center gap-1">
                           <Mail className="h-3 w-3" />
-                          {booking.email}
+                          {booking.touristEmail}
                         </div>
                         <div className="text-sm text-muted-foreground flex items-center gap-1">
-                          <Phone className="h-3 w-3" />
-                          {booking.phone}
+                          <CalendarHeart className="h-3 w-3" />
+                          {booking.duration} dias
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
                         <MapPin className="h-4 w-4 text-muted-foreground" />
-                        {booking.tour}
+                        {booking.city}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -207,11 +203,11 @@ const GuideBookings = () => {
                     <TableCell>
                       <div className="flex items-center gap-1">
                         <User className="h-4 w-4 text-muted-foreground" />
-                        {booking.participants}
+                        {booking.groupSize}
                       </div>
                     </TableCell>
                     <TableCell className="font-medium">
-                      {parseInt(booking.totalPrice).toLocaleString()} Kz
+                      {booking.totalPrice.toLocaleString()} Kz
                     </TableCell>
                     <TableCell>
                       <div className={`px-2 py-1 rounded-full text-xs inline-block ${getStatusColor(booking.status)}`}>
@@ -219,12 +215,12 @@ const GuideBookings = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      {booking.status === 'pendente' && (
+                      {booking.status === 'Pendente' && (
                         <div className="flex gap-2">
                           <Button 
                             size="sm" 
                             variant="outline"
-                            onClick={() => handleStatusChange(booking.id, 'confirmado')}
+                            onClick={() => handleStatusChange(booking.id, 'Confirmado')}
                             className="text-green-600 hover:text-green-700"
                           >
                             <Check className="h-3 w-3" />
@@ -232,7 +228,7 @@ const GuideBookings = () => {
                           <Button 
                             size="sm" 
                             variant="outline"
-                            onClick={() => handleStatusChange(booking.id, 'cancelado')}
+                            onClick={() => handleStatusChange(booking.id, 'Cancelado')}
                             className="text-red-600 hover:text-red-700"
                           >
                             <X className="h-3 w-3" />

@@ -31,6 +31,7 @@ import { ChatPage } from "./pages/ChatPage";
 import BookingPage from "./pages/BookingPage";
 import GuideProfilePage from "./pages/GuideProfileEdit";
 import UserProfilePage from "./pages/UserProfilePage";
+import GuideClients from "./pages/guideClients";
 
 const queryClient = new QueryClient();
 
@@ -88,6 +89,12 @@ const App = () => (
             <Route path="/guia/avaliacoes" element={
               <ProtectedRoute userType="guide">
                 <GuideReviews />
+              </ProtectedRoute>
+            } />
+
+             <Route path="/guia/clientes" element={
+              <ProtectedRoute userType="guide">
+                <GuideClients />
               </ProtectedRoute>
             } />
             
