@@ -8,12 +8,15 @@ import {
   MessageSquare, 
   Settings,
   MapPin,
-  Wallet
+  Wallet,
+  User
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 
 const GuideSidebar = () => {
   const location = useLocation();
+  const { user } = useAuth()
   
   const navItems = [
     {
@@ -94,8 +97,8 @@ const GuideSidebar = () => {
               <span className="text-primary font-medium">GU</span>
             </div>
             <div>
-              <p className="text-sm font-medium">Guia Usuário</p>
-              <p className="text-xs text-muted-foreground">guia@exploraangola.com</p>
+              <p className="text-sm font-medium">{user.displayName}</p>
+              <p className="text-xs text-muted-foreground">{user.email}</p>
             </div>
           </div>
         </div>

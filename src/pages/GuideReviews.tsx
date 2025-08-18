@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,66 +8,18 @@ import { Star, User, Calendar, MessageSquare, TrendingUp, Award } from "lucide-r
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import GuideSidebar from "@/components/GuideSidebar";
+import { getGuideBookings, getGuideReviews, Review } from "@/lib/firestore";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/hooks/use-toast";
 
 const GuideReviews = () => {
   const [ratingFilter, setRatingFilter] = useState("todas");
+      const {user, userData } = useAuth()
+      
+       const [reviews, setReviews] = useState<Review[]>([]);
+        const [loading, setLoading] = useState(true);
   
-  const reviews = [
-    {
-      id: 1,
-      tourist: "Maria Silva",
-      tour: "City Tour Luanda",
-      rating: 5,
-      comment: "Excelente guia! Carlos conhece muito bem a história de Luanda e tornou o passeio muito interessante. Recomendo!",
-      date: new Date(2024, 0, 20),
-      tourDate: new Date(2024, 0, 15)
-    },
-    {
-      id: 2,
-      tourist: "João Santos",
-      tour: "Miradouro da Lua",
-      rating: 5,
-      comment: "Experiência incrível! O Carlos é muito profissional e nos mostrou lugares únicos. Paisagens deslumbrantes!",
-      date: new Date(2024, 0, 18),
-      tourDate: new Date(2024, 0, 12)
-    },
-    {
-      id: 3,
-      tourist: "Ana Costa",
-      tour: "Fortaleza de São Miguel",
-      rating: 4,
-      comment: "Bom passeio, guide muito informativo sobre a história colonial. Gostei bastante da experiência.",
-      date: new Date(2024, 0, 16),
-      tourDate: new Date(2024, 0, 10)
-    },
-    {
-      id: 4,
-      tourist: "Pedro Mendes",
-      tour: "City Tour Luanda",
-      rating: 5,
-      comment: "Carlos é fantástico! Muito atencioso, pontual e conhece cada cantinho da cidade. Voltarei com certeza!",
-      date: new Date(2024, 0, 14),
-      tourDate: new Date(2024, 0, 8)
-    },
-    {
-      id: 5,
-      tourist: "Lucia Fernandes",
-      tour: "Miradouro da Lua",
-      rating: 4,
-      comment: "Passeio muito bom, lugares lindos. Carlos explica muito bem sobre a geologia local.",
-      date: new Date(2024, 0, 12),
-      tourDate: new Date(2024, 0, 5)
-    },
-    {
-      id: 6,
-      tourist: "Roberto Lima",
-      tour: "City Tour Luanda",
-      rating: 3,
-      comment: "Passeio ok, mas esperava um pouco mais de informações sobre alguns pontos turísticos.",
-      date: new Date(2024, 0, 10),
-      tourDate: new Date(2024, 0, 3)
-    }
-  ];
+ 
 
   const filteredReviews = reviews.filter(review => 
     ratingFilter === "todas" || review.rating.toString() === ratingFilter
@@ -80,6 +32,51 @@ const GuideReviews = () => {
     count: reviews.filter(r => r.rating === rating).length,
     percentage: (reviews.filter(r => r.rating === rating).length / reviews.length) * 100
   }));
+
+    useEffect(() => {
+      if (user && userData?.userType === 'guide') {
+        loadDashboardData();
+      }
+    }, [user, userData]);
+  
+    
+  
+    const loadDashboardData = async () => {
+      try {
+        setLoading(true);
+        
+        if (!user?.uid) return;
+  
+  
+            if (user) {
+            const guideReviews = await getGuideReviews(user.uid);
+            const guideTours = await getGuideBookings(user.uid);
+
+            const dataAll = guideReviews.map(review => {
+              const tour = guideTours.find(tour => tour.id === review.bookingId); 
+              return {
+                ...review,
+                tour: tour ? tour.city : null,
+                tourDate: tour ? tour.createdAt : null
+              };
+            });
+
+            setReviews(dataAll);
+          }
+
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível carregar os dados do dashboard",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+
 
   const renderStars = (rating: number, size: string = "h-4 w-4") => {
     return (
@@ -102,14 +99,28 @@ const GuideReviews = () => {
     totalReviews: reviews.length,
     averageRating: averageRating.toFixed(1),
     fiveStars: reviews.filter(r => r.rating === 5).length,
-    thisMonth: reviews.filter(r => r.date.getMonth() === new Date().getMonth()).length
+
+thisMonth: reviews.filter(r => {
+  if (!r.createdAt) return false;
+
+  // garante que temos Date
+  const date = r.createdAt instanceof Date 
+    ? r.createdAt 
+    : r.createdAt.toDate();
+
+  // pega mês/ano como string "MM-yyyy"
+  const reviewMonthYear = format(date, "MM-yyyy");
+  const currentMonthYear = format(new Date(), "MM-yyyy");
+
+  return reviewMonthYear === currentMonthYear;
+}).length
   };
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
          <GuideSidebar />
-    <div  className="flex-1 lg:ml-64 px-4">
+    <div  className="flex-1 lg:ml-64 px-4 pt-4">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">Minhas Avaliações</h1>
           <p className="text-muted-foreground">Veja o que os turistas estão dizendo sobre seus passeios</p>
@@ -222,32 +233,44 @@ const GuideReviews = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                  {filteredReviews.map((review) => (
-                    <div key={review.id} className="border-b pb-6 last:border-b-0">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                            <User className="h-5 w-5 text-gray-500" />
-                          </div>
-                          <div>
-                            <h4 className="font-medium">{review.tourist}</h4>
-                            <p className="text-sm text-muted-foreground">{review.tour}</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          {renderStars(review.rating)}
-                          <div className="text-xs text-muted-foreground mt-1">
-                            {format(review.date, "dd/MM/yyyy", { locale: ptBR })}
-                          </div>
-                        </div>
-                      </div>
-                      <p className="text-muted-foreground mb-2">{review.comment}</p>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <Calendar className="h-3 w-3" />
-                        Passeio realizado em {format(review.tourDate, "dd/MM/yyyy", { locale: ptBR })}
-                      </div>
-                    </div>
-                  ))}
+             {filteredReviews.map((review) => {
+  const createdAt = review.createdAt instanceof Date 
+    ? review.createdAt 
+    : review.createdAt?.toDate?.() ?? null;
+
+  const tourDate = (review as any).tourDate instanceof Date 
+    ? (review as any).tourDate 
+    : (review as any).tourDate?.toDate?.() ?? null;
+
+  return (
+    <div key={review.id} className="border-b pb-6 last:border-b-0">
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+            <User className="h-5 w-5 text-gray-500" />
+          </div>
+          <div>
+            <h4 className="font-medium">{review.touristName}</h4>
+            <p className="text-sm text-muted-foreground">{(review as any).tour}</p>
+          </div>
+        </div>
+        <div className="text-right">
+          {renderStars(review.rating)}
+          <div className="text-xs text-muted-foreground mt-1">
+            {createdAt ? format(createdAt, "dd/MM/yyyy", { locale: ptBR }) : "Data inválida"}
+          </div>
+        </div>
+      </div>
+      <p className="text-muted-foreground mb-2">{review.comment}</p>
+      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <Calendar className="h-3 w-3" />
+        Passeio realizado em{" "}
+        {tourDate ? format(tourDate, "dd/MM/yyyy", { locale: ptBR }) : "Data inválida"}
+      </div>
+    </div>
+  );
+})}
+
                 </div>
 
                 {filteredReviews.length === 0 && (
