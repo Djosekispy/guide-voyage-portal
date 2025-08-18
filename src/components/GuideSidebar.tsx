@@ -55,8 +55,8 @@ const GuideSidebar = () => {
       icon: MessageSquare,
     },
     {
-      name: "Pagamentos",
-      href: "/guia/pagamentos",
+      name: "Facturamento",
+      href: "/guia/facturamento",
       icon: Wallet,
     },
     {
