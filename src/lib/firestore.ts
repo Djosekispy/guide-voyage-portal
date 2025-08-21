@@ -12,7 +12,8 @@ import {
   addDoc,
   serverTimestamp,
   onSnapshot,
-  writeBatch
+  writeBatch,
+  limit
 } from 'firebase/firestore';
 import { db } from './firebase';
 
@@ -134,6 +135,126 @@ export interface Favorite {
   guideRating: number;
   createdAt: any;
 }
+
+export interface BankAccount {
+  id: string;
+  guideId: string;
+  accountHolder: string;
+  accountNumber: string;
+  bankName: string;
+  branchCode?: string;
+  accountType: 'Conta Corrente' | 'Conta Poupança' | 'Conta Salário';
+  taxId?: string; // CPF ou equivalente
+  isPrimary: boolean;
+  createdAt: any;
+  updatedAt: any;
+}
+
+// Bank Account Functions
+export const createBankAccount = async (accountData: Omit<BankAccount, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const docRef = await addDoc(collection(db, 'bankAccounts'), {
+    ...accountData,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  });
+  return docRef.id;
+};
+
+export const updateBankAccount = async (accountId: string, data: Partial<BankAccount>) => {
+  const accountRef = doc(db, 'bankAccounts', accountId);
+  await updateDoc(accountRef, {
+    ...data,
+    updatedAt: serverTimestamp()
+  });
+};
+
+export const deleteBankAccount = async (accountId: string) => {
+  await deleteDoc(doc(db, 'bankAccounts', accountId));
+};
+
+export const getGuideBankAccounts = async (guideId: string): Promise<BankAccount[]> => {
+  const q = query(
+    collection(db, 'bankAccounts'),
+    where('guideId', '==', guideId),
+    orderBy('isPrimary', 'desc'),
+    orderBy('createdAt', 'desc')
+  );
+  const querySnapshot = await getDocs(q);
+  
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  })) as BankAccount[];
+};
+
+export const getPrimaryBankAccount = async (guideId: string): Promise<BankAccount | null> => {
+  const q = query(
+    collection(db, 'bankAccounts'),
+    where('guideId', '==', guideId),
+    where('isPrimary', '==', true),
+    limit(1)
+  );
+  const querySnapshot = await getDocs(q);
+  
+  if (querySnapshot.empty) return null;
+  
+  return {
+    id: querySnapshot.docs[0].id,
+    ...querySnapshot.docs[0].data()
+  } as BankAccount;
+};
+
+export const setPrimaryBankAccount = async (accountId: string, guideId: string) => {
+  // Primeiro, remover o status de primary de todas as contas
+  const batch = writeBatch(db);
+  
+  const accounts = await getGuideBankAccounts(guideId);
+  accounts.forEach(account => {
+    const accountRef = doc(db, 'bankAccounts', account.id);
+    batch.update(accountRef, { isPrimary: false });
+  });
+  
+  // Depois, definir a nova conta como primary
+  const newPrimaryRef = doc(db, 'bankAccounts', accountId);
+  batch.update(newPrimaryRef, { isPrimary: true });
+  
+  await batch.commit();
+};
+
+export const getBankAccountById = async (accountId: string): Promise<BankAccount | null> => {
+  const docRef = doc(db, 'bankAccounts', accountId);
+  const docSnap = await getDoc(docRef);
+
+  if (docSnap.exists()) {
+    return {
+      id: docSnap.id,
+      ...docSnap.data()
+    } as BankAccount;
+  }
+
+  return null;
+};
+
+// Listener em tempo real para contas bancárias
+export const subscribeToGuideBankAccounts = (
+  guideId: string,
+  callback: (accounts: BankAccount[]) => void
+) => {
+  const q = query(
+    collection(db, 'bankAccounts'),
+    where('guideId', '==', guideId),
+    orderBy('isPrimary', 'desc'),
+    orderBy('createdAt', 'desc')
+  );
+  
+  return onSnapshot(q, (querySnapshot) => {
+    const accounts = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as BankAccount[];
+    callback(accounts);
+  });
+};
 
 // Guide Functions
 export const createGuideProfile = async (guideData: Omit<Guide, 'id' | 'createdAt' | 'updatedAt'>) => {
