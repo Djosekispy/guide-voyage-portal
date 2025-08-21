@@ -267,65 +267,80 @@ export default function GuidePackagesPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredPackages.map((pkg) => (
-                  <Card key={pkg.id} className="hover:shadow-md transition-shadow duration-300 h-full flex flex-col">
-                    <CardHeader>
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <CardTitle className="text-xl">{pkg.title}</CardTitle>
-                          <CardDescription className="mt-1 line-clamp-2">{pkg.location}</CardDescription>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    
-                    <CardContent className="flex-grow">
-                      <p className="text-gray-600 mb-4 line-clamp-3">{pkg.description}</p>
-                      
-                      <div className="space-y-3">
-                        <div className="flex items-center">
-                          <Clock className="h-4 w-4 mr-2 text-gray-500" />
-                          <span className="text-sm">{pkg.duration}</span>
-                        </div>
-                        
-                        <div className="flex items-center">
-                          <MapPin className="h-4 w-4 mr-2 text-gray-500" />
-                          <span className="text-sm">{pkg.location}</span>
-                        </div>
-                        
-                        <div className="flex items-center">
-                          <Users className="h-4 w-4 mr-2 text-gray-500" />
-                          <span className="text-sm">Até {pkg.maxGroupSize} pessoas</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                    
-                    <CardFooter className="flex flex-col items-start border-t pt-4">
-                      <div className="w-full flex justify-between items-center mb-3">
-                        <span className="text-2xl font-bold text-primary">
-                          {formatCurrency(pkg.price)}
-                        </span>
-                        {pkg.rating && (
-                          <div className="flex items-center">
-                            <Star className="h-4 w-4 text-yellow-400 fill-yellow-400 mr-1" />
-                            <span>{pkg.rating.toFixed(1)}</span>
-                          </div>
-                        )}
-                      </div>    
-                      <div className="w-full flex gap-2">
-                        <Button 
-                          variant="outline" 
-                          className="flex-1"
-                          onClick={() => openPackageModal(pkg)}
-                        >
-                          Detalhes
-                        </Button>
-                        <Button className="flex-1" asChild>
-                          <Link to={`/pacotes/${pkg.id}/reserva`}>Reservar</Link>
-                        </Button>
-                      </div>
-                    </CardFooter>
-                  </Card>
-                ))}
+               {filteredPackages.map((pkg) => (
+  <Card 
+    key={pkg.id} 
+    className="hover:shadow-md transition-shadow duration-300 h-full flex flex-col"
+  >
+    {/* Imagem do pacote */}
+    {pkg.images && (
+      <div className="relative w-full h-48">
+        <img 
+          src={pkg.images[0]} 
+          alt={pkg.title} 
+          className="w-full h-full object-cover rounded-t-xl" 
+        />
+      </div>
+    )}
+
+    <CardHeader>
+      <div className="flex justify-between items-start">
+        <div>
+          <CardTitle className="text-xl">{pkg.title}</CardTitle>
+          <CardDescription className="mt-1 line-clamp-2">{pkg.location}</CardDescription>
+        </div>
+      </div>
+    </CardHeader>
+    
+    <CardContent className="flex-grow">
+      <p className="text-gray-600 mb-4 line-clamp-3">{pkg.description}</p>
+      
+      <div className="space-y-3">
+        <div className="flex items-center">
+          <Clock className="h-4 w-4 mr-2 text-gray-500" />
+          <span className="text-sm">{pkg.duration}</span>
+        </div>
+        
+        <div className="flex items-center">
+          <MapPin className="h-4 w-4 mr-2 text-gray-500" />
+          <span className="text-sm">{pkg.location}</span>
+        </div>
+        
+        <div className="flex items-center">
+          <Users className="h-4 w-4 mr-2 text-gray-500" />
+          <span className="text-sm">Até {pkg.maxGroupSize} pessoas</span>
+        </div>
+      </div>
+    </CardContent>
+    
+    <CardFooter className="flex flex-col items-start border-t pt-4">
+      <div className="w-full flex justify-between items-center mb-3">
+        <span className="text-2xl font-bold text-primary">
+          {formatCurrency(pkg.price)}
+        </span>
+        {pkg.rating && (
+          <div className="flex items-center">
+            <Star className="h-4 w-4 text-yellow-400 fill-yellow-400 mr-1" />
+            <span>{pkg.rating.toFixed(1)}</span>
+          </div>
+        )}
+      </div>    
+      <div className="w-full flex gap-2">
+        <Button 
+          variant="outline" 
+          className="flex-1"
+          onClick={() => openPackageModal(pkg)}
+        >
+          Detalhes
+        </Button>
+        <Button className="flex-1" asChild>
+          <Link to={`/pacotes/${pkg.id}/reserva`}>Reservar</Link>
+        </Button>
+      </div>
+    </CardFooter>
+  </Card>
+))}
+
               </div>
             )}
           </div>
