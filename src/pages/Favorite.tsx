@@ -612,10 +612,11 @@ export default function FavoritesList() {
                             
                             <Button 
                               className="w-full mt-6"
-                              onClick={() => handleBookPackage(packages[currentPackageIndex]?.id)}
+                              onClick={() => handleBookGuide(packages[currentPackageIndex]?.guideId)}
+                              
                             >
                               <Calendar className="h-4 w-4 mr-2" />
-                              Reservar Pacote
+                              Reservar Pacotes
                             </Button>
                           </CardContent>
                         </Card>
