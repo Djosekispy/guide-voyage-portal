@@ -6,7 +6,8 @@ import {
   BookOpen, 
   Settings,
   UserCheck,
-  Package
+  Package,
+  Bell
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -40,6 +41,11 @@ const AdminSidebar = () => {
       name: "Reservas",
       href: "/admin/reservas",
       icon: BookOpen,
+    },
+    {
+      name: "Notificações",
+      href: "/admin/notificacoes",
+      icon: Bell,
     },
     {
       name: "Destinos",

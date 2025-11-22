@@ -153,6 +153,25 @@ export interface BankAccount {
   updatedAt: any;
 }
 
+export interface Notification {
+  id: string;
+  type: 'new_user' | 'new_booking' | 'new_review' | 'new_package' | 'booking_cancelled' | 'low_rating';
+  title: string;
+  message: string;
+  link?: string;
+  isRead: boolean;
+  priority: 'low' | 'medium' | 'high';
+  metadata?: {
+    userId?: string;
+    userName?: string;
+    bookingId?: string;
+    guideId?: string;
+    packageId?: string;
+    rating?: number;
+  };
+  createdAt: any;
+}
+
 // Bank Account Functions
 export const createBankAccount = async (accountData: Omit<BankAccount, 'id' | 'createdAt' | 'updatedAt'>) => {
   const docRef = await addDoc(collection(db, 'bankAccounts'), {
@@ -926,7 +945,7 @@ export const subscribeToTouristBookings = (
   const q = query(
     collection(db, 'bookings'),
     where('touristId', '==', touristId),
-    orderBy('date', 'asc')
+    orderBy('createdAt', 'desc')
   );
   
   return onSnapshot(q, (querySnapshot) => {
@@ -935,6 +954,166 @@ export const subscribeToTouristBookings = (
       ...doc.data()
     })) as Booking[];
     callback(bookings);
+  });
+};
+
+// Notification Functions
+export const createNotification = async (notificationData: Omit<Notification, 'id' | 'createdAt'>) => {
+  const docRef = await addDoc(collection(db, 'notifications'), {
+    ...notificationData,
+    createdAt: serverTimestamp()
+  });
+  return docRef.id;
+};
+
+export const getUnreadNotifications = async (): Promise<Notification[]> => {
+  const q = query(
+    collection(db, 'notifications'),
+    where('isRead', '==', false),
+    orderBy('createdAt', 'desc'),
+    limit(20)
+  );
+  const querySnapshot = await getDocs(q);
+  
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  })) as Notification[];
+};
+
+export const getAllNotifications = async (): Promise<Notification[]> => {
+  const q = query(
+    collection(db, 'notifications'),
+    orderBy('createdAt', 'desc'),
+    limit(50)
+  );
+  const querySnapshot = await getDocs(q);
+  
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  })) as Notification[];
+};
+
+export const markNotificationAsRead = async (notificationId: string) => {
+  const notificationRef = doc(db, 'notifications', notificationId);
+  await updateDoc(notificationRef, {
+    isRead: true
+  });
+};
+
+export const markAllNotificationsAsRead = async () => {
+  const q = query(
+    collection(db, 'notifications'),
+    where('isRead', '==', false)
+  );
+  const querySnapshot = await getDocs(q);
+  
+  const batch = writeBatch(db);
+  querySnapshot.docs.forEach((doc) => {
+    batch.update(doc.ref, { isRead: true });
+  });
+  
+  await batch.commit();
+};
+
+export const deleteNotification = async (notificationId: string) => {
+  await deleteDoc(doc(db, 'notifications', notificationId));
+};
+
+// Listener em tempo real para notificações
+export const subscribeToNotifications = (
+  callback: (notifications: Notification[]) => void
+) => {
+  const q = query(
+    collection(db, 'notifications'),
+    orderBy('createdAt', 'desc'),
+    limit(50)
+  );
+  
+  return onSnapshot(q, (querySnapshot) => {
+    const notifications = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as Notification[];
+    callback(notifications);
+  });
+};
+
+// Funções auxiliares para criar notificações automáticas
+export const notifyNewUser = async (userName: string, userType: 'tourist' | 'guide', userId: string) => {
+  await createNotification({
+    type: 'new_user',
+    title: `Novo ${userType === 'guide' ? 'Guia' : 'Turista'} Cadastrado`,
+    message: `${userName} acabou de se cadastrar como ${userType === 'guide' ? 'guia turístico' : 'turista'}.`,
+    link: userType === 'guide' ? `/guia/perfil?id=${userId}` : undefined,
+    isRead: false,
+    priority: 'medium',
+    metadata: {
+      userId,
+      userName
+    }
+  });
+};
+
+export const notifyNewBooking = async (bookingId: string, touristName: string, guideName: string, packageName?: string) => {
+  await createNotification({
+    type: 'new_booking',
+    title: 'Nova Reserva Criada',
+    message: `${touristName} fez uma reserva com ${guideName}${packageName ? ` para o pacote "${packageName}"` : ''}.`,
+    link: `/admin/reservas`,
+    isRead: false,
+    priority: 'medium',
+    metadata: {
+      bookingId,
+      userName: touristName
+    }
+  });
+};
+
+export const notifyBookingCancelled = async (bookingId: string, touristName: string, guideName: string) => {
+  await createNotification({
+    type: 'booking_cancelled',
+    title: 'Reserva Cancelada',
+    message: `A reserva de ${touristName} com ${guideName} foi cancelada.`,
+    link: `/admin/reservas`,
+    isRead: false,
+    priority: 'high',
+    metadata: {
+      bookingId,
+      userName: touristName
+    }
+  });
+};
+
+export const notifyLowRating = async (guideId: string, guideName: string, rating: number, touristName: string) => {
+  await createNotification({
+    type: 'low_rating',
+    title: 'Avaliação Baixa Recebida',
+    message: `${guideName} recebeu uma avaliação de ${rating} estrelas de ${touristName}. Isso pode requerer atenção.`,
+    link: `/guia/perfil?id=${guideId}`,
+    isRead: false,
+    priority: 'high',
+    metadata: {
+      guideId,
+      userName: guideName,
+      rating
+    }
+  });
+};
+
+export const notifyNewPackage = async (packageId: string, guideName: string, packageTitle: string) => {
+  await createNotification({
+    type: 'new_package',
+    title: 'Novo Pacote Criado',
+    message: `${guideName} criou um novo pacote turístico: "${packageTitle}".`,
+    link: `/admin/pacotes`,
+    isRead: false,
+    priority: 'low',
+    metadata: {
+      packageId,
+      userName: guideName
+    }
   });
 };
 
