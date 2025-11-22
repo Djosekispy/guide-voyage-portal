@@ -131,6 +131,14 @@ const register = async (email: string, password: string, additionalData: Omit<Us
       };
 
       await setDoc(doc(db, 'guides', user.uid), guideData);
+      
+      // Criar notificação para admins
+      const { notifyNewUser } = await import('@/lib/firestore');
+      await notifyNewUser(additionalData.name, 'guide', user.uid);
+    } else if (additionalData.userType === 'tourist') {
+      // Criar notificação para novos turistas também
+      const { notifyNewUser } = await import('@/lib/firestore');
+      await notifyNewUser(additionalData.name, 'tourist', user.uid);
     }
 
     setUserData(userData);
