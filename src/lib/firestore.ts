@@ -96,20 +96,23 @@ export interface Booking {
   touristId: string;
   touristName: string;
   touristEmail: string;
+  touristPhone?: string;
   guideId: string;
   guideName: string;
   packageId?: string;
   packageTitle?: string;
+  packageName?: string;
   city?: string;
-  date: string;
-  time: string;
-  duration: number;
+  date: any;
+  time?: string;
+  duration?: number;
   totalPrice: number;
-  groupSize: number;
-  status: 'Pendente' | 'Confirmado' | 'Finalizado' | 'Cancelado';
+  groupSize?: number;
+  numberOfPeople?: number;
+  status: 'Pendente' | 'Confirmado' | 'Finalizado' | 'Cancelado' | 'pending' | 'confirmed' | 'completed' | 'cancelled';
   notes?: string;
   createdAt: any;
-  updatedAt: any;
+  updatedAt?: any;
 }
 
 export interface Review {

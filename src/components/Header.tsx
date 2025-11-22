@@ -17,7 +17,9 @@ const Header = () => {
   };
 
   const navigateToDashboard = () => {
-    if (userData?.userType === 'guide') {
+    if (userData?.userType === 'admin') {
+      navigate('/admin/dashboard');
+    } else if (userData?.userType === 'guide') {
       navigate('/guia/dashboard');
     } else {
       navigate('/turista/dashboard');

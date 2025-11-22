@@ -6,7 +6,7 @@ import { Loader2 } from 'lucide-react';
 interface ProtectedRouteProps {
   children: ReactNode;
   requireAuth?: boolean;
-  userType?: 'tourist' | 'guide';
+  userType?: 'tourist' | 'guide' | 'admin';
 }
 
 const ProtectedRoute = ({ children, requireAuth = true, userType }: ProtectedRouteProps) => {
@@ -26,7 +26,10 @@ const ProtectedRoute = ({ children, requireAuth = true, userType }: ProtectedRou
 
   if (userType && userData?.userType !== userType) {
     // Redirecionar para dashboard apropriado
-    const redirectPath = userData?.userType === 'guide' ? '/guia/dashboard' : '/turista/dashboard';
+    const redirectPath = 
+      userData?.userType === 'admin' ? '/admin/dashboard' :
+      userData?.userType === 'guide' ? '/guia/dashboard' : 
+      '/turista/dashboard';
     return <Navigate to={redirectPath} replace />;
   }
 
