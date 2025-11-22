@@ -37,6 +37,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminUsers from "./pages/AdminUsers";
 import AdminGuides from "./pages/AdminGuides";
 import AdminBookings from "./pages/AdminBookings";
+import AdminNotifications from "./pages/AdminNotifications";
 
 const queryClient = new QueryClient();
 
@@ -183,6 +184,11 @@ const App = () => (
             <Route path="/admin/reservas" element={
               <ProtectedRoute userType="admin">
                 <AdminBookings />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/notificacoes" element={
+              <ProtectedRoute userType="admin">
+                <AdminNotifications />
               </ProtectedRoute>
             } />
 
