@@ -33,6 +33,10 @@ import GuideProfilePage from "./pages/GuideProfileEdit";
 import UserProfilePage from "./pages/UserProfilePage";
 import GuideClients from "./pages/guideClients";
 import GuideBilling from "./pages/GuideBilling";
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminUsers from "./pages/AdminUsers";
+import AdminGuides from "./pages/AdminGuides";
+import AdminBookings from "./pages/AdminBookings";
 
 const queryClient = new QueryClient();
 
@@ -159,6 +163,28 @@ const App = () => (
               <Route index element={<div className="hidden md:flex md:items-center md:justify-center md:h-full">Selecione uma conversa</div>} />
               <Route path=":conversationId" element={<ChatPage />} />
             </Route>
+
+            {/* Admin Routes - Protected */}
+            <Route path="/admin/dashboard" element={
+              <ProtectedRoute userType="admin">
+                <AdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/usuarios" element={
+              <ProtectedRoute userType="admin">
+                <AdminUsers />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/guias" element={
+              <ProtectedRoute userType="admin">
+                <AdminGuides />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/reservas" element={
+              <ProtectedRoute userType="admin">
+                <AdminBookings />
+              </ProtectedRoute>
+            } />
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

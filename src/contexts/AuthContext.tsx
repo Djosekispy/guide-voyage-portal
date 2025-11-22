@@ -19,7 +19,7 @@ interface UserData {
   uid: string;
   email: string;
   name: string;
-  userType: 'tourist' | 'guide';
+  userType: 'tourist' | 'guide' | 'admin';
   phone?: string;
   city?: string;
   photoURL?: string;
