@@ -272,8 +272,8 @@ const GuideProfile = () => {
                              {review?.createdAt
                       ? typeof review.createdAt === 'object' && 'seconds' in review.createdAt
                         ? new Date(review.createdAt.seconds * 1000).toLocaleDateString('pt-AO')
-                        : !isNaN(new Date(review?.createdAt))
-                          ? new Date(review.createdAt).toLocaleDateString('pt-AO')
+                         : review.createdAt instanceof Date
+                          ? review.createdAt.toLocaleDateString('pt-AO')
                           : 'Data inválida'
                       : 'Sem data'}
                           </span>
