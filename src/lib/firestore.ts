@@ -575,6 +575,70 @@ export const subscribeToGuideBookings = (guideId: string, callback: (bookings: B
   });
 };
 
+// Get guide count and average rating by city
+export const getGuidesCountByCity = async (cityName: string): Promise<{ count: number; avgRating: number }> => {
+  try {
+    const q = query(
+      collection(db, 'guides'),
+      where('city', '==', cityName),
+      where('isActive', '==', true)
+    );
+    const querySnapshot = await getDocs(q);
+    
+    const guides = querySnapshot.docs.map(doc => doc.data() as Guide);
+    const count = guides.length;
+    
+    if (count === 0) {
+      return { count: 0, avgRating: 0 };
+    }
+    
+    const totalRating = guides.reduce((sum, guide) => sum + (guide.rating || 0), 0);
+    const avgRating = count > 0 ? totalRating / count : 0;
+    
+    return { count, avgRating: Math.round(avgRating * 10) / 10 };
+  } catch (error) {
+    console.error('Error getting guides count by city:', error);
+    return { count: 0, avgRating: 0 };
+  }
+};
+
+// Get all cities with guide counts
+export const getAllCitiesWithGuideCounts = async (): Promise<Map<string, { count: number; avgRating: number }>> => {
+  try {
+    const q = query(
+      collection(db, 'guides'),
+      where('isActive', '==', true)
+    );
+    const querySnapshot = await getDocs(q);
+    
+    const cityStats = new Map<string, { guides: Guide[] }>();
+    
+    querySnapshot.docs.forEach(doc => {
+      const guide = doc.data() as Guide;
+      const city = guide.city;
+      
+      if (!cityStats.has(city)) {
+        cityStats.set(city, { guides: [] });
+      }
+      cityStats.get(city)!.guides.push(guide);
+    });
+    
+    const result = new Map<string, { count: number; avgRating: number }>();
+    
+    cityStats.forEach((data, city) => {
+      const count = data.guides.length;
+      const totalRating = data.guides.reduce((sum, g) => sum + (g.rating || 0), 0);
+      const avgRating = count > 0 ? Math.round((totalRating / count) * 10) / 10 : 0;
+      result.set(city, { count, avgRating });
+    });
+    
+    return result;
+  } catch (error) {
+    console.error('Error getting all cities with guide counts:', error);
+    return new Map();
+  }
+};
+
 export async function getGuidesByCity(): Promise<CityGuidesSummary[]> {
   // Primeiro, obtenha todos os guias do Firestore
   const guidesSnapshot = await getDocs(collection(db, 'guides'));

@@ -21,7 +21,7 @@ export default function GuidePackagesPage() {
   
   // Filtros
   const [searchTerm, setSearchTerm] = useState("");
-  const [priceRange, setPriceRange] = useState([0, 100000000]);
+  const [priceRange, setPriceRange] = useState([0, 10000000]);
   const [durationFilter, setDurationFilter] = useState("");
   const [sortOption, setSortOption] = useState("popular");
 
@@ -197,17 +197,17 @@ export default function GuidePackagesPage() {
               <div>
                 <label className="block text-sm font-medium mb-2">Preço: até {formatCurrency(priceRange[1])}</label>
                 <Slider
-                  defaultValue={[1000000]}
-                  max={1000000}
+                  defaultValue={[10000000]}
+                  max={10000000}
                   min={0}
-                  step={10000}
+                  step={50000}
                   value={priceRange}
                   onValueChange={setPriceRange}
                   className="w-full"
                 />
                 <div className="flex justify-between text-xs text-gray-500 mt-1">
                   <span>{formatCurrency(0)}</span>
-                  <span>{formatCurrency(1000000)}</span>
+                  <span>{formatCurrency(10000000)}</span>
                 </div>
               </div>
               
@@ -257,7 +257,7 @@ export default function GuidePackagesPage() {
                   className="mt-4"
                   onClick={() => {
                     setSearchTerm("");
-                    setPriceRange([0, 1000000]);
+                    setPriceRange([0, 10000000]);
                     setDurationFilter("");
                     setSortOption("popular");
                   }}
