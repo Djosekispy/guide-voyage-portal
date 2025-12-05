@@ -87,3 +87,4 @@ Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICE
 - na pagina do perfil do guia na secção de passeios, a descricao deve ser reduzida, adiconar a opcao de ver mais e as imagens do pacote de ser um slaide show
 - A pagina de destino também tem de ser dinamica, me refiro os numeros de guias, tudo esta estatico, deve ser dinamico
 - Os botoes de torne-se um guia so deve aparecer se o usuario logado nao for guia.
+- O guia logado nao pode ver o botao fazer reserva ou favoritar, nao pode fazer nada que demostre interacao com outros guias
