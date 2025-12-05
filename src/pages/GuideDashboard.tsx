@@ -603,22 +603,40 @@ const removeSelectedArrayItem = (field: 'includes' | 'excludes' | 'itinerary' | 
     {/* Campo para imagens */}
     <div>
       <Label>Imagens (URLs)</Label>
+      <p className="text-xs text-muted-foreground mb-2">
+        Cole URLs de imagens (ex: links do Google Drive, Imgur, etc.)
+      </p>
       {newPackage.images.map((image, index) => (
-        <div key={index} className="flex gap-2 mt-2">
-          <Input
-            value={image}
-            onChange={(e) => updateArrayItem('images', index, e.target.value)}
-            placeholder="https://exemplo.com/imagem.jpg"
-            type="url"
-          />
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => removeArrayItem('images', index)}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+        <div key={index} className="mt-2">
+          <div className="flex gap-2">
+            <Input
+              value={image}
+              onChange={(e) => updateArrayItem('images', index, e.target.value)}
+              placeholder="https://exemplo.com/imagem.jpg"
+              type="url"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => removeArrayItem('images', index)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+          {/* Preview da imagem */}
+          {image && image.trim() !== '' && (
+            <div className="mt-2 relative w-24 h-24 rounded-lg overflow-hidden border">
+              <img 
+                src={image} 
+                alt={`Preview ${index + 1}`}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = 'https://via.placeholder.com/96?text=Erro';
+                }}
+              />
+            </div>
+          )}
         </div>
       ))}
       <Button
@@ -852,22 +870,40 @@ const removeSelectedArrayItem = (field: 'includes' | 'excludes' | 'itinerary' | 
     {/* Campo para imagens */}
     <div>
       <Label>Imagens (URLs)</Label>
+      <p className="text-xs text-muted-foreground mb-2">
+        Cole URLs de imagens (ex: links do Google Drive, Imgur, etc.)
+      </p>
       {selectedPackage.images.map((image, index) => (
-        <div key={index} className="flex gap-2 mt-2">
-          <Input
-            value={image}
-            onChange={(e) => updateSelectedArrayItem('images', index, e.target.value)}
-            placeholder="https://exemplo.com/imagem.jpg"
-            type="url"
-          />
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => removeSelectedArrayItem('images', index)}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+        <div key={index} className="mt-2">
+          <div className="flex gap-2">
+            <Input
+              value={image}
+              onChange={(e) => updateSelectedArrayItem('images', index, e.target.value)}
+              placeholder="https://exemplo.com/imagem.jpg"
+              type="url"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => removeSelectedArrayItem('images', index)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+          {/* Preview da imagem */}
+          {image && image.trim() !== '' && (
+            <div className="mt-2 relative w-24 h-24 rounded-lg overflow-hidden border">
+              <img 
+                src={image} 
+                alt={`Preview ${index + 1}`}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = 'https://via.placeholder.com/96?text=Erro';
+                }}
+              />
+            </div>
+          )}
         </div>
       ))}
       <Button
