@@ -51,7 +51,7 @@ const GuideSidebar = () => {
     },
     {
       name: "Mensagens",
-      href: "/mensagens",
+      href: "/guia/mensagens",
       icon: MessageSquare,
     },
     {
@@ -60,8 +60,8 @@ const GuideSidebar = () => {
       icon: Wallet,
     },
     {
-      name: "Configurações",
-      href: "/guia/configuracoes",
+      name: "Definições",
+      href: "/guia/definicoes",
       icon: Settings,
     },
   ];

@@ -33,6 +33,8 @@ import GuideProfilePage from "./pages/GuideProfileEdit";
 import UserProfilePage from "./pages/UserProfilePage";
 import GuideClients from "./pages/guideClients";
 import GuideBilling from "./pages/GuideBilling";
+import GuideMessages from "./pages/GuideMessages";
+import GuideSettings from "./pages/GuideSettings";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminUsers from "./pages/AdminUsers";
 import AdminGuides from "./pages/AdminGuides";
@@ -107,6 +109,16 @@ const App = () => (
              <Route path="/guia/clientes" element={
               <ProtectedRoute userType="guide">
                 <GuideClients />
+              </ProtectedRoute>
+            } />
+            <Route path="/guia/mensagens" element={
+              <ProtectedRoute userType="guide">
+                <GuideMessages />
+              </ProtectedRoute>
+            } />
+            <Route path="/guia/definicoes" element={
+              <ProtectedRoute userType="guide">
+                <GuideSettings />
               </ProtectedRoute>
             } />
             
