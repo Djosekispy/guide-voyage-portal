@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, MapPin, Users, Star } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -6,15 +6,37 @@ import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import { useNavigate } from "react-router-dom";
 import { destinations } from "@/mock/destination";
+import { getAllCitiesWithGuideCounts } from "@/lib/firestore";
 
 const Destinations = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [cityStats, setCityStats] = useState<Map<string, { count: number; avgRating: number }>>(new Map());
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-   const navigate = useNavigate();
-  
-    const handleViewGuides = (city: string) => {
-      navigate(`/guias?city=${encodeURIComponent(city)}`);
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const stats = await getAllCitiesWithGuideCounts();
+        setCityStats(stats);
+      } catch (error) {
+        console.error('Error fetching city stats:', error);
+      } finally {
+        setLoading(false);
+      }
     };
+    fetchStats();
+  }, []);
+  
+  const handleViewGuides = (city: string) => {
+    navigate(`/guias?city=${encodeURIComponent(city)}`);
+  };
+
+  const getGuideCount = (cityName: string) => cityStats.get(cityName)?.count || 0;
+  const getCityRating = (cityName: string) => {
+    const stats = cityStats.get(cityName);
+    return stats?.avgRating || destinations.find(d => d.name === cityName)?.rating || 0;
+  };
 
  
 
@@ -91,12 +113,19 @@ const Destinations = () => {
                     <div className="flex items-center gap-2">
                       <Users className="w-4 h-4 text-muted-foreground" />
                       <span className="text-sm text-muted-foreground">
-                        {destination.guides} guias disponíveis
+                        {loading ? '...' : getGuideCount(destination.name) > 0 
+                          ? `${getGuideCount(destination.name)} guias` 
+                          : 'Sem guias ainda'}
                       </span>
                     </div>
                     
-                    <Button variant="outline" size="sm" onClick={() => handleViewGuides(destination.name)}>
-                      Ver Guias
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => handleViewGuides(destination.name)}
+                      disabled={getGuideCount(destination.name) === 0}
+                    >
+                      {getGuideCount(destination.name) > 0 ? 'Ver Guias' : 'Sem guias'}
                     </Button>
                   </div>
                 </div>

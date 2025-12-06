@@ -3,13 +3,27 @@ import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Calendar, DollarSign, CreditCard, Banknote, Percent, Wallet } from "lucide-react";
+import { Calendar, DollarSign, CreditCard, Banknote, Percent, Wallet, Plus, Edit, Trash2, Loader2, Building2, Star } from "lucide-react";
 import GuideSidebar from "@/components/GuideSidebar";
 import { useAuth } from "@/contexts/AuthContext";
-import { Booking, getGuideBookings, subscribeToGuideBookings } from "@/lib/firestore";
-import { toast } from "@/hooks/use-toast";
+import { 
+  Booking, 
+  getGuideBookings, 
+  subscribeToGuideBookings,
+  BankAccount,
+  createBankAccount,
+  updateBankAccount,
+  deleteBankAccount,
+  subscribeToGuideBankAccounts,
+  setPrimaryBankAccount,
+  getGuideProfile
+} from "@/lib/firestore";
+import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface BillingSummary {
   totalEarnings: number;
@@ -23,6 +37,7 @@ interface BillingSummary {
 
 const GuideBilling = () => {
   const { user, userData } = useAuth();
+  const { toast } = useToast();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<"currentMonth" | "lastMonth" | "allTime">("currentMonth");
@@ -36,22 +51,54 @@ const GuideBilling = () => {
     bookings: []
   });
 
+  // Bank account state
+  const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
+  const [isBankDialogOpen, setIsBankDialogOpen] = useState(false);
+  const [isEditingBank, setIsEditingBank] = useState(false);
+  const [selectedBankAccount, setSelectedBankAccount] = useState<BankAccount | null>(null);
+  const [savingBank, setSavingBank] = useState(false);
+  const [guideId, setGuideId] = useState<string | null>(null);
+  
+  const [bankFormData, setBankFormData] = useState({
+    accountHolder: '',
+    accountNumber: '',
+    bankName: '',
+    branchCode: '',
+    accountType: 'Conta Corrente' as BankAccount['accountType'],
+    taxId: '',
+    isPrimary: false
+  });
+
   const loadDashboardData = async () => {
     try {
       setLoading(true);
       
       if (!user?.uid) return;
 
-      // Carregar reservas
-      const guideBookings = await getGuideBookings(user.uid);
-      setBookings(guideBookings);
+      // Get guide profile first
+      const guide = await getGuideProfile(user.uid);
+      if (guide) {
+        setGuideId(guide.id);
+        
+        // Carregar reservas
+        const guideBookings = await getGuideBookings(guide.id);
+        setBookings(guideBookings);
 
-      // Configurar listener em tempo real para reservas
-      const unsubscribe = subscribeToGuideBookings(user.uid, (updatedBookings) => {
-        setBookings(updatedBookings);
-      });
+        // Configurar listener em tempo real para reservas
+        const unsubscribeBookings = subscribeToGuideBookings(guide.id, (updatedBookings) => {
+          setBookings(updatedBookings);
+        });
 
-      return () => unsubscribe();
+        // Subscribe to bank accounts
+        const unsubscribeBankAccounts = subscribeToGuideBankAccounts(guide.id, (accounts) => {
+          setBankAccounts(accounts);
+        });
+
+        return () => {
+          unsubscribeBookings();
+          unsubscribeBankAccounts();
+        };
+      }
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
       toast({
@@ -71,7 +118,6 @@ const GuideBilling = () => {
   }, [user, userData]);
 
   useEffect(() => {
-    // Calcular faturamento com base no período selecionado
     if (bookings.length > 0) {
       calculateBilling();
     }
@@ -99,7 +145,7 @@ const GuideBilling = () => {
     const canceled = filteredBookings.filter(b => b.status === 'Cancelado');
     
     const totalEarnings = confirmed.reduce((sum, b) => sum + b.totalPrice, 0);
-    const platformFee = totalEarnings * 0.05; // 5% de comissão
+    const platformFee = totalEarnings * 0.05;
     const netAmount = totalEarnings - platformFee;
 
     setBilling({
@@ -120,6 +166,143 @@ const GuideBilling = () => {
     }).format(value);
   };
 
+  const resetBankForm = () => {
+    setBankFormData({
+      accountHolder: '',
+      accountNumber: '',
+      bankName: '',
+      branchCode: '',
+      accountType: 'Conta Corrente',
+      taxId: '',
+      isPrimary: false
+    });
+    setSelectedBankAccount(null);
+    setIsEditingBank(false);
+  };
+
+  const handleOpenBankDialog = (account?: BankAccount) => {
+    if (account) {
+      setIsEditingBank(true);
+      setSelectedBankAccount(account);
+      setBankFormData({
+        accountHolder: account.accountHolder,
+        accountNumber: account.accountNumber,
+        bankName: account.bankName,
+        branchCode: account.branchCode || '',
+        accountType: account.accountType,
+        taxId: account.taxId || '',
+        isPrimary: account.isPrimary
+      });
+    } else {
+      resetBankForm();
+    }
+    setIsBankDialogOpen(true);
+  };
+
+  const handleSaveBankAccount = async () => {
+    if (!guideId) return;
+    
+    if (!bankFormData.accountHolder || !bankFormData.accountNumber || !bankFormData.bankName) {
+      toast({
+        title: "Erro",
+        description: "Por favor, preencha todos os campos obrigatórios",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setSavingBank(true);
+    try {
+      if (isEditingBank && selectedBankAccount) {
+        await updateBankAccount(selectedBankAccount.id, {
+          accountHolder: bankFormData.accountHolder,
+          accountNumber: bankFormData.accountNumber,
+          bankName: bankFormData.bankName,
+          branchCode: bankFormData.branchCode || undefined,
+          accountType: bankFormData.accountType,
+          taxId: bankFormData.taxId || undefined
+        });
+        toast({
+          title: "Sucesso!",
+          description: "Conta bancária atualizada com sucesso"
+        });
+      } else {
+        await createBankAccount({
+          guideId,
+          accountHolder: bankFormData.accountHolder,
+          accountNumber: bankFormData.accountNumber,
+          bankName: bankFormData.bankName,
+          branchCode: bankFormData.branchCode || undefined,
+          accountType: bankFormData.accountType,
+          taxId: bankFormData.taxId || undefined,
+          isPrimary: bankAccounts.length === 0 // First account is primary
+        });
+        toast({
+          title: "Sucesso!",
+          description: "Conta bancária adicionada com sucesso"
+        });
+      }
+      setIsBankDialogOpen(false);
+      resetBankForm();
+    } catch (error) {
+      console.error('Erro ao salvar conta bancária:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível salvar a conta bancária",
+        variant: "destructive"
+      });
+    } finally {
+      setSavingBank(false);
+    }
+  };
+
+  const handleDeleteBankAccount = async (accountId: string) => {
+    try {
+      await deleteBankAccount(accountId);
+      toast({
+        title: "Sucesso!",
+        description: "Conta bancária removida com sucesso"
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível remover a conta bancária",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleSetPrimaryAccount = async (accountId: string) => {
+    if (!guideId) return;
+    
+    try {
+      await setPrimaryBankAccount(accountId, guideId);
+      toast({
+        title: "Sucesso!",
+        description: "Conta principal definida com sucesso"
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível definir a conta principal",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const bankNames = [
+    'Banco BIC',
+    'BAI - Banco Angolano de Investimentos',
+    'BFA - Banco de Fomento Angola',
+    'Banco Sol',
+    'Banco Millennium Atlântico',
+    'Banco Keve',
+    'Banco de Negócios Internacional',
+    'Banco Económico',
+    'Standard Bank Angola',
+    'Banco Caixa Geral Angola'
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -128,7 +311,7 @@ const GuideBilling = () => {
       <div className="flex-1 lg:ml-64 px-4 pt-4">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">Faturamento</h1>
-          <p className="text-muted-foreground">Acompanhe seus ganhos e taxas</p>
+          <p className="text-muted-foreground">Acompanhe seus ganhos e gerencie dados bancários</p>
         </div>
 
         {/* Filtro de período */}
@@ -197,6 +380,198 @@ const GuideBilling = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Dados Bancários */}
+        <Card className="mb-8">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center">
+                <Building2 className="h-5 w-5 mr-2" />
+                Dados Bancários
+              </CardTitle>
+              <CardDescription>
+                Gerencie suas contas bancárias para receber pagamentos
+              </CardDescription>
+            </div>
+            <Dialog open={isBankDialogOpen} onOpenChange={setIsBankDialogOpen}>
+              <DialogTrigger asChild>
+                <Button onClick={() => handleOpenBankDialog()}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Adicionar Conta
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle>
+                    {isEditingBank ? 'Editar Conta Bancária' : 'Adicionar Conta Bancária'}
+                  </DialogTitle>
+                  <DialogDescription>
+                    Preencha os dados da sua conta bancária para receber pagamentos
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="col-span-2">
+                      <Label htmlFor="accountHolder">Titular da Conta *</Label>
+                      <Input
+                        id="accountHolder"
+                        value={bankFormData.accountHolder}
+                        onChange={(e) => setBankFormData(prev => ({ ...prev, accountHolder: e.target.value }))}
+                        placeholder="Nome completo do titular"
+                      />
+                    </div>
+                    
+                    <div className="col-span-2">
+                      <Label htmlFor="bankName">Banco *</Label>
+                      <Select 
+                        value={bankFormData.bankName} 
+                        onValueChange={(value) => setBankFormData(prev => ({ ...prev, bankName: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o banco" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {bankNames.map(bank => (
+                            <SelectItem key={bank} value={bank}>{bank}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="accountNumber">Número da Conta *</Label>
+                      <Input
+                        id="accountNumber"
+                        value={bankFormData.accountNumber}
+                        onChange={(e) => setBankFormData(prev => ({ ...prev, accountNumber: e.target.value }))}
+                        placeholder="Ex: 0000.0000.0000"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="branchCode">Código da Agência</Label>
+                      <Input
+                        id="branchCode"
+                        value={bankFormData.branchCode}
+                        onChange={(e) => setBankFormData(prev => ({ ...prev, branchCode: e.target.value }))}
+                        placeholder="Ex: 0001"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="accountType">Tipo de Conta</Label>
+                      <Select 
+                        value={bankFormData.accountType} 
+                        onValueChange={(value: BankAccount['accountType']) => setBankFormData(prev => ({ ...prev, accountType: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Conta Corrente">Conta Corrente</SelectItem>
+                          <SelectItem value="Conta Poupança">Conta Poupança</SelectItem>
+                          <SelectItem value="Conta Salário">Conta Salário</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="taxId">NIF (opcional)</Label>
+                      <Input
+                        id="taxId"
+                        value={bankFormData.taxId}
+                        onChange={(e) => setBankFormData(prev => ({ ...prev, taxId: e.target.value }))}
+                        placeholder="Número de Identificação Fiscal"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-end gap-2 pt-4">
+                    <Button variant="outline" onClick={() => {
+                      setIsBankDialogOpen(false);
+                      resetBankForm();
+                    }}>
+                      Cancelar
+                    </Button>
+                    <Button onClick={handleSaveBankAccount} disabled={savingBank}>
+                      {savingBank ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : null}
+                      {isEditingBank ? 'Atualizar' : 'Adicionar'}
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </CardHeader>
+          <CardContent>
+            {bankAccounts.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Building2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>Você ainda não tem nenhuma conta bancária cadastrada.</p>
+                <p className="text-sm">Adicione uma conta para receber seus pagamentos.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {bankAccounts.map((account) => (
+                  <div 
+                    key={account.id} 
+                    className={`p-4 border rounded-lg flex items-center justify-between ${
+                      account.isPrimary ? 'border-primary bg-primary/5' : ''
+                    }`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <CreditCard className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium">{account.bankName}</p>
+                          {account.isPrimary && (
+                            <Badge variant="default" className="text-xs">
+                              <Star className="h-3 w-3 mr-1" />
+                              Principal
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {account.accountType} • ****{account.accountNumber.slice(-4)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">{account.accountHolder}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {!account.isPrimary && (
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleSetPrimaryAccount(account.id)}
+                        >
+                          Definir como principal
+                        </Button>
+                      )}
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        onClick={() => handleOpenBankDialog(account)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        onClick={() => handleDeleteBankAccount(account.id)}
+                        disabled={account.isPrimary && bankAccounts.length > 1}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Tabela de reservas */}
         <Card>
@@ -267,11 +642,13 @@ const GuideBilling = () => {
                   Método de Pagamento
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  Os pagamentos são feitos via transferência bancária no final de cada mês.
+                  Os pagamentos são feitos via transferência bancária no final de cada mês para sua conta principal.
                 </p>
-                <Button variant="link" className="pl-0 mt-2">
-                  Atualizar dados bancários
-                </Button>
+                {bankAccounts.filter(a => a.isPrimary).length === 0 && (
+                  <p className="text-sm text-destructive mt-2">
+                    ⚠️ Você ainda não definiu uma conta bancária principal.
+                  </p>
+                )}
               </div>
               <div>
                 <h3 className="font-medium mb-2 flex items-center">
