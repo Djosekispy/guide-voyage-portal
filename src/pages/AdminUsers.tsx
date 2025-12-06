@@ -20,12 +20,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { collection, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Search, Trash2, Edit } from "lucide-react";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { Search, Trash2, Plus, AlertCircle } from "lucide-react";
 import AdminSidebar from "@/components/AdminSidebar";
 import Header from "@/components/Header";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface UserData {
   uid: string;
@@ -35,6 +45,25 @@ interface UserData {
   phone?: string;
   city?: string;
 }
+
+const AdminUsers = () => {
+  const { userData, loading } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [users, setUsers] = useState<UserData[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<UserData[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState<string>("all");
+  const [isLoading, setIsLoading] = useState(true);
+  const [showCreateAdminDialog, setShowCreateAdminDialog] = useState(false);
+  const [adminFormData, setAdminFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [isCreatingAdmin, setIsCreatingAdmin] = useState(false);
+  const [adminFormError, setAdminFormError] = useState("");
 
 const AdminUsers = () => {
   const { userData, loading } = useAuth();
@@ -134,6 +163,96 @@ const AdminUsers = () => {
     }
   };
 
+  const handleCreateAdmin = async () => {
+    setAdminFormError("");
+
+    // Validações
+    if (!adminFormData.name.trim()) {
+      setAdminFormError("Nome é obrigatório");
+      return;
+    }
+
+    if (!adminFormData.email.trim()) {
+      setAdminFormError("Email é obrigatório");
+      return;
+    }
+
+    if (!adminFormData.password) {
+      setAdminFormError("Senha é obrigatória");
+      return;
+    }
+
+    if (adminFormData.password.length < 6) {
+      setAdminFormError("Senha deve ter no mínimo 6 caracteres");
+      return;
+    }
+
+    if (adminFormData.password !== adminFormData.confirmPassword) {
+      setAdminFormError("As senhas não correspondem");
+      return;
+    }
+
+    try {
+      setIsCreatingAdmin(true);
+      const auth = getAuth();
+
+      // Criar usuário no Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        adminFormData.email,
+        adminFormData.password
+      );
+
+      const userId = userCredential.user.uid;
+
+      // Criar documento no Firestore
+      await updateDoc(doc(db, "users", userId), {
+        uid: userId,
+        email: adminFormData.email,
+        name: adminFormData.name,
+        userType: 'admin',
+        phone: '',
+        city: '',
+        isActive: true,
+      });
+
+      // Adicionar à lista local
+      setUsers([...users, {
+        uid: userId,
+        email: adminFormData.email,
+        name: adminFormData.name,
+        userType: 'admin',
+        phone: '',
+        city: '',
+      }]);
+
+      toast({
+        title: "Sucesso",
+        description: `Admin '${adminFormData.name}' criado com sucesso!`
+      });
+
+      // Resetar formulário
+      setAdminFormData({
+        name: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      });
+      setShowCreateAdminDialog(false);
+    } catch (error: any) {
+      console.error("Erro ao criar admin:", error);
+      if (error.code === 'auth/email-already-in-use') {
+        setAdminFormError("Este email já está registrado");
+      } else if (error.code === 'auth/invalid-email') {
+        setAdminFormError("Email inválido");
+      } else {
+        setAdminFormError(error.message || "Erro ao criar admin");
+      }
+    } finally {
+      setIsCreatingAdmin(false);
+    }
+  };
+
   if (loading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -154,6 +273,13 @@ const AdminUsers = () => {
               <p className="text-muted-foreground mt-2">
                 Visualize e gerencie todos os usuários da plataforma
               </p>
+            </div>
+
+            <div className="flex justify-end">
+              <Button onClick={() => setShowCreateAdminDialog(true)} className="gap-2">
+                <Plus className="h-4 w-4" />
+                Criar Novo Admin
+              </Button>
             </div>
 
             <Card>
@@ -242,6 +368,86 @@ const AdminUsers = () => {
           </div>
         </main>
       </div>
+
+      {/* Create Admin Dialog */}
+      <Dialog open={showCreateAdminDialog} onOpenChange={setShowCreateAdminDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Criar Novo Administrador</DialogTitle>
+            <DialogDescription>
+              Preencha os dados abaixo para criar uma nova conta de administrador
+            </DialogDescription>
+          </DialogHeader>
+
+          {adminFormError && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{adminFormError}</AlertDescription>
+            </Alert>
+          )}
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Nome Completo</label>
+              <Input
+                placeholder="Ex: João Silva"
+                value={adminFormData.name}
+                onChange={(e) => setAdminFormData({ ...adminFormData, name: e.target.value })}
+                disabled={isCreatingAdmin}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Email</label>
+              <Input
+                type="email"
+                placeholder="Ex: admin@guidevoyage.com"
+                value={adminFormData.email}
+                onChange={(e) => setAdminFormData({ ...adminFormData, email: e.target.value })}
+                disabled={isCreatingAdmin}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Senha</label>
+              <Input
+                type="password"
+                placeholder="Mínimo 6 caracteres"
+                value={adminFormData.password}
+                onChange={(e) => setAdminFormData({ ...adminFormData, password: e.target.value })}
+                disabled={isCreatingAdmin}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Confirmar Senha</label>
+              <Input
+                type="password"
+                placeholder="Confirme a senha"
+                value={adminFormData.confirmPassword}
+                onChange={(e) => setAdminFormData({ ...adminFormData, confirmPassword: e.target.value })}
+                disabled={isCreatingAdmin}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowCreateAdminDialog(false)}
+              disabled={isCreatingAdmin}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleCreateAdmin}
+              disabled={isCreatingAdmin}
+            >
+              {isCreatingAdmin ? "Criando..." : "Criar Admin"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
