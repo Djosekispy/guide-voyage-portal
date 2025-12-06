@@ -7,7 +7,10 @@ import {
   Settings,
   UserCheck,
   Package,
-  Bell
+  Bell,
+  CreditCard,
+  TrendingUp,
+  Wallet
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -41,6 +44,21 @@ const AdminSidebar = () => {
       name: "Reservas",
       href: "/admin/reservas",
       icon: BookOpen,
+    },
+    {
+      name: "Pagamentos",
+      href: "/admin/pagamentos",
+      icon: CreditCard,
+    },
+    {
+      name: "Saques",
+      href: "/admin/saques",
+      icon: Wallet,
+    },
+    {
+      name: "Analytics",
+      href: "/admin/analytics",
+      icon: TrendingUp,
     },
     {
       name: "Notificações",

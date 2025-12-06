@@ -40,6 +40,9 @@ import AdminUsers from "./pages/AdminUsers";
 import AdminGuides from "./pages/AdminGuides";
 import AdminBookings from "./pages/AdminBookings";
 import AdminNotifications from "./pages/AdminNotifications";
+import AdminPayments from "./pages/AdminPayments";
+import AdminWithdrawals from "./pages/AdminWithdrawals";
+import AdminAnalytics from "./pages/AdminAnalytics";
 
 const queryClient = new QueryClient();
 
@@ -201,6 +204,21 @@ const App = () => (
             <Route path="/admin/notificacoes" element={
               <ProtectedRoute userType="admin">
                 <AdminNotifications />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/pagamentos" element={
+              <ProtectedRoute userType="admin">
+                <AdminPayments />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/saques" element={
+              <ProtectedRoute userType="admin">
+                <AdminWithdrawals />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/analytics" element={
+              <ProtectedRoute userType="admin">
+                <AdminAnalytics />
               </ProtectedRoute>
             } />
 

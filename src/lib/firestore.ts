@@ -153,6 +153,70 @@ export interface BankAccount {
   updatedAt: any;
 }
 
+export interface Payment {
+  id: string;
+  touristId: string;
+  touristName: string;
+  touristEmail: string;
+  guideId: string;
+  guideName: string;
+  bookingId: string;
+  packageTitle: string;
+  amount: number;
+  platformFee: number; // comissão da plataforma
+  guideEarnings: number; // quanto o guia recebe
+  status: 'pending' | 'completed' | 'failed' | 'refunded';
+  paymentMethod: 'credit_card' | 'debit_card' | 'bank_transfer' | 'wallet';
+  transactionId?: string;
+  description?: string;
+  createdAt: any;
+  updatedAt: any;
+}
+
+export interface WithdrawalRequest {
+  id: string;
+  guideId: string;
+  guideName: string;
+  guideEmail: string;
+  amount: number;
+  bankAccountId: string;
+  bankName: string;
+  accountNumber: string;
+  accountHolder: string;
+  status: 'pending' | 'approved' | 'processing' | 'completed' | 'rejected';
+  reason?: string; // razão da rejeição
+  adminNotes?: string;
+  processedBy?: string; // UID do admin que processou
+  processedAt?: any;
+  completedAt?: any;
+  createdAt: any;
+  updatedAt: any;
+}
+
+export interface WalletBalance {
+  id: string;
+  guideId: string;
+  guideName: string;
+  totalEarnings: number;
+  currentBalance: number;
+  totalWithdrawn: number;
+  pendingWithdrawal: number;
+  lastWithdrawal?: any;
+  lastUpdate: any;
+}
+
+export interface Transaction {
+  id: string;
+  guideId: string;
+  type: 'booking' | 'refund' | 'withdrawal' | 'admin_adjustment';
+  amount: number;
+  description: string;
+  balanceBefore: number;
+  balanceAfter: number;
+  relatedId?: string; // ID do booking, withdrawal, etc
+  createdAt: any;
+}
+
 export interface Notification {
   id: string;
   type: 'new_user' | 'new_booking' | 'new_review' | 'new_package' | 'booking_cancelled' | 'low_rating';
@@ -1019,6 +1083,188 @@ export const subscribeToTouristBookings = (
     })) as Booking[];
     callback(bookings);
   });
+};
+
+// Payment Functions
+export const createPayment = async (paymentData: Omit<Payment, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const docRef = await addDoc(collection(db, 'payments'), {
+    ...paymentData,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  });
+  return docRef.id;
+};
+
+export const updatePaymentStatus = async (paymentId: string, status: Payment['status']) => {
+  const paymentRef = doc(db, 'payments', paymentId);
+  await updateDoc(paymentRef, {
+    status,
+    updatedAt: serverTimestamp()
+  });
+};
+
+export const getPaymentsByGuide = async (guideId: string): Promise<Payment[]> => {
+  const q = query(
+    collection(db, 'payments'),
+    where('guideId', '==', guideId),
+    orderBy('createdAt', 'desc')
+  );
+  const querySnapshot = await getDocs(q);
+  
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  })) as Payment[];
+};
+
+export const getAllPayments = async (): Promise<Payment[]> => {
+  const q = query(
+    collection(db, 'payments'),
+    orderBy('createdAt', 'desc')
+  );
+  const querySnapshot = await getDocs(q);
+  
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  })) as Payment[];
+};
+
+export const getPaymentsByStatus = async (status: Payment['status']): Promise<Payment[]> => {
+  const q = query(
+    collection(db, 'payments'),
+    where('status', '==', status),
+    orderBy('createdAt', 'desc')
+  );
+  const querySnapshot = await getDocs(q);
+  
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  })) as Payment[];
+};
+
+// Withdrawal Request Functions
+export const createWithdrawalRequest = async (withdrawalData: Omit<WithdrawalRequest, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const docRef = await addDoc(collection(db, 'withdrawals'), {
+    ...withdrawalData,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  });
+  return docRef.id;
+};
+
+export const updateWithdrawalRequest = async (withdrawalId: string, data: Partial<WithdrawalRequest>) => {
+  const withdrawalRef = doc(db, 'withdrawals', withdrawalId);
+  await updateDoc(withdrawalRef, {
+    ...data,
+    updatedAt: serverTimestamp()
+  });
+};
+
+export const getWithdrawalRequests = async (): Promise<WithdrawalRequest[]> => {
+  const q = query(
+    collection(db, 'withdrawals'),
+    orderBy('createdAt', 'desc')
+  );
+  const querySnapshot = await getDocs(q);
+  
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  })) as WithdrawalRequest[];
+};
+
+export const getWithdrawalsByGuide = async (guideId: string): Promise<WithdrawalRequest[]> => {
+  const q = query(
+    collection(db, 'withdrawals'),
+    where('guideId', '==', guideId),
+    orderBy('createdAt', 'desc')
+  );
+  const querySnapshot = await getDocs(q);
+  
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  })) as WithdrawalRequest[];
+};
+
+export const getWithdrawalsByStatus = async (status: WithdrawalRequest['status']): Promise<WithdrawalRequest[]> => {
+  const q = query(
+    collection(db, 'withdrawals'),
+    where('status', '==', status),
+    orderBy('createdAt', 'desc')
+  );
+  const querySnapshot = await getDocs(q);
+  
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  })) as WithdrawalRequest[];
+};
+
+// Wallet Balance Functions
+export const getWalletBalance = async (guideId: string): Promise<WalletBalance | null> => {
+  const docRef = doc(db, 'wallets', guideId);
+  const docSnap = await getDoc(docRef);
+  
+  if (docSnap.exists()) {
+    return {
+      id: docSnap.id,
+      ...docSnap.data()
+    } as WalletBalance;
+  }
+  
+  return null;
+};
+
+export const createWalletBalance = async (walletData: Omit<WalletBalance, 'id' | 'lastUpdate'>) => {
+  const docRef = doc(db, 'wallets', walletData.guideId);
+  await setDoc(docRef, {
+    ...walletData,
+    lastUpdate: serverTimestamp()
+  });
+};
+
+export const updateWalletBalance = async (guideId: string, data: Partial<WalletBalance>) => {
+  const walletRef = doc(db, 'wallets', guideId);
+  await updateDoc(walletRef, {
+    ...data,
+    lastUpdate: serverTimestamp()
+  });
+};
+
+export const getAllWalletBalances = async (): Promise<WalletBalance[]> => {
+  const q = query(collection(db, 'wallets'));
+  const querySnapshot = await getDocs(q);
+  
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  })) as WalletBalance[];
+};
+
+// Transaction Functions
+export const createTransaction = async (transactionData: Omit<Transaction, 'id' | 'createdAt'>) => {
+  const docRef = await addDoc(collection(db, 'transactions'), {
+    ...transactionData,
+    createdAt: serverTimestamp()
+  });
+  return docRef.id;
+};
+
+export const getTransactionsByGuide = async (guideId: string): Promise<Transaction[]> => {
+  const q = query(
+    collection(db, 'transactions'),
+    where('guideId', '==', guideId),
+    orderBy('createdAt', 'desc')
+  );
+  const querySnapshot = await getDocs(q);
+  
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  })) as Transaction[];
 };
 
 // Notification Functions
