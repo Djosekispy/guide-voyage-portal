@@ -1,16 +1,30 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Edit2, Trash2, MapPin, Clock, Users, DollarSign } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Plus, Edit2, Trash2, MapPin, Clock, Users, DollarSign, AlertCircle } from "lucide-react";
 import GuideSidebar from "@/components/GuideSidebar";
+import { useToast } from "@/hooks/use-toast";
+import {
+  getGuidePackages,
+  createTourPackage,
+  updateTourPackage,
+  deleteTourPackage,
+  TourPackage,
+} from "@/lib/firestore";
 
 const GuideTours = () => {
+  const { userData, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [tours, setTours] = useState([
     {

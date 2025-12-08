@@ -65,16 +65,6 @@ const AdminUsers = () => {
   const [isCreatingAdmin, setIsCreatingAdmin] = useState(false);
   const [adminFormError, setAdminFormError] = useState("");
 
-const AdminUsers = () => {
-  const { userData, loading } = useAuth();
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const [users, setUsers] = useState<UserData[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<UserData[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterType, setFilterType] = useState<string>("all");
-  const [isLoading, setIsLoading] = useState(true);
-
   useEffect(() => {
     if (!loading && userData?.userType !== 'admin') {
       navigate('/');
