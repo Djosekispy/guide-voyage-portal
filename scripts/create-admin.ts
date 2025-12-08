@@ -1,0 +1,130 @@
+#!/usr/bin/env node
+
+/**
+ * Script to create a default admin in the system (TypeScript)
+ *
+ * Usage:
+ *   node -r ts-node/register/transpile-only scripts/create-admin.ts
+ *   ts-node-esm scripts/create-admin.ts --email you@you.com --password pass --name "Your Name"
+ */
+
+import admin from 'firebase-admin';
+import readline from 'readline';
+import path from 'path';
+import fs from 'fs';
+
+// Initialize Firebase Admin
+const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH || path.join(__dirname, '../firebase-service-account.json');
+
+let serviceAccount: any;
+try {
+  // Read JSON file synchronously and parse to support running under ESM
+  const raw = fs.readFileSync(serviceAccountPath, 'utf-8');
+  serviceAccount = JSON.parse(raw);
+} catch (error: any) {
+  console.log('⚠️  Arquivo de credenciais do Firebase não encontrado em:', serviceAccountPath);
+  console.log('Para usar este script, exporte FIREBASE_SERVICE_ACCOUNT_PATH com o caminho do arquivo json');
+  console.log('\nAlternativa: Execute através do Firebase Console ou use o script web-based');
+  process.exit(1);
+}
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount as any),
+  projectId: serviceAccount.project_id,
+});
+
+const db = admin.firestore();
+const auth = admin.auth();
+
+// Parse command line arguments
+const args = process.argv.slice(2);
+let email = 'admin@guidevoyage.com';
+let password = 'Admin@123456';
+let name = 'Administrador';
+
+for (let i = 0; i < args.length; i++) {
+  if (args[i] === '--email' && args[i + 1]) email = args[i + 1];
+  if (args[i] === '--password' && args[i + 1]) password = args[i + 1];
+  if (args[i] === '--name' && args[i + 1]) name = args[i + 1];
+}
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+function question(query: string) {
+  return new Promise<string>((resolve) => rl.question(query, resolve));
+}
+
+async function createAdmin() {
+  console.log('\n🔐 Criador de Admin - Guide Voyage\n');
+
+  // If arguments provided, skip prompts
+  if (process.argv.length > 2) {
+    console.log(`Email: ${email}`);
+    console.log(`Nome: ${name}`);
+    console.log(`Senha: ${'*'.repeat(password.length)}\n`);
+  } else {
+    // Interactive mode
+    const inputEmail = await question('Email do admin: ');
+    if (inputEmail) email = inputEmail;
+
+    const inputName = await question('Nome completo: ');
+    if (inputName) name = inputName;
+
+    const inputPassword = await question('Senha (deixe em branco para usar padrão): ');
+    if (inputPassword) password = inputPassword;
+  }
+
+  rl.close();
+
+  try {
+    console.log('\n⏳ Criando usuário...\n');
+
+    // Create user in Firebase Auth
+    const userRecord = await auth.createUser({
+      email,
+      password,
+      displayName: name,
+      emailVerified: false,
+    });
+
+    console.log('✅ Usuário criado no Firebase Auth');
+
+    // Create user document in Firestore
+    const userRef = db.collection('users').doc(userRecord.uid);
+    await userRef.set({
+      uid: userRecord.uid,
+      email,
+      name,
+      userType: 'admin',
+      phone: '',
+      city: '',
+      isActive: true,
+      photoURL: null,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    console.log('✅ Documento criado no Firestore');
+
+    console.log('\n✨ Admin criado com sucesso!\n');
+    console.log('Credenciais:');
+    console.log(`  Email: ${email}`);
+    console.log(`  Senha: ${password}`);
+    console.log(`  UID: ${userRecord.uid}\n`);
+    console.log('⚠️  IMPORTANTE: Guarde estas credenciais em local seguro!');
+    console.log('⚠️  Mude a senha após o primeiro login!\n');
+
+    process.exit(0);
+  } catch (error: any) {
+    console.error('❌ Erro ao criar admin:', error.message || error);
+    if (error.code === 'auth/email-already-exists') {
+      console.log('Este email já está registrado.');
+    }
+    process.exit(1);
+  }
+}
+
+createAdmin();

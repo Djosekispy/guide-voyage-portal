@@ -9,10 +9,11 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "admin:create": "node scripts/create-admin.js",
-    "admin:create:default": "FIREBASE_SERVICE_ACCOUNT_PATH=./firebase-service-account.json node scripts/create-admin.js"
+    "admin:create": "ts-node-esm scripts/create-admin.ts",
+    "admin:create:default": "FIREBASE_SERVICE_ACCOUNT_PATH=./firebase-service-account.json ts-node-esm scripts/create-admin.ts"
   },
   "dependencies": {
+    "firebase-admin": "^11.11.0",
     "@googlemaps/js-api-loader": "^1.16.10",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.0",
@@ -83,6 +84,7 @@
     "lovable-tagger": "^1.1.7",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.11",
+    "ts-node": "^10.9.2",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
     "vite": "^5.4.1"
