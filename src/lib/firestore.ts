@@ -236,6 +236,69 @@ export interface Notification {
   createdAt: any;
 }
 
+// User interface and functions
+export interface User {
+  id: string;
+  uid: string;
+  name: string;
+  email: string;
+  userType: 'tourist' | 'guide' | 'admin';
+  phone?: string;
+  city?: string;
+  isActive?: boolean;
+  createdAt?: any;
+  updatedAt?: any;
+}
+
+export const getAllUsers = async (): Promise<User[]> => {
+  const querySnapshot = await getDocs(collection(db, 'users'));
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    uid: doc.id,
+    ...doc.data()
+  })) as User[];
+};
+
+export const getUserByUid = async (uid: string): Promise<User | null> => {
+  const docRef = doc(db, 'users', uid);
+  const docSnap = await getDoc(docRef);
+
+  if (docSnap.exists()) {
+    return { id: docSnap.id, uid: docSnap.id, ...docSnap.data() } as User;
+  }
+
+  return null;
+};
+
+export const createUser = async (uid: string, userData: Omit<User, 'id' | 'uid' | 'createdAt' | 'updatedAt'>) => {
+  const userRef = doc(db, 'users', uid);
+  await setDoc(userRef, {
+    ...userData,
+    uid,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  });
+};
+
+export const updateUser = async (uid: string, data: Partial<User>) => {
+  const userRef = doc(db, 'users', uid);
+  await updateDoc(userRef, {
+    ...data,
+    updatedAt: serverTimestamp()
+  });
+};
+
+export const deleteUser = async (uid: string) => {
+  await deleteDoc(doc(db, 'users', uid));
+};
+
+export const subscribeToUsers = (callback: (users: User[]) => void) => {
+  return onSnapshot(collection(db, 'users'), (querySnapshot) => {
+    const users = querySnapshot.docs.map(doc => ({ id: doc.id, uid: doc.id, ...doc.data() })) as User[];
+    callback(users);
+  });
+};
+
 // Bank Account Functions
 export const createBankAccount = async (accountData: Omit<BankAccount, 'id' | 'createdAt' | 'updatedAt'>) => {
   const docRef = await addDoc(collection(db, 'bankAccounts'), {

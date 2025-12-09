@@ -28,7 +28,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { collection, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore";
+import { collection, getDocs, doc, updateDoc, deleteDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { Search, Trash2, Plus, AlertCircle } from "lucide-react";
@@ -75,10 +75,17 @@ const AdminUsers = () => {
     const fetchUsers = async () => {
       try {
         const usersSnap = await getDocs(collection(db, "users"));
-        const usersData = usersSnap.docs.map(doc => ({
-          uid: doc.id,
-          ...doc.data()
-        })) as UserData[];
+        const usersData = usersSnap.docs.map(d => {
+          const data = d.data() as any;
+          return {
+            uid: d.id,
+            name: data.name || "",
+            email: data.email || "",
+            userType: (data.userType as UserData['userType']) || 'tourist',
+            phone: data.phone || '',
+            city: data.city || '',
+          } as UserData;
+        });
         setUsers(usersData);
         setFilteredUsers(usersData);
       } catch (error) {
@@ -102,9 +109,10 @@ const AdminUsers = () => {
     let filtered = users;
 
     if (searchTerm) {
+      const term = searchTerm.toLowerCase();
       filtered = filtered.filter(user =>
-        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase())
+        (user.name || '').toLowerCase().includes(term) ||
+        (user.email || '').toLowerCase().includes(term)
       );
     }
 
@@ -195,8 +203,8 @@ const AdminUsers = () => {
 
       const userId = userCredential.user.uid;
 
-      // Criar documento no Firestore
-      await updateDoc(doc(db, "users", userId), {
+      // Criar documento no Firestore (usar setDoc para novos documentos)
+      await setDoc(doc(db, "users", userId), {
         uid: userId,
         email: adminFormData.email,
         name: adminFormData.name,
@@ -204,6 +212,8 @@ const AdminUsers = () => {
         phone: '',
         city: '',
         isActive: true,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
       });
 
       // Adicionar à lista local
