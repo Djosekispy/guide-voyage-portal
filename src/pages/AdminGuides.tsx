@@ -183,7 +183,7 @@ const AdminGuides = () => {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => navigate(`/guia/perfil?id=${guide.id}`)}
+                              onClick={() => navigate(`/guia/perfil?guideId=${guide.id}`)}
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
