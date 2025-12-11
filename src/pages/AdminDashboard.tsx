@@ -36,7 +36,7 @@ const AdminDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!loading && userData?.userType !== 'admin') {
+    if (!loading && userData && userData.userType !== 'admin') {
       navigate('/');
     }
   }, [userData, loading, navigate]);
@@ -116,6 +116,17 @@ const AdminDashboard = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!userData || userData.userType !== 'admin') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-2">Acesso Negado</h1>
+          <p className="text-muted-foreground mb-4">Você não tem permissão para acessar esta página.</p>
+        </div>
       </div>
     );
   }

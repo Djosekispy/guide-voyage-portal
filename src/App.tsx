@@ -43,6 +43,9 @@ import AdminNotifications from "./pages/AdminNotifications";
 import AdminPayments from "./pages/AdminPayments";
 import AdminWithdrawals from "./pages/AdminWithdrawals";
 import AdminAnalytics from "./pages/AdminAnalytics";
+import AdminPackages from "./pages/AdminPackages";
+import AdminDestinations from "./pages/AdminDestinations";
+import AdminSettings from "./pages/AdminSettings";
 
 const queryClient = new QueryClient();
 
@@ -219,6 +222,21 @@ const App = () => (
             <Route path="/admin/analytics" element={
               <ProtectedRoute userType="admin">
                 <AdminAnalytics />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/pacotes" element={
+              <ProtectedRoute userType="admin">
+                <AdminPackages />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/destinos" element={
+              <ProtectedRoute userType="admin">
+                <AdminDestinations />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/configuracoes" element={
+              <ProtectedRoute userType="admin">
+                <AdminSettings />
               </ProtectedRoute>
             } />
 

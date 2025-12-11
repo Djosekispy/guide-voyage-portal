@@ -50,7 +50,7 @@ const HeroSection = () => {
 
         {/* CTAs */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-          {userData?.userType !== 'guide' && (
+          {(userData?.userType !== 'guide' && userData?.userType !== 'admin') && (
             <Button 
               variant="hero" 
               size="lg" 
@@ -61,7 +61,7 @@ const HeroSection = () => {
               Encontrar Guia
             </Button>
           )}
-          {userData?.userType !== 'guide' && (
+          {(userData?.userType !== 'guide' && userData?.userType !== 'admin') && (
             <Button 
               variant="outline" 
               size="lg" 
