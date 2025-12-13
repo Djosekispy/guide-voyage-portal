@@ -28,7 +28,9 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { collection, getDocs, doc, updateDoc, deleteDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { collection, getDocs, doc, getDoc, updateDoc, deleteDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { DEFAULT_GUIDE_DATA } from '@/mock/deafultProvider';
+import { createUser as createUserInFirestore } from '@/lib/firestore';
 import { db } from "@/lib/firebase";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { Search, Trash2, Plus, AlertCircle } from "lucide-react";
@@ -55,15 +57,16 @@ const AdminUsers = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
   const [isLoading, setIsLoading] = useState(true);
-  const [showCreateAdminDialog, setShowCreateAdminDialog] = useState(false);
-  const [adminFormData, setAdminFormData] = useState({
+  const [showCreateUserDialog, setShowCreateUserDialog] = useState(false);
+  const [userFormData, setUserFormData] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
+    userType: 'tourist' as 'tourist' | 'guide' | 'admin'
   });
-  const [isCreatingAdmin, setIsCreatingAdmin] = useState(false);
-  const [adminFormError, setAdminFormError] = useState("");
+  const [isCreatingUser, setIsCreatingUser] = useState(false);
+  const [userFormError, setUserFormError] = useState("");
 
   useEffect(() => {
     if (!loading && userData?.userType !== 'admin') {
@@ -151,6 +154,11 @@ const AdminUsers = () => {
         title: "Sucesso",
         description: "Tipo de usuário atualizado com sucesso"
       });
+      // If we changed to guide, ensure the guides document exists
+      if (newType === 'guide') {
+        const changedUser = users.find(u => u.uid === uid);
+        if (changedUser) await ensureGuideDocIfNeeded(uid, changedUser.name, changedUser.email);
+      }
     } catch (error) {
       console.error("Erro ao atualizar tipo de usuário:", error);
       toast({
@@ -161,95 +169,165 @@ const AdminUsers = () => {
     }
   };
 
-  const handleCreateAdmin = async () => {
-    setAdminFormError("");
+  // Ensure that when changing a user to 'guide' we create a 'guides' doc if it doesn't exist
+  const ensureGuideDocIfNeeded = async (uid: string, name: string, email: string) => {
+    try {
+      const guideRef = doc(db, 'guides', uid);
+      const guideSnap = await getDoc(guideRef);
+      if (!guideSnap.exists()) {
+        await setDoc(guideRef, {
+          id: uid,
+          uid,
+          name,
+          email,
+          phone: '',
+          city: '',
+          ...DEFAULT_GUIDE_DATA,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+      }
+    } catch (err) {
+      console.error('Erro ao garantir documento de guia:', err);
+    }
+  };
+
+  const handleCreateUser = async () => {
+    setUserFormError("");
 
     // Validações
-    if (!adminFormData.name.trim()) {
-      setAdminFormError("Nome é obrigatório");
+    if (!userFormData.name.trim()) {
+      setUserFormError("Nome é obrigatório");
       return;
     }
 
-    if (!adminFormData.email.trim()) {
-      setAdminFormError("Email é obrigatório");
+    if (!userFormData.email.trim()) {
+      setUserFormError("Email é obrigatório");
       return;
     }
 
-    if (!adminFormData.password) {
-      setAdminFormError("Senha é obrigatória");
+    if (!userFormData.password) {
+      setUserFormError("Senha é obrigatória");
       return;
     }
 
-    if (adminFormData.password.length < 6) {
-      setAdminFormError("Senha deve ter no mínimo 6 caracteres");
+    if (userFormData.password.length < 6) {
+      setUserFormError("Senha deve ter no mínimo 6 caracteres");
       return;
     }
 
-    if (adminFormData.password !== adminFormData.confirmPassword) {
-      setAdminFormError("As senhas não correspondem");
+    if (userFormData.password !== userFormData.confirmPassword) {
+      setUserFormError("As senhas não correspondem");
       return;
     }
 
     try {
-      setIsCreatingAdmin(true);
+      setIsCreatingUser(true);
       const auth = getAuth();
 
       // Criar usuário no Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(
         auth,
-        adminFormData.email,
-        adminFormData.password
+        userFormData.email,
+        userFormData.password
       );
 
       const userId = userCredential.user.uid;
 
-      // Criar documento no Firestore (usar setDoc para novos documentos)
-      await setDoc(doc(db, "users", userId), {
-        uid: userId,
-        email: adminFormData.email,
-        name: adminFormData.name,
-        userType: 'admin',
+      // Criar documento no Firestore para o usuário (usar helper)
+      await createUserInFirestore(userId, {
+        email: userFormData.email,
+        name: userFormData.name,
+        userType: userFormData.userType,
         phone: '',
         city: '',
-        isActive: true,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+        isActive: true
       });
+
+      // If creating guide, also create a guide profile
+      if (userFormData.userType === 'guide') {
+        try {
+          await createUserInFirestore(userId, userFormData as any);
+          await setDoc(doc(db, 'guides', userId), {
+            ...DEFAULT_GUIDE_DATA,
+            id: userId,
+            uid: userId,
+            name: userFormData.name,
+            email: userFormData.email,
+            phone: '',
+            city: '',
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          });
+        } catch (err) {
+          console.error('Error creating guide profile after user creation:', err);
+        }
+      }
 
       // Adicionar à lista local
       setUsers([...users, {
         uid: userId,
-        email: adminFormData.email,
-        name: adminFormData.name,
-        userType: 'admin',
+        email: userFormData.email,
+        name: userFormData.name,
+        userType: userFormData.userType,
         phone: '',
         city: '',
       }]);
 
       toast({
         title: "Sucesso",
-        description: `Admin '${adminFormData.name}' criado com sucesso!`
+        description: `Usuário '${userFormData.name}' criado com sucesso!`
       });
 
+      // Se for guia, criar também um documento em 'guides' com dados padronizados
+      if (userFormData.userType === 'guide') {
+        const guideData = {
+          id: userId,
+          uid: userId,
+          name: userFormData.name,
+          email: userFormData.email,
+          phone: '',
+          city: '',
+          description: DEFAULT_GUIDE_DATA.description,
+          experience: DEFAULT_GUIDE_DATA.experience,
+          pricePerHour: DEFAULT_GUIDE_DATA.pricePerHour,
+          languages: DEFAULT_GUIDE_DATA.languages,
+          specialties: DEFAULT_GUIDE_DATA.specialties,
+          rating: DEFAULT_GUIDE_DATA.rating,
+          reviewCount: DEFAULT_GUIDE_DATA.reviewCount,
+          isActive: DEFAULT_GUIDE_DATA.isActive,
+          photoURL: DEFAULT_GUIDE_DATA.photoURL,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        } as any;
+
+        try {
+          await setDoc(doc(db, 'guides', userId), guideData);
+        } catch (err) {
+          console.error('Erro ao criar documento de guia:', err);
+        }
+      }
+
       // Resetar formulário
-      setAdminFormData({
+      setUserFormData({
         name: "",
         email: "",
         password: "",
         confirmPassword: "",
+        userType: 'tourist'
       });
-      setShowCreateAdminDialog(false);
+      setShowCreateUserDialog(false);
     } catch (error: any) {
-      console.error("Erro ao criar admin:", error);
+      console.error("Erro ao criar usuário:", error);
       if (error.code === 'auth/email-already-in-use') {
-        setAdminFormError("Este email já está registrado");
+        setUserFormError("Este email já está registrado");
       } else if (error.code === 'auth/invalid-email') {
-        setAdminFormError("Email inválido");
+        setUserFormError("Email inválido");
       } else {
-        setAdminFormError(error.message || "Erro ao criar admin");
+        setUserFormError(error.message || "Erro ao criar usuário");
       }
     } finally {
-      setIsCreatingAdmin(false);
+      setIsCreatingUser(false);
     }
   };
 
@@ -276,9 +354,9 @@ const AdminUsers = () => {
             </div>
 
             <div className="flex justify-end">
-              <Button onClick={() => setShowCreateAdminDialog(true)} className="gap-2">
+              <Button onClick={() => setShowCreateUserDialog(true)} className="gap-2">
                 <Plus className="h-4 w-4" />
-                Criar Novo Admin
+                Criar Novo Usuário
               </Button>
             </div>
 
@@ -369,20 +447,20 @@ const AdminUsers = () => {
         </main>
       </div>
 
-      {/* Create Admin Dialog */}
-      <Dialog open={showCreateAdminDialog} onOpenChange={setShowCreateAdminDialog}>
+      {/* Create User Dialog */}
+      <Dialog open={showCreateUserDialog} onOpenChange={setShowCreateUserDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Criar Novo Administrador</DialogTitle>
+            <DialogTitle>Criar Novo Usuário</DialogTitle>
             <DialogDescription>
-              Preencha os dados abaixo para criar uma nova conta de administrador
+              Preencha os dados abaixo para criar uma nova conta de usuário
             </DialogDescription>
           </DialogHeader>
 
-          {adminFormError && (
+          {userFormError && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{adminFormError}</AlertDescription>
+              <AlertDescription>{userFormError}</AlertDescription>
             </Alert>
           )}
 
@@ -391,9 +469,9 @@ const AdminUsers = () => {
               <label className="text-sm font-medium">Nome Completo</label>
               <Input
                 placeholder="Ex: João Silva"
-                value={adminFormData.name}
-                onChange={(e) => setAdminFormData({ ...adminFormData, name: e.target.value })}
-                disabled={isCreatingAdmin}
+                value={userFormData.name}
+                onChange={(e) => setUserFormData({ ...userFormData, name: e.target.value })}
+                disabled={isCreatingUser}
               />
             </div>
 
@@ -402,9 +480,9 @@ const AdminUsers = () => {
               <Input
                 type="email"
                 placeholder="Ex: admin@guidevoyage.com"
-                value={adminFormData.email}
-                onChange={(e) => setAdminFormData({ ...adminFormData, email: e.target.value })}
-                disabled={isCreatingAdmin}
+                value={userFormData.email}
+                onChange={(e) => setUserFormData({ ...userFormData, email: e.target.value })}
+                disabled={isCreatingUser}
               />
             </div>
 
@@ -413,9 +491,9 @@ const AdminUsers = () => {
               <Input
                 type="password"
                 placeholder="Mínimo 6 caracteres"
-                value={adminFormData.password}
-                onChange={(e) => setAdminFormData({ ...adminFormData, password: e.target.value })}
-                disabled={isCreatingAdmin}
+                value={userFormData.password}
+                onChange={(e) => setUserFormData({ ...userFormData, password: e.target.value })}
+                disabled={isCreatingUser}
               />
             </div>
 
@@ -424,26 +502,40 @@ const AdminUsers = () => {
               <Input
                 type="password"
                 placeholder="Confirme a senha"
-                value={adminFormData.confirmPassword}
-                onChange={(e) => setAdminFormData({ ...adminFormData, confirmPassword: e.target.value })}
-                disabled={isCreatingAdmin}
+                value={userFormData.confirmPassword}
+                onChange={(e) => setUserFormData({ ...userFormData, confirmPassword: e.target.value })}
+                disabled={isCreatingUser}
               />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Tipo de Usuário</label>
+              <Select value={userFormData.userType} onValueChange={(value) => setUserFormData({...userFormData, userType: value as any})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione um tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="tourist">Turista</SelectItem>
+                  <SelectItem value="guide">Guia</SelectItem>
+                  <SelectItem value="admin">Administrador</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setShowCreateAdminDialog(false)}
-              disabled={isCreatingAdmin}
+              onClick={() => setShowCreateUserDialog(false)}
+              disabled={isCreatingUser}
             >
               Cancelar
             </Button>
             <Button
-              onClick={handleCreateAdmin}
-              disabled={isCreatingAdmin}
+              onClick={handleCreateUser}
+              disabled={isCreatingUser}
             >
-              {isCreatingAdmin ? "Criando..." : "Criar Admin"}
+              {isCreatingUser ? "Criando..." : "Criar Usuário"}
             </Button>
           </DialogFooter>
         </DialogContent>
