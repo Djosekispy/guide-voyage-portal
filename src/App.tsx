@@ -36,6 +36,7 @@ import GuideBilling from "./pages/GuideBilling";
 import GuideMessages from "./pages/GuideMessages";
 import GuideSettings from "./pages/GuideSettings";
 import AdminDashboard from "./pages/AdminDashboard";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import AdminUsers from "./pages/AdminUsers";
 import AdminGuides from "./pages/AdminGuides";
 import AdminBookings from "./pages/AdminBookings";
@@ -186,7 +187,9 @@ const App = () => (
             {/* Admin Routes - Protected */}
             <Route path="/admin/dashboard" element={
               <ProtectedRoute userType="admin">
-                <AdminDashboard />
+                <ErrorBoundary>
+                  <AdminDashboard />
+                </ErrorBoundary>
               </ProtectedRoute>
             } />
             <Route path="/admin/usuarios" element={

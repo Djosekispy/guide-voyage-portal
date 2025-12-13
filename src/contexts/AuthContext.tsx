@@ -33,6 +33,7 @@ interface AuthContextType {
   register: (email: string, password: string, userData: Omit<UserData, 'uid'>) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
+  refreshUserData?: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -40,7 +41,26 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    // In development, log detailed information to help debugging root cause.
+    if (import.meta.env.DEV) {
+      console.error('useAuth must be used within an AuthProvider — no provider was found for this component. Returning a fallback no-op context to avoid crash.');
+      // Add a stacktrace to help locate the caller
+      console.trace();
+    }
+
+    // Provide a safe fallback in case some component is rendered outside the provider
+    // This avoids hard throws which would cause the entire UI to go blank.
+    const noop = async () => { throw new Error('AuthProvider not mounted'); };
+    return {
+      user: null,
+      userData: null,
+      loading: true,
+      login: noop,
+      register: noop,
+      loginWithGoogle: noop,
+      logout: noop,
+      refreshUserData: noop,
+    } as AuthContextType;
   }
   return context;
 };
@@ -57,18 +77,30 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        setUser(user);
-        // Buscar dados adicionais do usuário no Firestore
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        if (userDoc.exists()) {
-          setUserData(userDoc.data() as UserData);
+      try {
+        if (user) {
+          setUser(user);
+          // Buscar dados adicionais do usuário no Firestore
+          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          if (userDoc.exists()) {
+            console.log(JSON.stringify(userDoc.data()))
+            setUserData(userDoc.data() as UserData);
+          } else {
+            // No Firestore doc found for this authenticated user
+            console.warn('[AuthContext] No Firestore user doc found for uid:', user.uid);
+            setUserData(null);
+          }
+        } else {
+          setUser(null);
+          setUserData(null);
         }
-      } else {
+      } catch (error) {
+        console.error('[AuthContext] Error in auth state changed handler:', error);
         setUser(null);
         setUserData(null);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return unsubscribe;
@@ -267,6 +299,21 @@ const loginWithGoogle = async () => {
     }
   };
 
+  const refreshUserData = async () => {
+    if (!auth.currentUser) return;
+    try {
+      const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
+      if (userDoc.exists()) {
+        setUserData(userDoc.data() as UserData);
+      } else {
+        console.warn('[AuthContext] refreshUserData found no document for uid:', auth.currentUser.uid);
+        setUserData(null);
+      }
+    } catch (error) {
+      console.error('[AuthContext] refreshUserData error:', error);
+    }
+  };
+
   const value: AuthContextType = {
     user,
     userData,
@@ -275,6 +322,7 @@ const loginWithGoogle = async () => {
     register,
     loginWithGoogle,
     logout
+    ,refreshUserData
   };
 
   return (

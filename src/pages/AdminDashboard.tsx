@@ -23,6 +23,8 @@ interface Stats {
 const AdminDashboard = () => {
   const { userData, loading } = useAuth();
   const navigate = useNavigate();
+  // Quick debug logs to surface state into the console
+  console.debug('[AdminDashboard] render', { loading, userData });
   const [stats, setStats] = useState<Stats>({
     totalUsers: 0,
     totalGuides: 0,
@@ -44,8 +46,10 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
+        console.debug('[AdminDashboard] fetchStats start');
         // Total de usuários
         const usersSnap = await getDocs(collection(db, "users"));
+        console.debug('[AdminDashboard] users fetched', { size: usersSnap.size });
         const totalUsers = usersSnap.size;
 
         // Guias e turistas
@@ -59,10 +63,12 @@ const AdminDashboard = () => {
 
         // Pacotes
         const packagesSnap = await getDocs(collection(db, "packages"));
+        console.debug('[AdminDashboard] packages fetched', { size: packagesSnap.size });
         const totalPackages = packagesSnap.size;
 
         // Reservas
         const bookingsSnap = await getDocs(collection(db, "bookings"));
+        console.debug('[AdminDashboard] bookings fetched', { size: bookingsSnap.size });
         const totalBookings = bookingsSnap.size;
 
         // Reservas pendentes
@@ -71,6 +77,7 @@ const AdminDashboard = () => {
           where("status", "==", "pending")
         );
         const pendingSnap = await getDocs(pendingQuery);
+        console.debug('[AdminDashboard] pending bookings fetched', { size: pendingSnap.size });
         const pendingBookings = pendingSnap.size;
 
         // Receita total
@@ -84,6 +91,7 @@ const AdminDashboard = () => {
 
         // Média de avaliações
         const reviewsSnap = await getDocs(collection(db, "reviews"));
+        console.debug('[AdminDashboard] reviews fetched', { size: reviewsSnap.size });
         let totalRating = 0;
         reviewsSnap.forEach((doc) => {
           totalRating += doc.data().rating || 0;
@@ -102,6 +110,10 @@ const AdminDashboard = () => {
         });
       } catch (error) {
         console.error("Erro ao buscar estatísticas:", error);
+        // Re-throw in development so errors reach ErrorBoundary / global handlers
+        if (import.meta.env.DEV) {
+          throw error;
+        }
       } finally {
         setIsLoading(false);
       }
