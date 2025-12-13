@@ -482,13 +482,15 @@ const GuideBilling = () => {
       <GuideSidebar />
       
       <div className="flex-1 lg:ml-64 px-4 pt-4">
+        <div className="max-w-6xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">Faturamento</h1>
           <p className="text-muted-foreground">Acompanhe seus ganhos e gerencie dados bancários</p>
         </div>
+        </div>
 
         {/* Filtro de período */}
-        <div className="flex justify-between items-center mb-6">
+          <div className="flex justify-between items-center mb-6">
           <Select value={timeRange} onValueChange={(value: "currentMonth" | "lastMonth" | "allTime") => setTimeRange(value)}>
             <SelectTrigger className="w-48">
               <SelectValue placeholder="Selecione o período" />
@@ -500,7 +502,7 @@ const GuideBilling = () => {
             </SelectContent>
           </Select>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 justify-end flex-shrink-0">
             <Button variant="ghost" onClick={() => navigate('/guia/EditProfile')}>
               <MapPin className="h-4 w-4 mr-2" />
               Editar Localização
@@ -512,7 +514,7 @@ const GuideBilling = () => {
         </div>
 
         {/* Cards de resumo */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 items-stretch">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center">
