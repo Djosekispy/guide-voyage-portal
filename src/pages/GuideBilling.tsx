@@ -615,18 +615,12 @@ const GuideBilling = () => {
             <div className="flex items-center gap-2">
               <Dialog open={isBankDialogOpen} onOpenChange={setIsBankDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button onClick={() => handleOpenBankDialog()}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Adicionar Conta
-                  </Button>
-                </DialogTrigger>
-              </Dialog>
-              <Button variant="outline" onClick={handleOpenWithdrawalDialog} className="gap-2">
-                <DollarSign className="h-4 w-4 mr-2" />
-                Solicitar Saque
-              </Button>
-            </div>
-              <DialogContent className="sm:max-w-[500px]">
+                    <Button onClick={() => handleOpenBankDialog()}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Adicionar Conta
+                    </Button>
+                  </DialogTrigger>
+                <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
                   <DialogTitle>
                     {isEditingBank ? 'Editar Conta Bancária' : 'Adicionar Conta Bancária'}
@@ -729,6 +723,10 @@ const GuideBilling = () => {
                 </div>
               </DialogContent>
             </Dialog>
+            <Button variant="outline" onClick={handleOpenWithdrawalDialog} className="gap-2">
+              <DollarSign className="h-4 w-4 mr-2" />
+              Solicitar Saque
+            </Button>
           </CardHeader>
           <CardContent>
             {bankAccounts.length === 0 ? (
