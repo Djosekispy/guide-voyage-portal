@@ -77,14 +77,3 @@ yarn dev
 ## 📜 Licença
 
 Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
-
-
-#TAREFAS EM FALTA
-- O Admin ao clicar em mensagens no painel , nao deve ir noutra pagina , deve abrir as mensagens mesmo ali na forma de outros menus aside com  o conteudo na direita
-- Adiconar formulario e a função de actualizar dados bancarios do guia no menu de facturamento
-- implementar a pagina e as funcoes de definicoes do menu definicoes no painel de guia
-- Fazer a pagina de gestao de passeis do guia funcionar perfeitamente com os dados vindo do banco de dados, e permitir editar e tudo mais
-- na pagina do perfil do guia na secção de passeios, a descricao deve ser reduzida, adiconar a opcao de ver mais e as imagens do pacote de ser um slaide show
-- A pagina de destino também tem de ser dinamica, me refiro os numeros de guias, tudo esta estatico, deve ser dinamico
-- Os botoes de torne-se um guia so deve aparecer se o usuario logado nao for guia.
-- O guia logado nao pode ver o botao fazer reserva ou favoritar, nao pode fazer nada que demostre interacao com outros guias

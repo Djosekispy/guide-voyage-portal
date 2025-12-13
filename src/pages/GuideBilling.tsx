@@ -3,9 +3,10 @@ import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Calendar, DollarSign, CreditCard, Banknote, Percent, Wallet, Plus, Edit, Trash2, Loader2, Building2, Star } from "lucide-react";
+import { Calendar, DollarSign, CreditCard, Banknote, Percent, Wallet, Plus, Edit, Trash2, Loader2, Building2, Star, MapPin } from "lucide-react";
 import GuideSidebar from "@/components/GuideSidebar";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from 'react-router-dom';
 import { 
   Booking, 
   getGuideBookings, 
@@ -16,12 +17,20 @@ import {
   deleteBankAccount,
   subscribeToGuideBankAccounts,
   setPrimaryBankAccount,
-  getGuideProfile
+  getGuideProfile,
+  createWithdrawalRequest,
+  updateWithdrawalRequest,
+  getWithdrawalsByGuide,
+  getWalletBalance,
+  updateWalletBalance,
+  createTransaction,
+  WithdrawalRequest,
+  WalletBalance
 } from "@/lib/firestore";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -37,8 +46,16 @@ interface BillingSummary {
 
 const GuideBilling = () => {
   const { user, userData } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [withdrawals, setWithdrawals] = useState<WithdrawalRequest[]>([]);
+  const [withdrawalsLoading, setWithdrawalsLoading] = useState(true);
+  const [isWithdrawalDialogOpen, setIsWithdrawalDialogOpen] = useState(false);
+  const [withdrawalAmount, setWithdrawalAmount] = useState<number | string>('');
+  const [selectedWithdrawalBank, setSelectedWithdrawalBank] = useState<string | null>(null);
+  const [isCreatingWithdrawal, setIsCreatingWithdrawal] = useState(false);
+  const [wallet, setWallet] = useState<WalletBalance | null>(null);
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<"currentMonth" | "lastMonth" | "allTime">("currentMonth");
   const [billing, setBilling] = useState<BillingSummary>({
@@ -94,6 +111,9 @@ const GuideBilling = () => {
           setBankAccounts(accounts);
         });
 
+        // Load withdrawals and wallet now that guide.id is known
+        loadWithdrawals(guide.id);
+        loadWallet(guide.id);
         return () => {
           unsubscribeBookings();
           unsubscribeBankAccounts();
@@ -116,6 +136,142 @@ const GuideBilling = () => {
       loadDashboardData();
     }
   }, [user, userData]);
+
+  useEffect(() => {
+    // when guideId changes, also refresh wallet and withdrawals
+    if (guideId) {
+      loadWithdrawals(guideId);
+      loadWallet(guideId);
+    }
+  }, [guideId]);
+
+  const loadWithdrawals = async (gId: string) => {
+    try {
+      setWithdrawalsLoading(true);
+      const data = await getWithdrawalsByGuide(gId);
+      setWithdrawals(data);
+    } catch (err) {
+      console.error('Erro ao carregar saques:', err);
+      toast({ title: 'Erro', description: 'Não foi possível carregar seu histórico de saques', variant: 'destructive' });
+    } finally {
+      setWithdrawalsLoading(false);
+    }
+  };
+
+  const loadWallet = async (gId: string) => {
+    try {
+      const w = await getWalletBalance(gId);
+      setWallet(w);
+    } catch (err) {
+      console.error('Erro ao carregar carteira:', err);
+    }
+  };
+
+  const formatKz = (value = 0) => {
+    return `${Number(value).toFixed(2)} Kz`;
+  };
+
+  const handleOpenWithdrawalDialog = () => {
+    setWithdrawalAmount('');
+    setSelectedWithdrawalBank(bankAccounts.length > 0 ? bankAccounts.find(b => b.isPrimary)?.id ?? bankAccounts[0].id : null);
+    setIsWithdrawalDialogOpen(true);
+  };
+
+  const handleRequestWithdrawal = async () => {
+    if (!guideId || !user) return;
+    if (!selectedWithdrawalBank) {
+      toast({ title: 'Erro', description: 'Selecione uma conta bancária para saque', variant: 'destructive' });
+      return;
+    }
+
+    const amountNumber = typeof withdrawalAmount === 'string' ? parseFloat(withdrawalAmount) : withdrawalAmount;
+    if (!amountNumber || amountNumber <= 0) {
+      toast({ title: 'Erro', description: 'Informe um valor válido para saque', variant: 'destructive' });
+      return;
+    }
+
+    const available = wallet?.currentBalance ?? 0;
+    if (amountNumber > available) {
+      toast({ title: 'Erro', description: 'Valor solicita maior que o saldo disponível', variant: 'destructive' });
+      return;
+    }
+
+    setIsCreatingWithdrawal(true);
+    try {
+      const chosenBank = bankAccounts.find(b => b.id === selectedWithdrawalBank);
+      const requestData = {
+        guideId: guideId,
+        guideName: user.displayName || userData?.name || '',
+        guideEmail: user.email || '',
+        amount: amountNumber,
+        bankAccountId: chosenBank?.id || '',
+        bankName: chosenBank?.bankName || '',
+        accountNumber: chosenBank?.accountNumber || '',
+        accountHolder: chosenBank?.accountHolder || '',
+        status: 'pending' as const
+      };
+
+      const newId = await createWithdrawalRequest(requestData as any);
+
+      // Update wallet: decrease currentBalance, increment pendingWithdrawal
+      const prevBalance = wallet?.currentBalance ?? 0;
+      const prevPending = wallet?.pendingWithdrawal ?? 0;
+      const newBalance = prevBalance - amountNumber;
+      const newPending = prevPending + amountNumber;
+
+      await updateWalletBalance(guideId, {
+        currentBalance: newBalance,
+        pendingWithdrawal: newPending,
+        lastWithdrawal: new Date().toISOString()
+      } as any);
+
+      // Create transaction record
+      await createTransaction({
+        guideId,
+        type: 'withdrawal',
+        amount: -amountNumber,
+        description: 'Solicitação de saque',
+        balanceBefore: prevBalance,
+        balanceAfter: newBalance
+      });
+
+      // Refresh
+      await loadWithdrawals(guideId);
+      await loadWallet(guideId);
+
+      toast({ title: 'Solicitação enviada', description: 'Sua solicitação de saque foi criada com sucesso.' });
+      setIsWithdrawalDialogOpen(false);
+    } catch (err) {
+      console.error('Error creating withdrawal:', err);
+      toast({ title: 'Erro', description: 'Não foi possível solicitar o saque', variant: 'destructive' });
+    } finally {
+      setIsCreatingWithdrawal(false);
+    }
+  };
+
+  const handleCancelWithdrawal = async (id: string, amount: number) => {
+    if (!guideId) return;
+    try {
+      // Mark withdrawal as rejected by guide
+      await updateWithdrawalRequest(id, { status: 'rejected', reason: 'Cancelado pelo guia' } as any);
+
+      // Refund the wallet: add back to currentBalance and remove pending
+      const prevBalance = wallet?.currentBalance ?? 0;
+      const prevPending = wallet?.pendingWithdrawal ?? 0;
+      const newBalance = prevBalance + amount;
+      const newPending = Math.max(prevPending - amount, 0);
+
+      await updateWalletBalance(guideId, { currentBalance: newBalance, pendingWithdrawal: newPending } as any);
+      await createTransaction({ guideId, type: 'admin_adjustment', amount: amount, description: 'Cancelamento de saque revertido', balanceBefore: prevBalance, balanceAfter: newBalance });
+
+      await loadWithdrawals(guideId);
+      await loadWallet(guideId);
+      toast({ title: 'Solicitação cancelada', description: 'O saque foi cancelado e o saldo retornou para sua carteira.' });
+    } catch (err) {
+      console.error('Erro ao cancelar saque:', err);
+      toast({ title: 'Erro', description: 'Não foi possível cancelar o saque', variant: 'destructive' });
+    }
+  };
 
   useEffect(() => {
     if (bookings.length > 0) {
@@ -327,7 +483,12 @@ const GuideBilling = () => {
             </SelectContent>
           </Select>
           
-          <Button variant="outline">
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" onClick={() => navigate('/guia/EditProfile')}>
+              <MapPin className="h-4 w-4 mr-2" />
+              Editar Localização
+            </Button>
+            <Button variant="outline">
             <Calendar className="h-4 w-4 mr-2" />
             Exportar relatório
           </Button>
@@ -349,6 +510,47 @@ const GuideBilling = () => {
               </p>
             </CardContent>
           </Card>
+
+          {/* Withdrawal Request Dialog */}
+          <Dialog open={isWithdrawalDialogOpen} onOpenChange={setIsWithdrawalDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Solicitar Saque</DialogTitle>
+                <DialogDescription>Solicite um saque para sua conta bancária registrada.</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-2">
+                <div>
+                  <label className="text-sm font-medium">Saldo disponível</label>
+                  <div className="text-lg font-bold">{wallet ? formatKz(wallet.currentBalance) : 'Carregando...'}</div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Conta para depósito</label>
+                  {bankAccounts.length === 0 ? (
+                    <div className="text-sm text-muted-foreground">Nenhuma conta bancária cadastrada. Adicione uma conta antes de solicitar um saque.</div>
+                  ) : (
+                    <Select value={selectedWithdrawalBank ?? undefined} onValueChange={(value: any) => setSelectedWithdrawalBank(value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione uma conta" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {bankAccounts.map((acc) => (
+                          <SelectItem key={acc.id} value={acc.id}>{acc.bankName} • ****{acc.accountNumber.slice(-4)} - {acc.accountHolder}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Valor (Kz)</label>
+                  <Input type="number" value={withdrawalAmount} onChange={(e) => setWithdrawalAmount(e.target.value)} placeholder="Ex: 15000" />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsWithdrawalDialogOpen(false)}>Cancelar</Button>
+                <Button onClick={handleRequestWithdrawal} disabled={isCreatingWithdrawal || bankAccounts.length === 0}>{isCreatingWithdrawal ? 'Solicitando...' : 'Solicitar Saque'}</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
           
           <Card>
             <CardHeader className="pb-2">
@@ -393,13 +595,20 @@ const GuideBilling = () => {
                 Gerencie suas contas bancárias para receber pagamentos
               </CardDescription>
             </div>
-            <Dialog open={isBankDialogOpen} onOpenChange={setIsBankDialogOpen}>
-              <DialogTrigger asChild>
-                <Button onClick={() => handleOpenBankDialog()}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Adicionar Conta
-                </Button>
-              </DialogTrigger>
+            <div className="flex items-center gap-2">
+              <Dialog open={isBankDialogOpen} onOpenChange={setIsBankDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button onClick={() => handleOpenBankDialog()}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Adicionar Conta
+                  </Button>
+                </DialogTrigger>
+              </Dialog>
+              <Button variant="outline" onClick={handleOpenWithdrawalDialog} className="gap-2">
+                <DollarSign className="h-4 w-4 mr-2" />
+                Solicitar Saque
+              </Button>
+            </div>
               <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
                   <DialogTitle>
@@ -568,6 +777,54 @@ const GuideBilling = () => {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Withdrawals History */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Histórico de Saques</CardTitle>
+            <CardDescription>Solicitações de saque feitas por você</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {withdrawalsLoading ? (
+              <div className="text-center py-8">Carregando histórico de saques...</div>
+            ) : withdrawals.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">Nenhuma solicitação encontrada</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Valor</TableHead>
+                      <TableHead>Conta</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Data</TableHead>
+                      <TableHead>Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {withdrawals.map((w) => (
+                      <TableRow key={w.id}>
+                        <TableCell className="font-bold text-green-600">{w.amount.toFixed(2)} Kz</TableCell>
+                        <TableCell className="text-xs">{w.bankName} • ****{w.accountNumber.slice(-4)}</TableCell>
+                        <TableCell>
+                          <Badge className={w.status === 'completed' ? 'bg-green-100 text-green-800' : w.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}>
+                            {w.status.charAt(0).toUpperCase() + w.status.slice(1)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-xs">{(new Date(w.createdAt?.seconds ? w.createdAt.toDate() : w.createdAt)).toLocaleString()}</TableCell>
+                        <TableCell>
+                          {w.status === 'pending' && (
+                            <Button variant="ghost" size="sm" onClick={() => handleCancelWithdrawal(w.id, w.amount)}>Cancelar</Button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
             )}
           </CardContent>
