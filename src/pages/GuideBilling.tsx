@@ -620,6 +620,7 @@ const GuideBilling = () => {
                       Adicionar Conta
                     </Button>
                   </DialogTrigger>
+                  
                 <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
                   <DialogTitle>
@@ -628,7 +629,9 @@ const GuideBilling = () => {
                   <DialogDescription>
                     Preencha os dados da sua conta bancária para receber pagamentos
                   </DialogDescription>
+                  
                 </DialogHeader>
+                
                 <div className="space-y-4 py-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="col-span-2">
@@ -729,6 +732,7 @@ const GuideBilling = () => {
               Solicitar Saque
             </Button>
           </CardHeader>
+          
           <CardContent>
             {bankAccounts.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
