@@ -21,6 +21,9 @@ import {
   WithdrawalRequest,
   getWithdrawalRequests,
   updateWithdrawalRequest,
+  getWalletBalance,
+  updateWalletBalance,
+  createTransaction,
 } from '@/lib/firestore';
 import { DollarSign, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
@@ -98,6 +101,54 @@ export default function AdminWithdrawals() {
       }
 
       await updateWithdrawalRequest(selectedWithdrawal.id, updateData);
+      // Sync wallet state depending on status transitions
+      try {
+        const guideId = selectedWithdrawal.guideId;
+        const wallet = await getWalletBalance(guideId);
+        const amount = selectedWithdrawal.amount;
+        const prevStatus = selectedWithdrawal.status;
+
+        if (wallet) {
+          let update: any = {};
+          if (newStatus === 'completed' && prevStatus !== 'completed') {
+            // Move from pending to withdrawn
+            const newPending = Math.max((wallet.pendingWithdrawal ?? 0) - amount, 0);
+            const newTotalWithdrawn = (wallet.totalWithdrawn ?? 0) + amount;
+            update.pendingWithdrawal = newPending;
+            update.totalWithdrawn = newTotalWithdrawn;
+            // record transaction for completion
+            await createTransaction({
+              guideId,
+              type: 'withdrawal',
+              amount: -amount,
+              description: 'Saque concluído',
+              balanceBefore: wallet.currentBalance ?? 0,
+              balanceAfter: wallet.currentBalance ?? 0
+            } as any);
+          } else if (newStatus === 'rejected' && prevStatus !== 'rejected') {
+            // Refund the amount to currentBalance and reduce pending
+            const newPending = Math.max((wallet.pendingWithdrawal ?? 0) - amount, 0);
+            const newBalance = (wallet.currentBalance ?? 0) + amount;
+            update.pendingWithdrawal = newPending;
+            update.currentBalance = newBalance;
+            // record refund transaction
+            await createTransaction({
+              guideId,
+              type: 'admin_adjustment',
+              amount: amount,
+              description: 'Reembolso por saque rejeitado',
+              balanceBefore: wallet.currentBalance ?? 0,
+              balanceAfter: newBalance
+            } as any);
+          }
+
+          if (Object.keys(update).length > 0) {
+            await updateWalletBalance(guideId, update);
+          }
+        }
+      } catch (syncError) {
+        console.error('Erro ao sincronizar carteira do guia:', syncError);
+      }
       setWithdrawals(withdrawals.map(w =>
         w.id === selectedWithdrawal.id
           ? { ...w, ...updateData } as WithdrawalRequest

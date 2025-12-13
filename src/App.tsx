@@ -33,6 +33,7 @@ import GuideProfilePage from "./pages/GuideProfileEdit";
 import UserProfilePage from "./pages/UserProfilePage";
 import GuideClients from "./pages/guideClients";
 import GuideBilling from "./pages/GuideBilling";
+import GuideWithdrawals from "./pages/GuideWithdrawals";
 import GuideMessages from "./pages/GuideMessages";
 import GuideSettings from "./pages/GuideSettings";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -96,6 +97,11 @@ const App = () => (
                 <GuideBilling />
               </ProtectedRoute>
             } />
+                    <Route path="/guia/saques" element={
+                      <ProtectedRoute userType="guide">
+                        <GuideWithdrawals />
+                      </ProtectedRoute>
+                    } />
             
             <Route path="/guia/reservas" element={
               <ProtectedRoute userType="guide">

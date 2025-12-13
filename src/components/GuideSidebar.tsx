@@ -9,6 +9,7 @@ import {
   Settings,
   MapPin,
   Wallet,
+  DollarSign,
   User
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -58,6 +59,11 @@ const GuideSidebar = () => {
       name: "Facturamento",
       href: "/guia/facturamento",
       icon: Wallet,
+    },
+    {
+      name: "Saques",
+      href: "/guia/saques",
+      icon: DollarSign,
     },
     {
       name: "Definições",

@@ -31,6 +31,7 @@ import {
 import { collection, getDocs, doc, getDoc, updateDoc, deleteDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { DEFAULT_GUIDE_DATA } from '@/mock/deafultProvider';
 import { createUser as createUserInFirestore } from '@/lib/firestore';
+import { createWalletBalance } from '@/lib/firestore';
 import { db } from "@/lib/firebase";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { Search, Trash2, Plus, AlertCircle } from "lucide-react";
@@ -186,6 +187,19 @@ const AdminUsers = () => {
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp()
         });
+        // Ensure wallet exists for guide
+        try {
+          await createWalletBalance({
+            guideId: uid,
+            guideName: name,
+            totalEarnings: 0,
+            currentBalance: 0,
+            totalWithdrawn: 0,
+            pendingWithdrawal: 0,
+          });
+        } catch (err) {
+          // ignore if exists or fails
+        }
       }
     } catch (err) {
       console.error('Erro ao garantir documento de guia:', err);
@@ -301,11 +315,22 @@ const AdminUsers = () => {
           updatedAt: serverTimestamp()
         } as any;
 
-        try {
-          await setDoc(doc(db, 'guides', userId), guideData);
-        } catch (err) {
+          try {
+            await setDoc(doc(db, 'guides', userId), guideData);
+            // Create wallet for new guide
+                await createWalletBalance({
+                  guideId: userId,
+                  guideName: userFormData.name,
+                  totalEarnings: 0,
+                  currentBalance: 0,
+                  totalWithdrawn: 0,
+                  pendingWithdrawal: 0,
+                });
+          } catch (err) {
           console.error('Erro ao criar documento de guia:', err);
         }
+              // Also ensure wallet exists for created guide (for safety)
+            // no-op: wallet created above
       }
 
       // Resetar formulário

@@ -22,6 +22,7 @@ import {
   updateWithdrawalRequest,
   getWithdrawalsByGuide,
   getWalletBalance,
+  createWalletBalance,
   updateWalletBalance,
   createTransaction,
   WithdrawalRequest,
@@ -160,7 +161,23 @@ const GuideBilling = () => {
 
   const loadWallet = async (gId: string) => {
     try {
-      const w = await getWalletBalance(gId);
+      let w = await getWalletBalance(gId);
+      if (!w) {
+        // create initial wallet if missing
+        try {
+          await createWalletBalance({
+            guideId: gId,
+            guideName: user?.displayName || userData?.name || '',
+            totalEarnings: 0,
+            currentBalance: 0,
+            totalWithdrawn: 0,
+            pendingWithdrawal: 0,
+          });
+        } catch (err) {
+          console.error('Erro ao criar carteira inicial:', err);
+        }
+        w = await getWalletBalance(gId);
+      }
       setWallet(w);
     } catch (err) {
       console.error('Erro ao carregar carteira:', err);
