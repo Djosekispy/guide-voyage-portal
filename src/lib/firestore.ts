@@ -35,6 +35,11 @@ export interface Guide {
   isActive: boolean;
   isProfileComplete?: boolean;
   photoURL?: string;
+  location?: {
+    name?: string;
+    lat: number;
+    lng: number;
+  };
   createdAt: any;
   updatedAt: any;
 }

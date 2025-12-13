@@ -10,6 +10,7 @@ import Header from "@/components/Header";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { getGuidePackages, getGuideProfile, getGuideReviews, Guide, Review, TourPackage } from "@/lib/firestore";
+import GoogleMapsAngola from '@/components/GoogleMapsAngola';
 
 const GuideProfile = () => {
   const [isFavorite, setIsFavorite] = useState(false);
@@ -95,7 +96,7 @@ const GuideProfile = () => {
                     
                     <div className="flex items-center gap-2 mb-4 justify-center md:justify-start">
                       <MapPin className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">{guide?.city}, Angola</span>
+                      <span className="text-muted-foreground">{guide?.city}{guide?.location?.name ? ` — ${guide.location.name}` : ''}, Angola</span>
                     </div>
                     
                     <div className="flex items-center gap-4 mb-4 justify-center md:justify-start">
@@ -291,15 +292,26 @@ const GuideProfile = () => {
          <TabsContent value="map" className="mt-6">
   <Card>
     <CardContent className="p-6">
-      <div className="bg-muted rounded-lg h-96 flex items-center justify-center">
-        <div className="text-center">
-          <MapPin className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-xl font-semibold mb-2">Mapa Interativo</h3>
-          <p className="text-muted-foreground">
-            Localização aproximada do guia em {guide?.city}
-          </p>
+      {guide?.location ? (
+        <GoogleMapsAngola
+          height="400px"
+          showControls={false}
+          showSearch={false}
+          allowSelection={false}
+          initialPosition={{ lat: guide.location.lat, lng: guide.location.lng }}
+          initialMarkerLabel={guide.location.name}
+        />
+      ) : (
+        <div className="bg-muted rounded-lg h-96 flex items-center justify-center">
+          <div className="text-center">
+            <MapPin className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-xl font-semibold mb-2">Mapa Interativo</h3>
+            <p className="text-muted-foreground">
+              Localização aproximada do guia em {guide?.city}
+            </p>
+          </div>
         </div>
-      </div>
+      )}
     </CardContent>
   </Card>
 </TabsContent>

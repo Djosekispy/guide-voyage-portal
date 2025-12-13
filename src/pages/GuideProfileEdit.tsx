@@ -12,6 +12,7 @@ import { X, ArrowLeft, Edit, Save, User, MapPin, Phone, Mail, Star, Languages } 
 import { useToast } from "@/components/ui/use-toast";
 import Header from "@/components/Header";
 import { Guide, updateGuideProfile } from "@/lib/firestore";
+import GoogleMapsAngola from '@/components/GoogleMapsAngola';
 import Footer from "@/components/Footer";
 
 const GuideProfilePage = () => {
@@ -31,6 +32,7 @@ const GuideProfilePage = () => {
     pricePerHour: 0,
     languages: [],
     specialties: [],
+    location: undefined,
     rating: 0,
     reviewCount: 0,
     isActive: true,
@@ -79,6 +81,10 @@ const GuideProfilePage = () => {
 
   const handleInputChange = (field: keyof Guide, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleLocationSelect = (location: { name?: string; lat: number; lng: number }) => {
+    setFormData(prev => ({ ...prev, location } as Guide));
   };
 
   const addLanguage = () => {
@@ -418,7 +424,10 @@ const GuideProfilePage = () => {
                       <h2 className="text-xl font-bold">{profileData.name}</h2>
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <MapPin className="w-4 h-4" />
-                        <span>{profileData.city || "Cidade não informada"}</span>
+                          <span>{profileData.city || "Cidade não informada"}</span>
+                          {profileData.location && (
+                            <span className="ml-2">• {profileData.location.name || `${profileData.location.lat.toFixed(4)}, ${profileData.location.lng.toFixed(4)}`}</span>
+                          )}
                       </div>
                     </div>
                   </div>
@@ -484,6 +493,31 @@ const GuideProfilePage = () => {
               )}
             </CardContent>
           </Card>
+          {/* Map selection - show in edit mode */}
+          {isEditing && (
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle>Defina sua localização</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-3">Selecione um ponto no mapa que represente sua localização ou área de atuação. Isso será exibido no seu perfil para turistas.</p>
+                <GoogleMapsAngola
+                  height="400px"
+                  showControls={true}
+                  allowSelection={true}
+                  initialPosition={formData.location ? { lat: formData.location.lat, lng: formData.location.lng } : null}
+                  initialMarkerLabel={formData.location?.name}
+                  onLocationSelect={handleLocationSelect}
+                />
+                {formData.location && (
+                  <div className="mt-3 text-sm text-muted-foreground">
+                    <div><strong>Local:</strong> {formData.location.name || 'Ponto selecionado'}</div>
+                    <div><strong>Coordenadas:</strong> {formData.location.lat.toFixed(6)}, {formData.location.lng.toFixed(6)}</div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
       <Footer/>

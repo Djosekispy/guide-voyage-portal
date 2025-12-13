@@ -15,12 +15,22 @@ interface GoogleMapsAngolaProps {
   height?: string;
   showSearch?: boolean;
   showControls?: boolean;
+  // Allow users (guides) to select a location on the map
+  allowSelection?: boolean;
+  // Initial position and marker label
+  initialPosition?: { lat: number; lng: number } | null;
+  initialMarkerLabel?: string;
+  onLocationSelect?: (location: { name?: string; lat: number; lng: number }) => void;
 }
 
 const GoogleMapsAngola: React.FC<GoogleMapsAngolaProps> = ({ 
   height = "500px", 
   showSearch = true, 
-  showControls = true 
+  showControls = true,
+  allowSelection = false,
+  initialPosition = null,
+  initialMarkerLabel,
+  onLocationSelect
 }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<google.maps.Map | null>(null);
@@ -28,6 +38,8 @@ const GoogleMapsAngola: React.FC<GoogleMapsAngolaProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [mapType, setMapType] = useState<'roadmap' | 'satellite' | 'hybrid' | 'terrain'>('roadmap');
   const [selectedDestination, setSelectedDestination] = useState<typeof angolaDestinations[0] | null>(null);
+  const [selectedMarker, setSelectedMarker] = useState<google.maps.Marker | null>(null);
+  const selectedMarkerRef = useRef<google.maps.Marker | null>(null);
   const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
   const [autocomplete, setAutocomplete] = useState<google.maps.places.Autocomplete | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -158,6 +170,20 @@ const [angolaDestinations, setAngolaDestinations] = useState<any[]>([]);
       });
 
       setMarkers(newMarkers);
+      // If an initialPosition is provided, create a marker and center map
+      if (initialPosition) {
+        const ip = initialPosition as { lat: number; lng: number };
+        const marker = new google.maps.Marker({
+          position: ip,
+          map: googleMap,
+          title: initialMarkerLabel || 'Localização selecionada',
+          animation: google.maps.Animation.DROP,
+        });
+        setSelectedMarker(marker);
+        selectedMarkerRef.current = marker;
+        googleMap.setCenter(ip);
+        googleMap.setZoom(12);
+      }
       setIsLoaded(true);
 
       // Função global para ver guias (chamada pelos InfoWindows)
@@ -166,10 +192,32 @@ const [angolaDestinations, setAngolaDestinations] = useState<any[]>([]);
         // Aqui você implementaria a navegação para a página de guias
       };
 
+      // When allowSelection is true, attach a click listener to select location
+      if (allowSelection) {
+        googleMap.addListener('click', (event: google.maps.MapMouseEvent) => {
+          const latLng = event.latLng;
+          if (!latLng) return;
+          // Remove previous selection marker
+          if (selectedMarkerRef.current) {
+            selectedMarkerRef.current.setMap(null);
+          }
+          const newMarker = new google.maps.Marker({ position: latLng.toJSON(), map: googleMap });
+          setSelectedMarker(newMarker);
+          selectedMarkerRef.current = newMarker;
+          // Reverse geocode to get a human-readable address
+          const geocoder = new google.maps.Geocoder();
+          geocoder.geocode({ location: latLng }, (results, status) => {
+            const name = (status === 'OK' && results && results[0]) ? results[0].formatted_address : undefined;
+            if (onLocationSelect) {
+              onLocationSelect({ name, lat: latLng.lat(), lng: latLng.lng() });
+            }
+          });
+        });
+      }
     } catch (error) {
       console.error('Erro ao carregar Google Maps:', error);
     }
-  }, [apiKey, mapType]);
+  }, [apiKey, mapType, allowSelection, initialPosition, onLocationSelect]);
 
   const handleMapTypeChange = (type: 'roadmap' | 'satellite' | 'hybrid' | 'terrain') => {
     setMapType(type);
