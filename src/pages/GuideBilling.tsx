@@ -723,6 +723,7 @@ const GuideBilling = () => {
                 </div>
               </DialogContent>
             </Dialog>
+            </div>
             <Button variant="outline" onClick={handleOpenWithdrawalDialog} className="gap-2">
               <DollarSign className="h-4 w-4 mr-2" />
               Solicitar Saque
@@ -956,6 +957,7 @@ const GuideBilling = () => {
           </Card>
         )}
       </div>
+    </div>
     </div>
   );
 };
