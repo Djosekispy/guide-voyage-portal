@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { 
   User, 
@@ -17,10 +18,15 @@ import {
   Eye,
   EyeOff,
   Mail,
-  Phone
+  Phone,
+  MapPin,
+  Languages,
+  Star,
+  X
 } from 'lucide-react';
 import Header from '@/components/Header';
 import GuideSidebar from '@/components/GuideSidebar';
+import GoogleMapsAngola from '@/components/GoogleMapsAngola';
 import { getGuideProfile, updateGuideProfile, Guide } from '@/lib/firestore';
 import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
@@ -46,8 +52,17 @@ export default function GuideSettings() {
     name: '',
     email: '',
     phone: '',
-    description: ''
+    city: '',
+    description: '',
+    experience: 0,
+    pricePerHour: 0,
+    languages: [] as string[],
+    specialties: [] as string[],
+    location: null as { name?: string; lat: number; lng: number } | null
   });
+
+  const [newLanguage, setNewLanguage] = useState('');
+  const [newSpecialty, setNewSpecialty] = useState('');
 
   // Configurações de notificação
   const [notifications, setNotifications] = useState<NotificationSettings>({
@@ -85,7 +100,13 @@ export default function GuideSettings() {
           name: profile.name || '',
           email: profile.email || '',
           phone: profile.phone || '',
-          description: profile.description || ''
+          city: profile.city || '',
+          description: profile.description || '',
+          experience: profile.experience || 0,
+          pricePerHour: profile.pricePerHour || 0,
+          languages: profile.languages || [],
+          specialties: profile.specialties || [],
+          location: profile.location || null
         });
       }
     } catch (error) {
@@ -108,7 +129,13 @@ export default function GuideSettings() {
       await updateGuideProfile(guideProfile.id, {
         name: profileData.name,
         phone: profileData.phone,
-        description: profileData.description
+        city: profileData.city,
+        description: profileData.description,
+        experience: profileData.experience,
+        pricePerHour: profileData.pricePerHour,
+        languages: profileData.languages,
+        specialties: profileData.specialties,
+        location: profileData.location || undefined
       });
       
       toast({
@@ -127,10 +154,47 @@ export default function GuideSettings() {
     }
   };
 
+  const handleLocationSelect = (location: { name?: string; lat: number; lng: number }) => {
+    setProfileData(prev => ({ ...prev, location }));
+  };
+
+  const addLanguage = () => {
+    if (newLanguage.trim() && !profileData.languages.includes(newLanguage.trim())) {
+      setProfileData(prev => ({
+        ...prev,
+        languages: [...prev.languages, newLanguage.trim()]
+      }));
+      setNewLanguage('');
+    }
+  };
+
+  const removeLanguage = (language: string) => {
+    setProfileData(prev => ({
+      ...prev,
+      languages: prev.languages.filter(l => l !== language)
+    }));
+  };
+
+  const addSpecialty = () => {
+    if (newSpecialty.trim() && !profileData.specialties.includes(newSpecialty.trim())) {
+      setProfileData(prev => ({
+        ...prev,
+        specialties: [...prev.specialties, newSpecialty.trim()]
+      }));
+      setNewSpecialty('');
+    }
+  };
+
+  const removeSpecialty = (specialty: string) => {
+    setProfileData(prev => ({
+      ...prev,
+      specialties: prev.specialties.filter(s => s !== specialty)
+    }));
+  };
+
   const handleSaveNotifications = async () => {
     setSaving(true);
     try {
-      // Simular salvamento de notificações (pode ser implementado com Firestore)
       await new Promise(resolve => setTimeout(resolve, 500));
       
       toast({
@@ -172,14 +236,11 @@ export default function GuideSettings() {
       const currentUser = auth.currentUser;
       if (!currentUser || !currentUser.email) throw new Error('Usuário não encontrado');
 
-      // Reautenticar usuário
       const credential = EmailAuthProvider.credential(
         currentUser.email,
         passwordData.currentPassword
       );
       await reauthenticateWithCredential(currentUser, credential);
-
-      // Atualizar senha
       await updatePassword(currentUser, passwordData.newPassword);
 
       toast({
@@ -236,18 +297,22 @@ export default function GuideSettings() {
         </div>
 
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full max-w-md grid-cols-3">
+          <TabsList className="grid w-full max-w-lg grid-cols-4">
             <TabsTrigger value="profile">
               <User className="h-4 w-4 mr-2" />
-              Perfil
+              <span className="hidden sm:inline">Perfil</span>
+            </TabsTrigger>
+            <TabsTrigger value="location">
+              <MapPin className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Localização</span>
             </TabsTrigger>
             <TabsTrigger value="notifications">
               <Bell className="h-4 w-4 mr-2" />
-              Notificações
+              <span className="hidden sm:inline">Notificações</span>
             </TabsTrigger>
             <TabsTrigger value="security">
               <Shield className="h-4 w-4 mr-2" />
-              Segurança
+              <span className="hidden sm:inline">Segurança</span>
             </TabsTrigger>
           </TabsList>
 
@@ -283,22 +348,30 @@ export default function GuideSettings() {
                         className="pl-10 bg-muted"
                       />
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      O email não pode ser alterado
-                    </p>
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Telefone</Label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Telefone</Label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="phone"
+                        value={profileData.phone}
+                        onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
+                        placeholder="+244 9XX XXX XXX"
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="city">Cidade</Label>
                     <Input
-                      id="phone"
-                      value={profileData.phone}
-                      onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
-                      placeholder="+244 9XX XXX XXX"
-                      className="pl-10"
+                      id="city"
+                      value={profileData.city}
+                      onChange={(e) => setProfileData(prev => ({ ...prev, city: e.target.value }))}
+                      placeholder="Ex: Luanda"
                     />
                   </div>
                 </div>
@@ -314,19 +387,59 @@ export default function GuideSettings() {
                   />
                 </div>
 
+                {/* Languages */}
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2"><Languages className="h-4 w-4" />Idiomas</Label>
+                  <div className="flex gap-2">
+                    <Input value={newLanguage} onChange={(e) => setNewLanguage(e.target.value)} placeholder="Ex: Português" onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addLanguage())} />
+                    <Button type="button" onClick={addLanguage}>Adicionar</Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">{profileData.languages.map((lang) => (<Badge key={lang} variant="secondary" className="flex items-center gap-1">{lang}<X className="w-3 h-3 cursor-pointer" onClick={() => removeLanguage(lang)} /></Badge>))}</div>
+                </div>
+
+                {/* Specialties */}
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2"><Star className="h-4 w-4" />Especialidades</Label>
+                  <div className="flex gap-2">
+                    <Input value={newSpecialty} onChange={(e) => setNewSpecialty(e.target.value)} placeholder="Ex: História" onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSpecialty())} />
+                    <Button type="button" onClick={addSpecialty}>Adicionar</Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">{profileData.specialties.map((spec) => (<Badge key={spec} variant="outline" className="flex items-center gap-1">{spec}<X className="w-3 h-3 cursor-pointer" onClick={() => removeSpecialty(spec)} /></Badge>))}</div>
+                </div>
+
                 <Button onClick={handleSaveProfile} disabled={saving}>
-                  {saving ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Save className="h-4 w-4 mr-2" />
-                  )}
+                  {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
                   Salvar Alterações
                 </Button>
               </CardContent>
             </Card>
           </TabsContent>
 
-          {/* Tab Notificações */}
+          {/* Tab Localização */}
+          <TabsContent value="location">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><MapPin className="h-5 w-5" />Minha Localização</CardTitle>
+                <CardDescription>Defina sua localização no mapa para que os turistas possam encontrá-lo</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {profileData.location && (
+                  <div className="p-4 bg-muted rounded-lg">
+                    <p className="text-sm font-medium">Localização Atual:</p>
+                    <p className="text-sm text-muted-foreground">{profileData.location.name || `Lat: ${profileData.location.lat.toFixed(6)}, Lng: ${profileData.location.lng.toFixed(6)}`}</p>
+                  </div>
+                )}
+                <div className="space-y-2">
+                  <Label>Clique no mapa para selecionar sua localização</Label>
+                  <GoogleMapsAngola height="400px" showSearch={true} showControls={false} allowSelection={true} initialPosition={profileData.location} initialMarkerLabel="Minha localização" onLocationSelect={handleLocationSelect} />
+                </div>
+                <Button onClick={handleSaveProfile} disabled={saving}>
+                  {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+                  Salvar Localização
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
           <TabsContent value="notifications">
             <Card>
               <CardHeader>
