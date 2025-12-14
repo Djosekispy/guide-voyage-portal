@@ -388,6 +388,33 @@ const GuideProfilePage = () => {
                     </div>
                   </div>
 
+                  {/* Localização no Mapa */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2 flex items-center gap-2">
+                      <MapPin className="w-4 h-4" />
+                      Minha Localização
+                    </label>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Clique no mapa para definir sua localização
+                    </p>
+                    {formData.location && (
+                      <div className="p-3 bg-muted rounded-lg mb-4">
+                        <p className="text-sm">
+                          <strong>Localização atual:</strong> {formData.location.name || `${formData.location.lat.toFixed(6)}, ${formData.location.lng.toFixed(6)}`}
+                        </p>
+                      </div>
+                    )}
+                    <GoogleMapsAngola 
+                      height="300px"
+                      showSearch={true}
+                      showControls={false}
+                      allowSelection={true}
+                      initialPosition={formData.location}
+                      initialMarkerLabel="Minha localização"
+                      onLocationSelect={handleLocationSelect}
+                    />
+                  </div>
+
                   <div className="flex justify-between pt-4">
                     <Button 
                       type="button" 
