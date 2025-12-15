@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Header from "@/components/Header";
-import { Booking, getGuideProfile, getTouristBookings, updateBookingStatus } from "@/lib/firestore";
+import { Booking, getGuideById, getTouristBookings, updateBookingStatus } from "@/lib/firestore";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -14,23 +14,29 @@ import { toast } from "sonner";
 const TouristBookings = () => {
  const [bookings, setBookings] = useState<any>([]);
 const [loading, setLoading] = useState(true);
-const [isChanging, setLsChanging] = useState(false);
+const [changingBookingId, setChangingBookingId] = useState<string | null>(null);
 const { user } = useAuth();
 const navigate = useNavigate();
-   const handleMessageGuide = (id:string, name: string, photoURL : string) => {
-    navigate(`/mensagens?guideId=${id}&guideName=${encodeURIComponent(name)}&guidePhotoURL=${encodeURIComponent(photoURL || '')}`);
+
+   const handleMessageGuide = (guideUid: string, name: string, photoURL : string) => {
+    // Usa o uid do guia para criar conversa
+    navigate(`/mensagens?guideId=${guideUid}&guideName=${encodeURIComponent(name)}&guidePhotoURL=${encodeURIComponent(photoURL || '')}`);
   };
 
 const modifyBookingStatus = async (bookingId: string, newStatus: Booking["status"]) => {
   try {
-    setLsChanging(true);
+    setChangingBookingId(bookingId);
     await updateBookingStatus(bookingId, newStatus);
+    // Atualizar o estado local
+    setBookings((prev: any[]) => 
+      prev.map((b: any) => b.id === bookingId ? { ...b, status: newStatus } : b)
+    );
     toast.success("Status da reserva atualizado com sucesso!");
   } catch (error) {
     console.error(error);
     toast.error("Erro ao atualizar o status da reserva.");
   } finally {
-    setLsChanging(false);
+    setChangingBookingId(null);
   }
 };
 
@@ -43,9 +49,10 @@ useEffect(() => {
       const bookingsWithGuideInfo = await Promise.all(
         bookingsData.map(async (booking) => {
           if (booking.guideId) {
-            const guide = await getGuideProfile(booking.guideId);
+            const guide = await getGuideById(booking.guideId);
             return {
               ...booking,
+              guideUid: guide?.uid || booking.guideId,
               guidePhotoURL: guide?.photoURL,
               guideRating: guide?.rating,
               guideDescription: guide?.description,
@@ -155,39 +162,38 @@ useEffect(() => {
               {booking.status === 'Pendente' && (
                 <>
                {user?.uid && 
-                  <Button variant="outline" onClick={() => handleMessageGuide(booking.guideId, booking.guideName, booking.guidePhotoURL)}>
-                                            <MessageSquare className="h-4 w-4 mr-2" />
-                                            Mensagem
-                                          </Button>}
-                                <Button
-                disabled={isChanging}
-                variant="destructive"
-                size="sm"
-                onClick={() => modifyBookingStatus(booking.id, 'Cancelado')}
-              >
-                {isChanging ? (
-                  <>
-                    <Loader className="w-4 h-4 mr-2 animate-spin" />
-                    Processando...
-                  </>
-                ) : (
-                  <>
-                    <X className="w-4 h-4 mr-2" />
-                    Cancelar
-                  </>
-                )}
-              </Button>
-
+                  <Button variant="outline" onClick={() => handleMessageGuide(booking.guideUid || booking.guideId, booking.guideName, booking.guidePhotoURL)}>
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Mensagem
+                  </Button>}
+                  <Button
+                    disabled={changingBookingId === booking.id}
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => modifyBookingStatus(booking.id, 'Cancelado')}
+                  >
+                    {changingBookingId === booking.id ? (
+                      <>
+                        <Loader className="w-4 h-4 mr-2 animate-spin" />
+                        Processando...
+                      </>
+                    ) : (
+                      <>
+                        <X className="w-4 h-4 mr-2" />
+                        Cancelar
+                      </>
+                    )}
+                  </Button>
                 </>
               )}
               
               {booking.status === 'Confirmado' && (
                 <>
                  {user?.uid && 
-                  <Button variant="outline" onClick={() => handleMessageGuide(booking.guideId, booking.guideName, booking.guidePhotoURL)}>
-                                            <MessageSquare className="h-4 w-4 mr-2" />
-                                            Mensagem
-                                          </Button>}
+                  <Button variant="outline" onClick={() => handleMessageGuide(booking.guideUid || booking.guideId, booking.guideName, booking.guidePhotoURL)}>
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Mensagem
+                  </Button>}
                   <Button variant="outline" size="sm">
                     Ver Detalhes
                   </Button>
