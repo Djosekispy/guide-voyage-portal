@@ -26,7 +26,7 @@ const GuideSidebar = () => {
       icon: LayoutDashboard,
     },
     {
-      name: "Passeios",
+      name: "Pacotes",
       href: "/guia/passeios",
       icon: MapPin,
     },

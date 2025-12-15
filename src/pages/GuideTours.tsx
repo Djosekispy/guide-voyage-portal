@@ -59,15 +59,16 @@ const GuideTours = () => {
 
       const guideProfile = await getGuideProfile(user.uid);
       if (guideProfile) {
-        setGuideId(guideProfile.id);
-        const packages = await getGuidePackages(guideProfile.id);
+        // Usar uid para criar pacotes (consistente com verificação de booking)
+        setGuideId(user.uid);
+        const packages = await getGuidePackages(user.uid);
         setTours(packages);
       }
     } catch (error) {
-      console.error('Erro ao carregar passeios:', error);
+      console.error('Erro ao carregar pacotes:', error);
       toast({
         title: "Erro",
-        description: "Não foi possível carregar seus passeios",
+        description: "Não foi possível carregar seus pacotes",
         variant: "destructive"
       });
     } finally {
@@ -102,7 +103,7 @@ const GuideTours = () => {
 
       toast({
         title: "Sucesso!",
-        description: "Passeio criado com sucesso"
+        description: "Pacote criado com sucesso"
       });
 
       setNewTour({
@@ -120,10 +121,10 @@ const GuideTours = () => {
       setIsCreateDialogOpen(false);
       loadTours();
     } catch (error) {
-      console.error('Erro ao criar passeio:', error);
+      console.error('Erro ao criar pacote:', error);
       toast({
         title: "Erro",
-        description: "Não foi possível criar o passeio",
+        description: "Não foi possível criar o pacote",
         variant: "destructive"
       });
     } finally {
@@ -148,17 +149,17 @@ const GuideTours = () => {
 
       toast({
         title: "Sucesso!",
-        description: "Passeio atualizado com sucesso"
+        description: "Pacote atualizado com sucesso"
       });
 
       setIsEditDialogOpen(false);
       setSelectedTour(null);
       loadTours();
     } catch (error) {
-      console.error('Erro ao atualizar passeio:', error);
+      console.error('Erro ao atualizar pacote:', error);
       toast({
         title: "Erro",
-        description: "Não foi possível atualizar o passeio",
+        description: "Não foi possível atualizar o pacote",
         variant: "destructive"
       });
     } finally {
@@ -171,13 +172,13 @@ const GuideTours = () => {
       await deleteTourPackage(id);
       toast({
         title: "Sucesso!",
-        description: "Passeio removido com sucesso"
+        description: "Pacote removido com sucesso"
       });
       loadTours();
     } catch (error) {
       toast({
         title: "Erro",
-        description: "Não foi possível remover o passeio",
+        description: "Não foi possível remover o pacote",
         variant: "destructive"
       });
     }
@@ -242,7 +243,7 @@ const GuideTours = () => {
   const renderPackageForm = (data: typeof newTour | TourPackage, isEdit: boolean = false) => (
     <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto">
       <div className="grid gap-2">
-        <Label htmlFor="title">Título do Passeio</Label>
+        <Label htmlFor="title">Título do Pacote</Label>
         <Input
           id="title"
           value={data.title}
@@ -443,21 +444,21 @@ const GuideTours = () => {
       <div className="flex-1 lg:ml-64 px-4 pt-4">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">Meus Passeios</h1>
-            <p className="text-muted-foreground">Gerencie seus passeios turísticos</p>
+            <h1 className="text-3xl font-bold text-foreground mb-2">Meus Pacotes</h1>
+            <p className="text-muted-foreground">Gerencie seus pacotes turísticos</p>
           </div>
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
-                Criar Passeio
+                Criar Pacote
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[600px]">
               <DialogHeader>
-                <DialogTitle>Criar Novo Passeio</DialogTitle>
+                <DialogTitle>Criar Novo Pacote</DialogTitle>
                 <DialogDescription>
-                  Preencha os detalhes do seu novo passeio turístico
+                  Preencha os detalhes do seu novo pacote turístico
                 </DialogDescription>
               </DialogHeader>
               {renderPackageForm(newTour)}
@@ -467,7 +468,7 @@ const GuideTours = () => {
                 </Button>
                 <Button onClick={handleCreateTour} disabled={isSaving}>
                   {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                  Criar Passeio
+                  Criar Pacote
                 </Button>
               </div>
             </DialogContent>
@@ -478,9 +479,9 @@ const GuideTours = () => {
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
-              <DialogTitle>Editar Passeio</DialogTitle>
+              <DialogTitle>Editar Pacote</DialogTitle>
               <DialogDescription>
-                Atualize os detalhes do seu passeio
+                Atualize os detalhes do seu pacote
               </DialogDescription>
             </DialogHeader>
             {selectedTour && renderPackageForm(selectedTour, true)}

@@ -441,6 +441,27 @@ export const getGuideProfile = async (uid: string): Promise<Guide | null> => {
   } as Guide;
 };
 
+// Get guide by Firestore document ID
+export const getGuideById = async (guideId: string): Promise<Guide | null> => {
+  try {
+    const guideRef = doc(db, 'guides', guideId);
+    const guideSnap = await getDoc(guideRef);
+    
+    if (!guideSnap.exists()) {
+      // Fallback: try querying by uid in case guideId is actually a uid
+      return await getGuideProfile(guideId);
+    }
+    
+    return {
+      id: guideSnap.id,
+      ...guideSnap.data()
+    } as Guide;
+  } catch (error) {
+    console.error("Error getting guide by ID:", error);
+    return null;
+  }
+};
+
 export const getTourPackage = async (packageId: string): Promise<TourPackage | null> => {
   try {
     const packageRef = doc(db, 'tourPackages', packageId);
