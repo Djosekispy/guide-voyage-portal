@@ -43,7 +43,7 @@ export default function MessagesPage() {
             const newConversationId = await createConversation(
               user.uid,
               user.displayName || 'Usuário',
-              user.photoURL || "",
+              user.photoURL || null,
               guideId,
               guideName || 'Guia',
               guidePhotoURL
