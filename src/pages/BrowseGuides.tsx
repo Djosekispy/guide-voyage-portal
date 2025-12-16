@@ -21,7 +21,11 @@ import {
   Calendar,
   Package,
   DollarSign,
-  Eye
+  Eye,
+  ChevronDown,
+  ChevronUp,
+  Menu,
+  X
 } from 'lucide-react';
 import GoogleMapsAngola from '@/components/GoogleMapsAngola';
 import { Favorite, 
@@ -41,10 +45,10 @@ import { useAuth } from '@/contexts/AuthContext';
 export default function BrowseGuides() {
   const navigate = useNavigate();
   const { toast } = useToast();
-   const [searchParams, setSearchParams] = useSearchParams();
-   const queryParam = searchParams.get('city');
-   const { user } = useAuth();
-   const [reviews, setReviews] = useState<Review[]>([]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const queryParam = searchParams.get('city');
+  const { user } = useAuth();
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [searchTerm, setSearchTerm] = useState(queryParam || '');
   const [selectedCity, setSelectedCity] = useState('');
   const [priceRange, setPriceRange] = useState('');
@@ -56,30 +60,31 @@ export default function BrowseGuides() {
   const [isGuideDetailOpen, setIsGuideDetailOpen] = useState(false);
   const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [isFavoritedMap, setIsFavoritedMap] = useState<Record<string, boolean>>({});
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [showMobileMap, setShowMobileMap] = useState(false);
 
+  useEffect(() => {
+    if (!user?.uid) {
+      setFavorites([]);
+      setIsFavoritedMap({});
+      return;
+    }
 
-useEffect(() => {
-  if (!user?.uid) {
-    setFavorites([]);
-    setIsFavoritedMap({});
-    return;
-  }
+    const unsubscribe = subscribeToUserFavorites(user?.uid, (fetchedFavorites) => {
+      setFavorites(fetchedFavorites);
 
-  const unsubscribe = subscribeToUserFavorites(user?.uid, (fetchedFavorites) => {
-    setFavorites(fetchedFavorites);
+      const favoritedMap = fetchedFavorites.reduce((acc, fav) => {
+        acc[fav.guideId] = true;
+        return acc;
+      }, {} as Record<string, boolean>);
 
-    const favoritedMap = fetchedFavorites.reduce((acc, fav) => {
-      acc[fav.guideId] = true;
-      return acc;
-    }, {} as Record<string, boolean>);
+      setIsFavoritedMap(favoritedMap);
+    });
 
-    setIsFavoritedMap(favoritedMap);
-  });
+    return () => unsubscribe();
+  }, [user?.uid]);
 
-  return () => unsubscribe();
-}, [user?.uid]);
-
-   const handleMessageGuide = (id:string, name: string, photoURL : string) => {
+  const handleMessageGuide = (id:string, name: string, photoURL : string) => {
     navigate(`/mensagens?guideId=${id}&guideName=${encodeURIComponent(name)}&guidePhotoURL=${encodeURIComponent(photoURL || '')}`);
   };
 
@@ -103,7 +108,6 @@ useEffect(() => {
           : `Você removeu ${guide.name} dos favoritos`,
       });
       
-      // Atualizar estado local
       setIsFavoritedMap(prev => ({
         ...prev,
         [guide.id]: isNowFavorited
@@ -117,26 +121,27 @@ useEffect(() => {
     }
   };
 
-const cities = [
-  'Bengo',
-  'Benguela',
-  'Bié',
-  'Cabinda',
-  'Cuando Cubango',
-  'Cuanza Norte',
-  'Cuanza Sul',
-  'Cunene',
-  'Huambo',
-  'Huíla',
-  'Luanda',
-  'Lunda Norte',
-  'Lunda Sul',
-  'Malanje',
-  'Moxico',
-  'Namibe',
-  'Uíge',
-  'Zaire'
-];
+  const cities = [
+    'Bengo',
+    'Benguela',
+    'Bié',
+    'Cabinda',
+    'Cuando Cubango',
+    'Cuanza Norte',
+    'Cuanza Sul',
+    'Cunene',
+    'Huambo',
+    'Huíla',
+    'Luanda',
+    'Lunda Norte',
+    'Lunda Sul',
+    'Malanje',
+    'Moxico',
+    'Namibe',
+    'Uíge',
+    'Zaire'
+  ];
+
   const priceRanges = [
     { label: 'Até 10.000 AOA', value: '0-10000' },
     { label: '10.000 - 15.000 AOA', value: '10000-15000' },
@@ -169,11 +174,11 @@ const cities = [
   };
 
   const handleViewGuide = async (guide: Guide) => {
-    
     setSelectedGuide(guide);
     setIsGuideDetailOpen(true);
-        const guideId = guide.uid
-      try {
+    const guideId = guide.uid;
+    
+    try {
       const [guide, guideReviews] = await Promise.all([
         getGuideProfile(guideId),
         getGuideReviews(guideId)
@@ -197,11 +202,12 @@ const cities = [
   };
 
   // Filtrar guias
-  const filteredGuides =  guides.filter(guide => {
+  const filteredGuides = guides.filter(guide => {
     const matchesSearch = guide.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          guide.specialties.some(specialty => 
                            specialty.toLowerCase().includes(searchTerm.toLowerCase())
-                         ) || guide.city.toLowerCase().includes(searchTerm.toLowerCase()) ||  guide.description.toLowerCase().includes(searchTerm.toLowerCase());
+                         ) || guide.city.toLowerCase().includes(searchTerm.toLowerCase()) ||  
+                         guide.description.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesCity = !selectedCity || guide.city === selectedCity;
     
@@ -240,95 +246,169 @@ const cities = [
   }
 
   return (
-      <div className="min-h-screen">
-          <Header />
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-4">Descobrir Guias</h1>
-        <p className="text-xl text-muted-foreground mb-6">
-          Encontre guias locais experientes para explorar as maravilhas de Angola
-        </p>
+    <div className="min-h-screen">
+      <Header />
+      <div className="container mx-auto px-4 py-8">
+        {/* Header e título */}
+        <div className="mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold mb-4">Descobrir Guias</h1>
+          <p className="text-lg md:text-xl text-muted-foreground mb-6">
+            Encontre guias locais experientes para explorar as maravilhas de Angola
+          </p>
 
-        {/* Filtros */}
-        <div className="flex flex-wrap gap-4 mb-6">
-          <div className="relative flex-1 min-w-[300px]">
+          {/* Barra de busca principal */}
+          <div className="relative mb-6">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
             <Input
               placeholder="Buscar por nome, cidade ou especialidade..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-12"
-          
+              className="pl-12 w-full"
             />
           </div>
-          
-          <Select value={selectedCity} 
-               onValueChange={(value) => {
-        value === 'cidades' 
-          ? (setSelectedCity(''), setSearchTerm('')) 
-          : (setSelectedCity(value), setSearchTerm(value));
-      }}
-    >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Cidade" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="cidades">Todas as cidades</SelectItem>
-              {cities.map(city => (
-                <SelectItem key={city} value={city}>{city}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
 
-          <Select value={priceRange} onValueChange={setPriceRange}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Faixa de preço" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="precos">Todos os preços</SelectItem>
-              {priceRanges.map(range => (
-                <SelectItem key={range.value} value={range.value}>{range.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {/* Botão para mostrar filtros em mobile */}
+          <div className="flex flex-wrap gap-3 mb-6">
+            <Button
+              variant="outline"
+              className="md:hidden"
+              onClick={() => setShowMobileFilters(!showMobileFilters)}
+            >
+              {showMobileFilters ? <ChevronUp className="h-4 w-4 mr-2" /> : <ChevronDown className="h-4 w-4 mr-2" />}
+              Filtros
+            </Button>
 
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-[150px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="rating">Avaliação</SelectItem>
-              <SelectItem value="price">Preço</SelectItem>
-              <SelectItem value="experience">Experiência</SelectItem>
-            </SelectContent>
-          </Select>
+            <Button
+              variant="outline"
+              className="md:hidden"
+              onClick={() => setShowMobileMap(!showMobileMap)}
+            >
+              <MapPin className="h-4 w-4 mr-2" />
+              Mapa
+            </Button>
+          </div>
+
+          {/* Filtros - Visível em desktop, condicional em mobile */}
+          <div className={`${showMobileFilters ? 'block' : 'hidden'} md:block mb-6`}>
+            <div className="flex flex-col md:flex-row flex-wrap gap-4 p-4 md:p-0 bg-card md:bg-transparent rounded-lg md:rounded-none">
+              <Select value={selectedCity} 
+                onValueChange={(value) => {
+                  value === 'cidades' 
+                    ? (setSelectedCity(''), setSearchTerm('')) 
+                    : (setSelectedCity(value), setSearchTerm(value));
+                }}
+              >
+                <SelectTrigger className="w-full md:w-[180px]">
+                  <SelectValue placeholder="Cidade" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="cidades">Todas as cidades</SelectItem>
+                  {cities.map(city => (
+                    <SelectItem key={city} value={city}>{city}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={priceRange} onValueChange={setPriceRange}>
+                <SelectTrigger className="w-full md:w-[200px]">
+                  <SelectValue placeholder="Faixa de preço" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="precos">Todos os preços</SelectItem>
+                  {priceRanges.map(range => (
+                    <SelectItem key={range.value} value={range.value}>{range.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-full md:w-[150px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="rating">Avaliação</SelectItem>
+                  <SelectItem value="price">Preço</SelectItem>
+                  <SelectItem value="experience">Experiência</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <p className="text-muted-foreground mb-6">
+            {filteredGuides.length} guia{filteredGuides.length !== 1 ? 's' : ''} encontrado{filteredGuides.length !== 1 ? 's' : ''} por <b>{searchTerm}</b>  
+          </p>
         </div>
 
-        <p className="text-muted-foreground mb-6">
-          {filteredGuides.length} guia{filteredGuides.length !== 1 ? 's' : ''} encontrado{filteredGuides.length !== 1 ? 's' : ''} por <b>{searchTerm}</b>  
-        </p>
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Lista de Guias */}
-        <div className="lg:col-span-2">
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 gap-6">
+        {/* Layout principal */}
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Conteúdo principal - Cards */}
+          <div className="lg:w-2/3">
+            {/* Mapa em mobile (condicional) */}
+            {showMobileMap && (
+              <div className="mb-6 md:hidden">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <MapPin className="h-5 w-5 mr-2" />
+                      Localização dos Guias
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-3">
+                    <GoogleMapsAngola 
+                      height="300px"
+                      showSearch={true}
+                      showControls={true}
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Lista de Cards - Vertical */}
+            <div className="space-y-4">
               {sortedGuides.map((guide) => (
-                <Card key={guide.id} className="hover:shadow-lg transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      <div className="relative">
-                        <Avatar className="h-16 w-16">
-                          <AvatarImage src={guide.photoURL} alt={guide.name} />
-                          <AvatarFallback>{guide.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                        </Avatar>
-                        {guide.isActive && (
-                          <div className="absolute -bottom-1 -right-1 h-5 w-5 bg-green-500 border-2 border-white rounded-full"></div>
-                        )}
+                <Card key={guide.id} className="hover:shadow-lg transition-shadow overflow-hidden">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex flex-col sm:flex-row items-start gap-4">
+                      {/* Avatar e status */}
+                      <div className="flex-shrink-0 self-center sm:self-start">
+                        <div className="relative">
+                          <Avatar className="h-16 w-16">
+                            <AvatarImage src={guide.photoURL} alt={guide.name} />
+                            <AvatarFallback>{guide.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                          </Avatar>
+                          {guide.isActive && (
+                            <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-green-500 border-2 border-white rounded-full"></div>
+                          )}
+                        </div>
                       </div>
 
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between mb-2">
+                      {/* Conteúdo principal */}
+                      <div className="flex-1 w-full">
+                        {/* Header mobile */}
+                        <div className="sm:hidden mb-3">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h3 className="font-bold text-lg">{guide.name}</h3>
+                              <div className="flex items-center text-muted-foreground text-sm">
+                                <MapPin className="h-3 w-3 mr-1" />
+                                {guide.city}
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="flex items-center mb-1">
+                                <Star className="h-3 w-3 text-yellow-500 mr-1" />
+                                <span className="font-medium">{guide.rating.toFixed(1)}</span>
+                              </div>
+                              <p className="text-lg font-bold text-primary">
+                                {guide.pricePerHour.toLocaleString('pt-AO', { style: 'currency', currency: 'AOA' })}/hora
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Header desktop */}
+                        <div className="hidden sm:flex items-start justify-between mb-2">
                           <div>
                             <h3 className="font-bold text-lg">{guide.name}</h3>
                             <div className="flex items-center text-muted-foreground text-sm">
@@ -348,53 +428,84 @@ const cities = [
                           </div>
                         </div>
 
-                        <p className="text-muted-foreground text-sm mb-3">{guide.description}</p>
+                        {/* Descrição */}
+                        <p className="text-muted-foreground text-sm mb-3 break-words whitespace-normal">
+                          {guide.description.length > 150 ? `${guide.description.substring(0, 150)}...` : guide.description}
+                        </p>
 
+                        {/* Especialidades */}
                         <div className="flex flex-wrap gap-2 mb-3">
-                          {guide.specialties.map((specialty, index) => (
-                            <Badge key={index} variant="secondary">{specialty}</Badge>
+                          {guide.specialties.slice(0, 3).map((specialty, index) => (
+                            <Badge key={index} variant="secondary" className="text-xs">
+                              {specialty}
+                            </Badge>
                           ))}
+                          {guide.specialties.length > 3 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{guide.specialties.length - 3}
+                            </Badge>
+                          )}
                         </div>
 
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            <div className="flex items-center">
-                              <Clock className="h-4 w-4 mr-1" />
-                              {guide.experience} anos exp.
-                            </div>
-                            <div className="flex items-center">
-                              <Package className="h-4 w-4 mr-1" />
-                              {getGuidePackages(guide.id).length} pacotes
-                            </div>
-                            <div className="flex items-center">
-                              <MessageSquare className="h-4 w-4 mr-1" />
-                              {guide.languages.join(', ')}
-                            </div>
+                        {/* Informações */}
+                        <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mb-4">
+                          <div className="flex items-center">
+                            <Clock className="h-3 w-3 mr-1" />
+                            {guide.experience} anos exp.
                           </div>
+                          <div className="flex items-center">
+                            <Package className="h-3 w-3 mr-1" />
+                            {getGuidePackages(guide.id).length} pacotes
+                          </div>
+                          <div className="hidden sm:flex items-center">
+                            <MessageSquare className="h-3 w-3 mr-1" />
+                            {guide.languages.slice(0, 2).join(', ')}
+                            {guide.languages.length > 2 && '...'}
+                          </div>
+                        </div>
 
-                          <div className="flex gap-2">
-                              <Button 
+                        {/* Botões */}
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <div className="flex flex-wrap gap-2">
+                            <Button 
                               variant="outline" 
                               size="sm"
                               disabled={!user || guide.uid === user?.uid}
                               onClick={() => handleToggleFavorite(guide)}
-                              className={!isGuideFavorited(user?.uid, guide.id) || isFavoritedMap[guide.id] ? "bg-amber-100 border-amber-300" : ""}
+                              className={`text-xs sm:text-sm ${isFavoritedMap[guide.id] ? "bg-amber-100 border-amber-300" : ""}`}
                             >
                               <Heart 
-                                className={`h-4 w-4 mr-2 ${!isGuideFavorited(user?.uid, guide.id) || isFavoritedMap[guide.id] ? "fill-red-500 text-red-500" : ""}`} 
+                                className={`h-3 w-3 sm:h-4 sm:w-4 mr-1 ${isFavoritedMap[guide.id] ? "fill-red-500 text-red-500" : ""}`} 
                               />
                               {isFavoritedMap[guide.id] ? "Favorito" : "Favoritar"}
                             </Button>
-                            <Button variant="outline" size="sm" onClick={() => handleViewGuide(guide)}>
-                              <Eye className="h-4 w-4 mr-2" />
+                            <Button variant="outline" size="sm" onClick={() => handleViewGuide(guide)} className="text-xs sm:text-sm">
+                              <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                               Ver Perfil
                             </Button>
-                            <Button disabled={!user || guide.uid === user?.uid} size="sm">
-                              <Calendar className="h-4 w-4 mr-2" />
-                                <Link    to={`/guias/${guide.id}/pacotes`}>
-                                             Reserva
-                                            </Link>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            <Button 
+                              disabled={!user || guide.uid === user?.uid} 
+                              size="sm" 
+                              className="text-xs sm:text-sm"
+                            >
+                              <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                              <Link to={`/guias/${guide.id}/pacotes`}>
+                                Reserva
+                              </Link>
                             </Button>
+                            {user?.uid && guide.uid !== user?.uid && (
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => handleMessageGuide(guide.id, guide.name, guide.photoURL)}
+                                className="text-xs sm:text-sm"
+                              >
+                                <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                                Mensagem
+                              </Button>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -405,69 +516,72 @@ const cities = [
 
               {sortedGuides.length === 0 && (
                 <Card>
-                  <CardContent className="p-12 text-center">
+                  <CardContent className="p-8 text-center">
                     <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <h3 className="text-lg font-semibold mb-2">Nenhum guia encontrado</h3>
-                    <p className="text-muted-foreground">
+                    <p className="text-muted-foreground mb-4">
                       Tente ajustar seus filtros de busca.
                     </p>
+                    <Button onClick={() => {
+                      setSearchTerm('');
+                      setSelectedCity('');
+                      setPriceRange('');
+                    }}>
+                      Limpar filtros
+                    </Button>
                   </CardContent>
                 </Card>
               )}
             </div>
           </div>
-        </div>
 
-   
-      </div>
-     {/* Mapa */}
-        <div className="lg:col-span-1 mt-8">
-          <Card className="sticky top-6">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <MapPin className="h-5 w-5 mr-2" />
-                Localização dos Guias
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <GoogleMapsAngola 
-                height="500px"
-                showSearch={true}
-                showControls={true}
-              />
-            </CardContent>
-          </Card>
+          {/* Mapa - Sidebar desktop */}
+          <div className="lg:w-1/3 hidden lg:block">
+            <Card className="sticky top-6">
+
+              <CardContent className="p-3">
+                <GoogleMapsAngola 
+                  height="calc(100vh - 200px)"
+                  showSearch={true}
+                  showControls={true}
+                />
+              </CardContent>
+            </Card>
+          </div>
         </div>
+      </div>
 
       {/* Dialog com detalhes do guia */}
       <Dialog open={isGuideDetailOpen} onOpenChange={setIsGuideDetailOpen}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full">
           {selectedGuide && (
             <>
               <DialogHeader>
-                <DialogTitle className="flex items-center gap-4">
+                <DialogTitle className="flex flex-col sm:flex-row sm:items-center gap-4">
                   <Avatar className="h-12 w-12">
                     <AvatarImage src={selectedGuide.photoURL} alt={selectedGuide.name} />
                     <AvatarFallback>{selectedGuide.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <h2 className="text-2xl font-bold">{selectedGuide.name}</h2>
-                    <div className="flex items-center text-muted-foreground">
-                      <MapPin className="h-4 w-4 mr-1" />
+                    <h2 className="text-xl sm:text-2xl font-bold">{selectedGuide.name}</h2>
+                    <div className="flex flex-wrap items-center text-muted-foreground text-sm">
+                      <MapPin className="h-3 w-3 mr-1" />
                       {selectedGuide.city}
-                      <span className="mx-2">•</span>
-                      <Star className="h-4 w-4 mr-1 text-yellow-500" />
-                      {selectedGuide.rating.toFixed(1)} ({selectedGuide.reviewCount} avaliações)
+                      <span className="mx-2 hidden sm:inline">•</span>
+                      <div className="flex items-center mt-1 sm:mt-0">
+                        <Star className="h-3 w-3 mr-1 text-yellow-500" />
+                        {selectedGuide.rating.toFixed(1)} ({selectedGuide.reviewCount} avaliações)
+                      </div>
                     </div>
                   </div>
                 </DialogTitle>
               </DialogHeader>
 
               <Tabs defaultValue="overview" className="mt-6">
-                <TabsList>
-                  <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-                  <TabsTrigger value="packages">Pacotes</TabsTrigger>
-                  <TabsTrigger value="reviews">Avaliações</TabsTrigger>
+                <TabsList className="w-full overflow-x-auto flex">
+                  <TabsTrigger value="overview" className="flex-1">Visão Geral</TabsTrigger>
+                  <TabsTrigger value="packages" className="flex-1">Pacotes</TabsTrigger>
+                  <TabsTrigger value="reviews" className="flex-1">Avaliações</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="overview" className="space-y-6">
@@ -505,14 +619,16 @@ const cities = [
 
                 <TabsContent value="packages" className="space-y-4">
                   <h3 className="font-semibold">Pacotes Disponíveis</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {getGuidePackages(selectedGuide.id).map((pkg) => (
                       <Card key={pkg.id}>
                         <CardHeader>
-                          <CardTitle className="text-lg">{pkg.title}</CardTitle>
+                          <CardTitle className="text-base sm:text-lg">{pkg.title}</CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <p className="text-sm text-muted-foreground mb-3">{pkg.description}</p>
+                          <p className="text-sm text-muted-foreground mb-3">
+                            {pkg.description.length > 100 ? `${pkg.description.substring(0, 100)}...` : pkg.description}
+                          </p>
                           
                           <div className="space-y-2 mb-4">
                             <div className="flex items-center text-sm">
@@ -538,7 +654,6 @@ const cities = [
                               <Star className="h-4 w-4 text-yellow-500 mr-1" />
                               <span className="text-sm">{pkg.rating.toFixed(1)} ({pkg.reviewCount})</span>
                             </div>
-                            
                           </div>
                         </CardContent>
                       </Card>
@@ -552,62 +667,62 @@ const cities = [
                   )}
                 </TabsContent>
 
-                 <TabsContent value="reviews" className="mt-6">
-                <h3 className="text-lg font-semibold mb-4">Avaliações dos Clientes</h3>
-                
-                {reviews.length > 0 ? (
-                  <div className="space-y-6">
-                    {reviews.map((review) => (
-                      <div key={review.id} className="border rounded-lg p-4">
-                        <div className="flex items-center gap-3 mb-3">
-                          <Avatar className="h-10 w-10">
-                            <AvatarFallback>
-                              {review.touristName.split(' ').map(n => n[0]).join('')}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <h4 className="font-medium">{review.touristName}</h4>
-                            <div className="flex items-center">
-                              {[...Array(5)].map((_, i) => (
-                                <Star
-                                  key={i}
-                                  className={`h-4 w-4 ${i < review.rating ? 'text-yellow-500 fill-current' : 'text-gray-300'}`}
-                                />
-                              ))}
-                              <span className="text-sm text-muted-foreground ml-2">
-                                {new Date(review.createdAt).toLocaleDateString('pt-AO')}
-                              </span>
+                <TabsContent value="reviews" className="mt-6">
+                  <h3 className="text-lg font-semibold mb-4">Avaliações dos Clientes</h3>
+                  
+                  {reviews.length > 0 ? (
+                    <div className="space-y-4">
+                      {reviews.map((review) => (
+                        <div key={review.id} className="border rounded-lg p-4">
+                          <div className="flex items-center gap-3 mb-3">
+                            <Avatar className="h-10 w-10">
+                              <AvatarFallback>
+                                {review.touristName.split(' ').map(n => n[0]).join('')}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <h4 className="font-medium">{review.touristName}</h4>
+                              <div className="flex flex-wrap items-center">
+                                {[...Array(5)].map((_, i) => (
+                                  <Star
+                                    key={i}
+                                    className={`h-4 w-4 ${i < review.rating ? 'text-yellow-500 fill-current' : 'text-gray-300'}`}
+                                  />
+                                ))}
+                                <span className="text-sm text-muted-foreground ml-2">
+                                  {new Date(review.createdAt).toLocaleDateString('pt-AO')}
+                                </span>
+                              </div>
                             </div>
                           </div>
+                          <p className="text-muted-foreground">
+                            {review.comment}
+                          </p>
                         </div>
-                        <p className="text-muted-foreground">
-                          {review.comment}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-12 text-muted-foreground">
-                    <Star className="h-12 w-12 mx-auto mb-4" />
-                    <h4 className="text-lg font-medium">Nenhuma avaliação ainda</h4>
-                    <p>Seja o primeiro a avaliar este guia</p>
-                  </div>
-                )}
-              </TabsContent>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <Star className="h-12 w-12 mx-auto mb-4" />
+                      <h4 className="text-lg font-medium">Nenhuma avaliação ainda</h4>
+                      <p>Seja o primeiro a avaliar este guia</p>
+                    </div>
+                  )}
+                </TabsContent>
               </Tabs>
 
-              <div className="flex justify-end gap-2 mt-6 pt-6 border-t">
-
-                    {user?.uid && 
-                    <Button disabled={!user || selectedGuide.uid === user?.uid} variant="outline" onClick={() => handleMessageGuide(selectedGuide.id, selectedGuide.name, selectedGuide.photoURL)}>
-                                <MessageSquare className="h-4 w-4 mr-2" />
-                                Enviar Mensagem
-                              </Button>}
-                <Button disabled={!user || selectedGuide.uid === user?.uid} >
+              <div className="flex flex-col sm:flex-row justify-end gap-2 mt-6 pt-6 border-t">
+                {user?.uid && selectedGuide.uid !== user?.uid && (
+                  <Button variant="outline" onClick={() => handleMessageGuide(selectedGuide.id, selectedGuide.name, selectedGuide.photoURL)}>
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Enviar Mensagem
+                  </Button>
+                )}
+                <Button disabled={!user || selectedGuide.uid === user?.uid}>
                   <Calendar className="h-4 w-4 mr-2" />
-                   <Link to={`/guias/${selectedGuide.id}/pacotes`}>
-                                            Fazer Reserva
-                                            </Link>
+                  <Link to={`/guias/${selectedGuide.id}/pacotes`}>
+                    Fazer Reserva
+                  </Link>
                 </Button>
               </div>
             </>
@@ -615,6 +730,5 @@ const cities = [
         </DialogContent>
       </Dialog>
     </div>
-      </div>
   );
 }
