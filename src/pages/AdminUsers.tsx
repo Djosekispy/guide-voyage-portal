@@ -33,12 +33,23 @@ import { DEFAULT_GUIDE_DATA } from '@/mock/deafultProvider';
 import { createUser as createUserInFirestore } from '@/lib/firestore';
 import { createWalletBalance } from '@/lib/firestore';
 import { db } from "@/lib/firebase";
+import { initializeApp, deleteApp } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { Search, Trash2, Plus, AlertCircle } from "lucide-react";
 import AdminSidebar from "@/components/AdminSidebar";
 import Header from "@/components/Header";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+
+// Firebase config for secondary app (user creation without affecting current session)
+const firebaseConfig = {
+  apiKey: "AIzaSyBsQ3339Z_UadiOsKsPGdOp0LHEuMqsOEU",
+  authDomain: "kilemba-df33a.firebaseapp.com",
+  projectId: "kilemba-df33a",
+  storageBucket: "kilemba-df33a.appspot.com",
+  messagingSenderId: "877784344083",
+  appId: "1:877784344083:web:da5492792babbf52f3c1e6"
+};
 
 interface UserData {
   uid: string;
@@ -237,111 +248,90 @@ const AdminUsers = () => {
 
     try {
       setIsCreatingUser(true);
-      const auth = getAuth();
+      
+      // Create a secondary Firebase app to create users without affecting admin session
+      const secondaryApp = initializeApp(firebaseConfig, 'SecondaryApp');
+      const secondaryAuth = getAuth(secondaryApp);
 
-      // Criar usuário no Firebase Auth
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        userFormData.email,
-        userFormData.password
-      );
+      try {
+        // Criar usuário no Firebase Auth usando a instância secundária
+        const userCredential = await createUserWithEmailAndPassword(
+          secondaryAuth,
+          userFormData.email,
+          userFormData.password
+        );
 
-      const userId = userCredential.user.uid;
+        const userId = userCredential.user.uid;
 
-      // Criar documento no Firestore para o usuário (usar helper)
-      await createUserInFirestore(userId, {
-        email: userFormData.email,
-        name: userFormData.name,
-        userType: userFormData.userType,
-        phone: '',
-        city: '',
-        isActive: true
-      });
+        // Sign out from secondary auth immediately
+        await secondaryAuth.signOut();
 
-      // If creating guide, also create a guide profile
-      if (userFormData.userType === 'guide') {
-        try {
-          await createUserInFirestore(userId, userFormData as any);
-          await setDoc(doc(db, 'guides', userId), {
-            ...DEFAULT_GUIDE_DATA,
-            id: userId,
-            uid: userId,
-            name: userFormData.name,
-            email: userFormData.email,
-            phone: '',
-            city: '',
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp()
-          });
-        } catch (err) {
-          console.error('Error creating guide profile after user creation:', err);
-        }
-      }
-
-      // Adicionar à lista local
-      setUsers([...users, {
-        uid: userId,
-        email: userFormData.email,
-        name: userFormData.name,
-        userType: userFormData.userType,
-        phone: '',
-        city: '',
-      }]);
-
-      toast({
-        title: "Sucesso",
-        description: `Usuário '${userFormData.name}' criado com sucesso!`
-      });
-
-      // Se for guia, criar também um documento em 'guides' com dados padronizados
-      if (userFormData.userType === 'guide') {
-        const guideData = {
-          id: userId,
-          uid: userId,
-          name: userFormData.name,
+        // Criar documento no Firestore para o usuário (usar helper)
+        await createUserInFirestore(userId, {
           email: userFormData.email,
+          name: userFormData.name,
+          userType: userFormData.userType,
           phone: '',
           city: '',
-          description: DEFAULT_GUIDE_DATA.description,
-          experience: DEFAULT_GUIDE_DATA.experience,
-          pricePerHour: DEFAULT_GUIDE_DATA.pricePerHour,
-          languages: DEFAULT_GUIDE_DATA.languages,
-          specialties: DEFAULT_GUIDE_DATA.specialties,
-          rating: DEFAULT_GUIDE_DATA.rating,
-          reviewCount: DEFAULT_GUIDE_DATA.reviewCount,
-          isActive: DEFAULT_GUIDE_DATA.isActive,
-          photoURL: DEFAULT_GUIDE_DATA.photoURL,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
-        } as any;
+          isActive: true
+        });
 
+        // If creating guide, also create a guide profile
+        if (userFormData.userType === 'guide') {
           try {
-            await setDoc(doc(db, 'guides', userId), guideData);
+            await setDoc(doc(db, 'guides', userId), {
+              ...DEFAULT_GUIDE_DATA,
+              id: userId,
+              uid: userId,
+              name: userFormData.name,
+              email: userFormData.email,
+              phone: '',
+              city: '',
+              createdAt: serverTimestamp(),
+              updatedAt: serverTimestamp()
+            });
             // Create wallet for new guide
-                await createWalletBalance({
-                  guideId: userId,
-                  guideName: userFormData.name,
-                  totalEarnings: 0,
-                  currentBalance: 0,
-                  totalWithdrawn: 0,
-                  pendingWithdrawal: 0,
-                });
+            await createWalletBalance({
+              guideId: userId,
+              guideName: userFormData.name,
+              totalEarnings: 0,
+              currentBalance: 0,
+              totalWithdrawn: 0,
+              pendingWithdrawal: 0,
+            });
           } catch (err) {
-          console.error('Erro ao criar documento de guia:', err);
+            console.error('Error creating guide profile after user creation:', err);
+          }
         }
-              // Also ensure wallet exists for created guide (for safety)
-            // no-op: wallet created above
-      }
 
-      // Resetar formulário
-      setUserFormData({
-        name: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-        userType: 'tourist'
-      });
-      setShowCreateUserDialog(false);
+        // Adicionar à lista local
+        setUsers([...users, {
+          uid: userId,
+          email: userFormData.email,
+          name: userFormData.name,
+          userType: userFormData.userType,
+          phone: '',
+          city: '',
+        }]);
+
+        toast({
+          title: "Sucesso",
+          description: `Usuário '${userFormData.name}' criado com sucesso!`
+        });
+
+        // Resetar formulário
+        setUserFormData({
+          name: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+          userType: 'tourist'
+        });
+        setShowCreateUserDialog(false);
+      } finally {
+        // Always delete the secondary app
+        await deleteApp(secondaryApp);
+      }
     } catch (error: any) {
       console.error("Erro ao criar usuário:", error);
       if (error.code === 'auth/email-already-in-use') {
