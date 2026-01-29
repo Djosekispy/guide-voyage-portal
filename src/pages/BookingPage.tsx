@@ -22,9 +22,21 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { createBooking, Booking, getTourPackage, TourPackage } from '@/lib/firestore';
+import { 
+  createBooking, 
+  Booking, 
+  getTourPackage, 
+  TourPackage,
+  createPayment,
+  notifyNewBooking,
+  getWalletBalance,
+  createWalletBalance,
+  updateWalletBalance
+} from '@/lib/firestore';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+
+const PLATFORM_FEE_PERCENT = 10; // 10% de comissão da plataforma
 
 export default function BookingPage() {
   const { packageId } = useParams();
