@@ -22,9 +22,21 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { createBooking, Booking, getTourPackage, TourPackage } from '@/lib/firestore';
+import { 
+  createBooking, 
+  Booking, 
+  getTourPackage, 
+  TourPackage,
+  createPayment,
+  notifyNewBooking,
+  getWalletBalance,
+  createWalletBalance,
+  updateWalletBalance
+} from '@/lib/firestore';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+
+const PLATFORM_FEE_PERCENT = 10; // 10% de comissão da plataforma
 
 export default function BookingPage() {
   const { packageId } = useParams();
@@ -81,7 +93,7 @@ export default function BookingPage() {
     setLoading(true);
 
     try {
-      const bookingData :  Omit<Booking, "id" | "createdAt" | "updatedAt"> = {
+      const bookingData: Omit<Booking, "id" | "createdAt" | "updatedAt"> = {
         touristId: user.uid,
         touristName: user.displayName || 'Anônimo',
         touristEmail: user.email || '',
@@ -99,7 +111,59 @@ export default function BookingPage() {
         notes,
       };
 
-      await createBooking(bookingData);
+      const bookingId = await createBooking(bookingData);
+
+      // Criar pagamento automaticamente
+      const totalAmount = packageData.price * groupSize;
+      const platformFee = Math.round(totalAmount * PLATFORM_FEE_PERCENT / 100);
+      const guideEarnings = totalAmount - platformFee;
+
+      try {
+        await createPayment({
+          touristId: user.uid,
+          touristName: user.displayName || 'Anônimo',
+          touristEmail: user.email || '',
+          guideId: packageData.guideId,
+          guideName: packageData.guideName,
+          bookingId: bookingId,
+          packageTitle: packageData.title,
+          amount: totalAmount,
+          platformFee: platformFee,
+          guideEarnings: guideEarnings,
+          status: 'pending',
+          paymentMethod: 'bank_transfer',
+          description: `Reserva do pacote "${packageData.title}" para ${groupSize} pessoa(s)`,
+        });
+
+        // Atualizar ou criar carteira do guia
+        const wallet = await getWalletBalance(packageData.guideId);
+        if (wallet) {
+          await updateWalletBalance(packageData.guideId, {
+            totalEarnings: (wallet.totalEarnings || 0) + guideEarnings,
+            currentBalance: (wallet.currentBalance || 0) + guideEarnings,
+          });
+        } else {
+          await createWalletBalance({
+            guideId: packageData.guideId,
+            guideName: packageData.guideName,
+            totalEarnings: guideEarnings,
+            currentBalance: guideEarnings,
+            totalWithdrawn: 0,
+            pendingWithdrawal: 0,
+          });
+        }
+
+        // Notificar admin sobre nova reserva
+        await notifyNewBooking(
+          bookingId,
+          user.displayName || 'Turista',
+          packageData.guideName,
+          packageData.title
+        );
+      } catch (paymentError) {
+        console.error('Erro ao processar pagamento:', paymentError);
+        // Continua mesmo se o pagamento falhar - a reserva foi criada
+      }
       
       toast({
         title: 'Reserva realizada!',

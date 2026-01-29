@@ -224,7 +224,7 @@ export interface Transaction {
 
 export interface Notification {
   id: string;
-  type: 'new_user' | 'new_booking' | 'new_review' | 'new_package' | 'booking_cancelled' | 'low_rating';
+  type: 'new_user' | 'new_booking' | 'new_review' | 'new_package' | 'booking_cancelled' | 'low_rating' | 'admin_message';
   title: string;
   message: string;
   link?: string;
@@ -237,6 +237,8 @@ export interface Notification {
     guideId?: string;
     packageId?: string;
     rating?: number;
+    recipientCount?: number;
+    sendTo?: string;
   };
   createdAt: any;
 }
