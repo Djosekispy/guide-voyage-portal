@@ -572,7 +572,7 @@ const GuideBilling = () => {
           </Card>
         </div>
 
-        {/* Dados Bancários */}
+        {/* Dados Bancários 
         <Card className="mb-8">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
@@ -763,7 +763,7 @@ const GuideBilling = () => {
             )}
           </CardContent>
         </Card>
-
+*/}
         {/* Tabela de reservas */}
         <Card>
           <CardHeader>
@@ -817,7 +817,7 @@ const GuideBilling = () => {
           </CardContent>
         </Card>
 
-        {/* Seção de pagamento */}
+        {/* Seção de pagamento
         <Card className="mt-6">
           <CardHeader>
             <CardTitle>Informações de Pagamento</CardTitle>
@@ -859,7 +859,7 @@ const GuideBilling = () => {
             </div>
           </CardContent>
         </Card>
-
+ */}
         {billing.bookings.length === 0 && (
           <Card className="text-center py-12 mt-6">
             <CardContent>

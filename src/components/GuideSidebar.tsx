@@ -60,11 +60,11 @@ const GuideSidebar = () => {
       href: "/guia/facturamento",
       icon: Wallet,
     },
-    {
-      name: "Saques",
-      href: "/guia/saques",
-      icon: DollarSign,
-    },
+ //   {
+  //    name: "Saques",
+  //    href: "/guia/saques",
+  //  icon: DollarSign,
+  //  },
     {
       name: "Definições",
       href: "/guia/definicoes",

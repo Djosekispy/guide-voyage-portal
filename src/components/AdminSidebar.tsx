@@ -50,11 +50,11 @@ const AdminSidebar = () => {
       href: "/admin/pagamentos",
       icon: CreditCard,
     },
-    {
-      name: "Saques",
-      href: "/admin/saques",
-      icon: Wallet,
-    },
+ //   {
+ //     name: "Saques",
+ //     href: "/admin/saques",
+ //     icon: Wallet,
+ //   },
     {
       name: "Analytics",
       href: "/admin/analytics",
@@ -65,11 +65,11 @@ const AdminSidebar = () => {
       href: "/admin/notificacoes",
       icon: Bell,
     },
-    {
-      name: "Destinos",
-      href: "/admin/destinos",
-      icon: MapPin,
-    },
+  //  {
+  //    name: "Destinos",
+  //    href: "/admin/destinos",
+  //    icon: MapPin,
+  //  },
     {
       name: "Configurações",
       href: "/admin/configuracoes",
