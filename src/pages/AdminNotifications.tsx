@@ -419,9 +419,9 @@ const AdminNotifications = () => {
                             >
                               <TableCell>
                                 {!notification.isRead ? (
-                                  <div className="h-2 w-2 rounded-full bg-primary" />
+                                  <div className="h-2 w-4 rounded-lg bg-primary" />
                                 ) : (
-                                  <div className="h-2 w-2" />
+                                  <div className="h-2 w-4" />
                                 )}
                               </TableCell>
                               <TableCell>
