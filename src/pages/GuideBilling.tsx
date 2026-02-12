@@ -551,7 +551,7 @@ const GuideBilling = () => {
                 <Wallet className="h-4 w-4 mr-2" />
                 Carteira
               </CardTitle>
-              <CardDescription className="text-sm text-muted-foreground">Saldo disponível e saques</CardDescription>
+              <CardDescription className="text-sm text-muted-foreground">Saldo disponível</CardDescription>
             </CardHeader>
             <CardContent className="flex-1 flex flex-col justify-between">
               <div>
@@ -562,12 +562,14 @@ const GuideBilling = () => {
                 {/**   <p className="text-xs text-muted-foreground">Total sacado: {wallet ? formatCurrency(wallet.totalWithdrawn ?? 0) : '—'}</p> */}
                 </div>
               </div>
+               {/** 
               <div className="flex justify-end pt-4">
                 <Button variant="outline" onClick={handleOpenWithdrawalDialog} className="gap-2">
                   <DollarSign className="h-4 w-4 mr-2" />
                   Solicitar Saque
                 </Button>
               </div>
+               */}
             </CardContent>
           </Card>
         </div>
