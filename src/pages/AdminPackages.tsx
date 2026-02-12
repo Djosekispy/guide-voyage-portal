@@ -195,9 +195,9 @@ export default function AdminPackages() {
                               <Button variant="ghost" size="sm" onClick={() => handleView(p)}>
                                 <Eye className="h-4 w-4"/>
                               </Button>
-                              <Button variant="ghost" size="sm" onClick={() => handleEdit(p)}>
+                             {/**  <Button variant="ghost" size="sm" onClick={() => handleEdit(p)}>
                                 <Edit className="h-4 w-4"/>
-                              </Button>
+                              </Button> */}
                               <Button variant="ghost" size="sm" onClick={() => handleDelete(p.id)}>
                                 <Trash2 className="h-4 w-4 text-destructive"/>
                               </Button>

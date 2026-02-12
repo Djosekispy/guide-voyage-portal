@@ -178,7 +178,7 @@ const GuideBilling = () => {
     const canceled = filteredBookings.filter(b => b.status === 'Cancelado');
     
     const totalEarnings = confirmed.reduce((sum, b) => sum + b.totalPrice, 0);
-    const platformFee = totalEarnings * 0.05;
+    const platformFee = totalEarnings * 0.10;
     const netAmount = totalEarnings - platformFee;
 
     setBilling({
@@ -518,7 +518,7 @@ const GuideBilling = () => {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center">
                 <Percent className="h-4 w-4 mr-2" />
-                Taxa da Plataforma (5%)
+                Taxa da Plataforma (10%)
               </CardTitle>
             </CardHeader>
             <CardContent className="flex-1 flex flex-col justify-between">

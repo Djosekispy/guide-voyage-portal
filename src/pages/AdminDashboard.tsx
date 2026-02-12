@@ -8,6 +8,7 @@ import { db } from "@/lib/firebase";
 import { Users, MapPin, BookOpen, Star, TrendingUp, DollarSign } from "lucide-react";
 import AdminSidebar from "@/components/AdminSidebar";
 import Header from "@/components/Header";
+import { getAllTourPackages } from "@/lib/firestore";
 
 interface Stats {
   totalUsers: number;
@@ -62,9 +63,10 @@ const AdminDashboard = () => {
         });
 
         // Pacotes
-        const packagesSnap = await getDocs(collection(db, "packages"));
-        console.debug('[AdminDashboard] packages fetched', { size: packagesSnap.size });
-        const totalPackages = packagesSnap.size;
+        console.log('[AdminDashboard] fetching packages...');
+        const packagesSnap = await getAllTourPackages();
+        console.debug('[AdminDashboard] packages fetched', { size: packagesSnap.length });
+        const totalPackages = packagesSnap.length;
 
         // Reservas
         const bookingsSnap = await getDocs(collection(db, "bookings"));
