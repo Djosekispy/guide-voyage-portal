@@ -293,6 +293,8 @@ export default function AdminAnalytics() {
                     </CardContent>
                   </Card>
 
+{
+  /** 
                   <Card>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm font-medium text-muted-foreground">Saques Pendentes</CardTitle>
@@ -307,6 +309,8 @@ export default function AdminAnalytics() {
                       </div>
                     </CardContent>
                   </Card>
+*/
+}
                 </div>
 
                 {/* Revenue Details */}
@@ -328,7 +332,7 @@ export default function AdminAnalytics() {
                       <p className="text-2xl font-bold text-purple-600">{stats.platformFees.toFixed(2)} Kz</p>
                     </CardContent>
                   </Card>
-
+    {/** 
                   <Card>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm font-medium text-muted-foreground">Total Sacado</CardTitle>
@@ -337,6 +341,7 @@ export default function AdminAnalytics() {
                       <p className="text-2xl font-bold text-blue-600">{stats.totalWithdrawn.toFixed(2)} Kz</p>
                     </CardContent>
                   </Card>
+    */}
                 </div>
 
                 {/* Charts */}
@@ -380,24 +385,7 @@ export default function AdminAnalytics() {
                     </CardContent>
                   </Card>
 
-                  {/* Withdrawal Status Distribution */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Status dos Saques</CardTitle>
-                      <CardDescription>Distribuição de solicitações de saque</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="h-80 flex items-center justify-center">
-                        <Pie data={withdrawalStatusData} options={chartOptions} />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Summary Tables */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Top Earning Guides */}
-                  <Card>
+                   <Card>
                     <CardHeader>
                       <CardTitle>Top Guias por Ganhos</CardTitle>
                       <CardDescription>Guias com mais ganhos</CardDescription>
@@ -420,7 +408,29 @@ export default function AdminAnalytics() {
                     </CardContent>
                   </Card>
 
-                  {/* Payment Method Distribution */}
+                  {/* 
+          Withdrawal Status Distribution 
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Status dos Saques</CardTitle>
+                      <CardDescription>Distribuição de solicitações de saque</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-80 flex items-center justify-center">
+                        <Pie data={withdrawalStatusData} options={chartOptions} />
+                      </div>
+                    </CardContent>
+                  </Card>
+                */}
+
+                </div>
+
+                {/* Summary Tables */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Top Earning Guides */}
+                 
+
+                  {/* Payment Method Distribution 
                   <Card>
                     <CardHeader>
                       <CardTitle>Métodos de Pagamento</CardTitle>
@@ -455,6 +465,7 @@ export default function AdminAnalytics() {
                       </div>
                     </CardContent>
                   </Card>
+                  */}
                 </div>
               </>
             )}

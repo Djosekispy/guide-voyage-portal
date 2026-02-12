@@ -559,7 +559,7 @@ const GuideBilling = () => {
                 <p className="text-sm text-muted-foreground mt-1">Saldo disponível</p>
                 <div className="mt-4">
                   <p className="text-xs text-muted-foreground">Pendentes: {wallet ? formatCurrency(wallet.pendingWithdrawal ?? 0) : '—'}</p>
-                  <p className="text-xs text-muted-foreground">Total sacado: {wallet ? formatCurrency(wallet.totalWithdrawn ?? 0) : '—'}</p>
+                {/**   <p className="text-xs text-muted-foreground">Total sacado: {wallet ? formatCurrency(wallet.totalWithdrawn ?? 0) : '—'}</p> */}
                 </div>
               </div>
               <div className="flex justify-end pt-4">
