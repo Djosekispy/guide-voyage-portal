@@ -6,7 +6,7 @@ const Testimonials = () => {
   const testimonials = [
     {
       id: 1,
-      name: "Maria Silva",
+      name: "Ney miguel ",
       location: "Angola",
       avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b47c?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80",
       rating: 5,
@@ -15,7 +15,7 @@ const Testimonials = () => {
     },
     {
       id: 2,
-      name: "Ricardo Mendes",
+      name: "Wander MIguel",
       location: "Angola",
       avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80",
       rating: 5,
@@ -24,7 +24,7 @@ const Testimonials = () => {
     },
     {
       id: 3,
-      name: "Carlos Ferreira",
+      name: "Vladney Miguel",
       location: "Angola",
       avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80",
       rating: 5,
@@ -33,7 +33,7 @@ const Testimonials = () => {
     },
     {
       id: 4,
-      name: "Isabella Santos",
+      name: "Whitney Miguel",
       location: "Angola",
       avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80",
       rating: 5,
