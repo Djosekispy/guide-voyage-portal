@@ -5,19 +5,19 @@ import Header from "@/components/Header";
 const About = () => {
   const team = [
     {
-      name: "Ana Kiluanje",
+      name: "Wander Miguel",
       role: "Fundadora & CEO",
-      image: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face",
-      description: "20 anos promovendo o turismo sustentável em Angola"
+      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
+      description: "30 anos promovendo o turismo sustentável em Angola"
     },
     {
-      name: "João Mukongo",
+      name: "Vlade Miguel",
       role: "Diretor de Operações",
       image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
       description: "Especialista em experiências turísticas autênticas angolanas"
     },
     {
-      name: "Maria Tchizamba",
+      name: "Ney Miguel",
       role: "Coordenadora de Guias",
       image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=face",
       description: "Conectando viajantes com as melhores tradições locais"

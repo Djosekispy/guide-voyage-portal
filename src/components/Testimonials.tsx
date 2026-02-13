@@ -7,7 +7,7 @@ const Testimonials = () => {
     {
       id: 1,
       name: "Maria Silva",
-      location: "Lisboa, Portugal",
+      location: "Angola",
       avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b47c?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80",
       rating: 5,
       text: "Angola superou todas as minhas expectativas! O guia João me mostrou as Quedas de Kalandula e a cultura local de forma autêntica. Uma experiência transformadora!",
@@ -16,7 +16,7 @@ const Testimonials = () => {
     {
       id: 2,
       name: "Ricardo Mendes",
-      location: "São Paulo, Brasil",
+      location: "Angola",
       avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80",
       rating: 5,
       text: "A Serra da Leba em Lubango foi de tirar o fôlego! A guia Ana conhecia cada curva da estrada e cada história do lugar. Absolutamente incrível!",
@@ -25,7 +25,7 @@ const Testimonials = () => {
     {
       id: 3,
       name: "Carlos Ferreira",
-      location: "Rio de Janeiro, Brasil",
+      location: "Angola",
       avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80",
       rating: 5,
       text: "O Deserto do Namibe foi uma aventura única! O guia local me levou para ver paisagens que pareciam de outro planeta. Angola é um tesouro escondido!",
@@ -34,7 +34,7 @@ const Testimonials = () => {
     {
       id: 4,
       name: "Isabella Santos",
-      location: "Madrid, Espanha",
+      location: "Angola",
       avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80",
       rating: 5,
       text: "Luanda me surpreendeu completamente! Entre a Fortaleza de São Miguel e a Marginal, descobri uma cidade vibrante e cheia de história. Recomendo a todos!",

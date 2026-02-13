@@ -203,8 +203,8 @@ const getDatesWithBookings = () => {
                           <Users className="h-4 w-4 text-muted-foreground" />
                           <span>{booking.groupSize} participante(s)</span>
                         </div>
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="outline">
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline">
                             Detalhes
                           </Button>
                           <Button size="sm" variant="outline">
